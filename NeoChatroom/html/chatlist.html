@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天室列表</title>
+    <link rel="icon" href="/images/logo16.ico" type="image/x-icon">
+    <style>
+        /* 通用样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #007BFF;
+            color: #fff;
+            padding: 5px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+            .header .left-section {
+                display: flex;
+                align-items: center;
+            }
+
+            .header .right-section {
+                display: flex;
+                align-items: center;
+                margin-left: auto;
+            }
+
+            .header .theme-toggle {
+                margin-right: 20px; /* 调整按钮之间的间距 */
+            }
+
+            .header img {
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            .header .chatroom-title {
+                font-size: 22px;
+                font-weight: bold;
+            }
+
+            .header button {
+                padding: 8px 12px;
+                border-radius: 5px;
+                cursor: pointer;
+                color: #007BFF;
+                border: none;
+                font-size: 16px;
+                margin-right: 20px;
+                background-color: #dcdcdc;
+                transition: background-color 0.2s, transform 0.1s ease;
+            }
+
+                .header button:hover {
+                    background-color: #c0c0c0;
+                    transform: scale(1.1);
+                }
+                
+        /* 容器 */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+            position: relative;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .room-list {
+            margin-top: 10px;
+        }
+
+        .room-card {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+            .room-card:hover {
+                background-color: #e6f7ff;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .room-card .room-id {
+                font-weight: bold;
+                color: #555;
+                width: 80px;
+            }
+
+            .room-card .room-name {
+                font-size: 1.1em;
+                color: #333;
+                text-align: right;
+                flex: 1;
+                padding-right: 10px;
+            }
+
+            .room-card .login-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(5px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+                .room-card .login-overlay button {
+                    padding: 10px 20px;
+                    background-color: #007BFF;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transform: scale(0.9);
+                    transition: transform 0.3s ease;
+                }
+
+                    .room-card .login-overlay button:hover {
+                        transform: scale(1);
+                    }
+
+            .room-card:hover .login-overlay {
+                opacity: 1;
+            }
+        /* "加入"按钮 */
+        .join-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .join-btn:hover {
+                background-color: #0056b3;
+                transform: scale(1.05);
+            }
+        /* 指定加入面板 */
+        .join-panel {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+            .join-panel input {
+                width: 200px;
+                padding: 8px;
+                font-size: 14px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                transition: border 0.3s;
+            }
+
+                .join-panel input:focus {
+                    border-color: #007BFF;
+                    outline: none;
+                }
+
+            .join-panel button {
+                padding: 8px 16px;
+                font-size: 14px;
+                margin-left: 10px;
+                background-color: #007BFF;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+                .join-panel button:hover {
+                    background-color: #0056b3;
+                }
+        /* 深色模式 */
+        body.dark-mode {
+            background-color: #333;
+            color: #ccc;
+        }
+
+            body.dark-mode .header {
+                background-color: #222;
+            }
+
+            body.dark-mode .container {
+                background: #1e1e1e;
+                box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+            }
+
+            body.dark-mode .room-card {
+                background-color: #2a2a2a;
+                border: 1px solid #444;
+            }
+
+                body.dark-mode .room-card:hover {
+                    background-color: #333;
+                }
+
+                body.dark-mode .room-card .room-id {
+                    color: #aaa;
+                }
+
+                body.dark-mode .room-card .room-name {
+                    color: #eee;
+                }
+
+                body.dark-mode .room-card .login-overlay {
+                    background: rgba(30, 30, 30, 0.8);
+                }
+
+            body.dark-mode .join-btn {
+                background-color: #0056b3;
+            }
+
+            body.dark-mode .join-panel {
+                background-color: #1e1e1e;
+                border-color: #555;
+            }
+
+                body.dark-mode .join-panel input {
+                    background: #2a2a2a;
+                    color: #ccc;
+                    border: 1px solid #555;
+                }
+
+                body.dark-mode .join-panel button {
+                    background-color: #007BFF;
+                }
+        /* 主题切换按钮 */
+        .theme-toggle {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #dcdcdc;
+            color: #007BFF;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s ease;
+        }
+
+            .theme-toggle:hover {
+                background-color: #c0c0c0;
+                transform: scale(1.1);
+            }
+
+        /* 空状态提示 */
+        .empty-message {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="header">
+        <div class="left-section">
+            <img src="/images/logo16.ico" alt="Logo">
+            <div class="chatroom-title">seve's chatroom</div>
+        </div>
+        <div class="right-section">
+            <div class="username" id="usernameDisplay"></div>
+            <button class="login-button" id="loginButton" onclick="window.location.href='/login'">登录</button>
+            <button class="theme-toggle" id="themeToggle">D/B</button>
+        </div>
+    </div>
+
+
+    <!-- 已加入的聊天室 -->
+    <div class="container">
+        <h2>已加入的聊天室</h2>
+        <div id="joined-chatrooms" class="room-list">
+            <!-- 加入的聊天室卡片 -->
+        </div>
+    </div>
+
+    <!-- 所有聊天室 -->
+    <div class="container">
+        <h2>所有聊天室</h2>
+        <div id="all-chatrooms" class="room-list">
+            <!-- 所有聊天室卡片 -->
+        </div>
+    </div>
+
+    <!-- 指定加入面板 -->
+    <div class="join-panel">
+        <h2>指定加入</h2>
+        <input type="text" id="join-room-input" placeholder="请输入聊天室ID (≥3)">
+        <button id="join-room-btn">加入聊天室</button>
+    </div>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            // 保存主题偏好
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+        });
+
+        // 检查保存的主题偏好
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // 获取 cookie 的工具函数
+        function getCookie(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+
+        // 删除 cookie 的工具函数
+        function deleteCookie(name) {
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;';
+        }
+
+        let currentUsername = "";
+        const uid = getCookie("uid");
+        const serverUrl = window.location.origin;
+
+        // 更新登录状态
+        async function updateLoginStatus() {
+            try {
+                const response = await fetch(`${serverUrl}/user/username?uid=${uid}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUsername = data.username;
+                    document.getElementById('usernameDisplay').textContent = currentUsername;
+                    document.getElementById('loginButton').style.display = 'none';
+                    return true;
+                } else {
+                    document.getElementById('loginButton').style.display = 'inline-block';
+                    currentUsername = '';
+                    document.getElementById('usernameDisplay').textContent = '';
+                    return false;
+                }
+            } catch (error) {
+                document.getElementById('loginButton').style.display = 'inline-block';
+                currentUsername = '';
+                document.getElementById('usernameDisplay').textContent = '';
+                return false;
+            }
+        }
+
+        // 检查登录状态
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch(`${serverUrl}/user/username?uid=${uid}`);
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                window.location.href = '/login';
+                return false;
+            }
+        }
+
+        // 调用 /list 接口获取已加入的聊天室
+        async function fetchJoinedChatrooms() {
+            if (!await checkLoginStatus()) return;
+
+            try {
+                const response = await fetch('/list', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const rooms = await response.json();
+                renderJoinedChatrooms(rooms);
+            } catch (error) {
+                console.error('获取已加入聊天室失败:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        function renderJoinedChatrooms(rooms) {
+            const container = document.getElementById('joined-chatrooms');
+            container.innerHTML = '';
+
+            if (!rooms || rooms.length === 0) {
+                container.innerHTML = '<p class="empty-message">当前没有加入的聊天室。</p>';
+                return;
+            }
+
+            rooms.forEach(room => {
+                if (parseInt(room.id) < 3) return;  // 只显示 ID≥3
+
+                const card = document.createElement('div');
+                card.className = 'room-card';
+                const roomName = room.name.trim() ? room.name : '无名称的聊天室';
+
+                card.innerHTML = `
+                            <span class="room-id">ID: ${room.id}</span>
+                            <span class="room-name">${roomName}</span>
+                        `;
+
+                // 已加入的聊天室点击跳转到 /chat+ID
+                card.addEventListener('click', () => {
+                    window.location.href = `/chat${room.id}`;
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // 调用 /allchatlist 接口获取所有聊天室
+        async function fetchAllChatrooms() {
+            if (!await checkLoginStatus()) return;
+
+            try {
+                const response = await fetch('/allchatlist', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    throw new Error('获取聊天室列表失败');
+                }
+
+                const rooms = await response.json();
+                renderAllChatrooms(rooms);
+            } catch (error) {
+                console.error('获取所有聊天室失败:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        function renderAllChatrooms(rooms) {
+            const container = document.getElementById('all-chatrooms');
+            container.innerHTML = '';
+
+            if (!rooms || rooms.length === 0) {
+                container.innerHTML = '<p class="empty-message">当前没有可用的聊天室。</p>';
+                return;
+            }
+
+            rooms.forEach(room => {
+                if (parseInt(room.id) < 3) return;  // 过滤 ID<3
+
+                const card = document.createElement('div');
+                card.className = 'room-card';
+                const roomName = room.name.trim() ? room.name : '无名称的聊天室';
+
+                card.innerHTML = `
+                    <span class="room-id">ID: ${room.id}</span>
+                    <span class="room-name">${roomName}</span>
+                    <div class="login-overlay">
+                        <button class="join-btn">加入</button>
+                    </div>
+                `;
+
+                // 添加加入按钮功能
+                const joinBtn = card.querySelector('.join-btn');
+                joinBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (currentUsername) {
+                        await joinRoom(room.id, room.name);
+                    } else {
+                        window.location.href = '/login';
+                    }
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+
+        // 通用的加入聊天室函数，通过 /addroom 路由执行加入操作
+        async function joinRoom(roomId, roomName) {
+            if (!await checkLoginStatus()) return;
+
+            try {
+                const response = await fetch(`/addroom?roomId=${roomId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+
+                alert(`成功加入聊天室 ${roomName.trim() ? roomName : '无名称的聊天室'}`);
+                // 加入成功后自动刷新已加入的聊天室列表
+                await fetchJoinedChatrooms();
+            } catch (error) {
+                console.error('加入聊天室时出现错误:', error);
+                alert('加入聊天室时出现错误: ' + error.message);
+
+
+            }
+        }
+
+        // 处理"指定加入"面板的提交
+        function setupJoinPanel() {
+            const joinBtn = document.getElementById('join-room-btn');
+            joinBtn.addEventListener('click', async () => {
+                const input = document.getElementById('join-room-input');
+                const roomId = parseInt(input.value.trim());
+
+                if (isNaN(roomId) || roomId < 3) {
+                    alert('请输入有效的聊天室ID (≥3)');
+                    return;
+                }
+
+                if (!await checkLoginStatus()) return;
+
+                await joinRoom(roomId, '');
+                input.value = '';
+            });
+        }
+
+        // 页面加载完毕后拉取数据、设置加入面板并更新登录状态
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!await checkLoginStatus()) return;
+
+            await updateLoginStatus();
+            await fetchJoinedChatrooms();
+            await fetchAllChatrooms();
+            setupJoinPanel();
+        });
+    </script>
+</body>
+</html>
