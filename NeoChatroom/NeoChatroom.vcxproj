@@ -142,8 +142,6 @@
     <ClInclude Include="include\log.h" />
     <ClInclude Include="include\resource.h" />
     <ClInclude Include="include\Server.h" />
-    <ClInclude Include="include\SHA-256.h" />
-    <ClInclude Include="include\sha256.h" />
     <ClInclude Include="include\tool.h" />
     <ClInclude Include="json\json-forwards.h" />
     <ClInclude Include="json\json.h" />

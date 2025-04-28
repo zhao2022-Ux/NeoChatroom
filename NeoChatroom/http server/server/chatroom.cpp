@@ -63,6 +63,15 @@ using namespace std;
             return;
         }
 
+        // Validate that the requested room matches this chatroom instance
+        std::string requested_path = req.path;
+        std::string expected_path = "/chat/" + std::to_string(roomid) + "/messages";
+        if (requested_path != expected_path) {
+            res.status = 403;
+            res.set_content("Invalid room access", "text/plain");
+            return;
+        }
+
         Json::Value response;
         for (const auto& msg : chatMessages) {
             response.append(msg);
@@ -151,6 +160,15 @@ using namespace std;
             return;
         }
 
+        // Validate that the requested room matches this chatroom instance
+        std::string requested_path = req.path;
+        std::string expected_path = "/chat/" + std::to_string(roomid) + "/messages";
+        if (requested_path != expected_path) {
+            res.status = 403;
+            res.set_content("Invalid room access", "text/plain");
+            return;
+        }
+
         // 保存聊天消息
         Json::Value newMessage;
         newMessage["user"] = nowuser.getname();
@@ -172,7 +190,7 @@ using namespace std;
         if (chatMessages.size() >= MAXSIZE) chatMessages.pop_front();
 
         //Logger& logger = logger.getInstance();
-        logger.logInfo("chatroom::message", (("[" + nowuser.getname() + "][" + WordCode::GbkToUtf8(msgSafe.c_str()) + "]")));
+        logger.logInfo("chatroom::message", (("[roomID:" + to_string(roomid) + "][" + nowuser.getname() + "][" + WordCode::GbkToUtf8(msgSafe.c_str()) + "]")));
 
 
         // 响应 OK
@@ -310,6 +328,15 @@ using namespace std;
         res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         res.set_header("Access-Control-Allow-Headers", "Content-Type");
 
+        // Validate that the requested room matches this chatroom instance
+        std::string requested_path = req.path;
+        std::string expected_path = "/chat/" + std::to_string(roomid) + "/upload";
+        if (requested_path != expected_path) {
+            res.status = 403;
+            res.set_content("Invalid room access", "text/plain");
+            return;
+        }
+
         if (req.has_file("file")) {
             auto file = req.get_file_value("file");
 
@@ -354,14 +381,14 @@ using namespace std;
     void chatroom::setupChatRoutes() {
         Server& server = server.getInstance(HOST);
         // 提供聊天记录的 GET 请求
-        server.getInstance().handleRequest("/chat/messages", [this](const httplib::Request& req, httplib::Response& res) {
+        server.getInstance().handleRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res) {
             getChatMessages(req, res);
             });
         //server.getInstance().handleRequest("/chat/messages", getChatMessages);
 
 
         // 处理 POST 请求，接收并保存新的聊天消息
-        server.getInstance().handlePostRequest("/chat/messages", [this](const httplib::Request& req, httplib::Response& res , const Json::Value& root) {
+        server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res , const Json::Value& root) {
                 postChatMessage(req, res, root);  
         });
         //server.getInstance().handlePostRequest("/chat/messages", postChatMessage);
@@ -374,7 +401,7 @@ using namespace std;
         //server.getInstance().handleRequest("/user/username", getUsername);
 
         // 图片上传路由
-        server.getInstance().handlePostRequest("/chat/upload", [this](const httplib::Request& req, httplib::Response& res) {
+        server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/upload", [this](const httplib::Request& req, httplib::Response& res) {
             uploadImage(req, res);
         });
         //server.getInstance().handlePostRequest("/chat/upload", uploadImage);
@@ -422,6 +449,21 @@ using namespace std;
     void chatroom::settittle(string Tittle) {
         chatTitle = Tittle;
     }
-    
+    void chatroom::setPasswordHash(const std::string& hash) {
+        passwordHash = hash;
+    }
+
+    std::string chatroom::getPasswordHash() const {
+        return passwordHash;
+    }
+
+    void chatroom::setPassword(const std::string& Newpassword) {
+        password = Newpassword;
+        this->setPasswordHash(SHA256::sha256(Newpassword));
+    }
+
+    string chatroom::GetPassword() {
+        return password;
+    }
 //---------chatroom
 

@@ -5,6 +5,10 @@
 #include "../json/json.h"
 #include "../include/log.h"
 
+std::string HOST = "0.0.0.0";
+int PORT = 80;
+
+
 Server& Server::getInstance(const std::string& host, int port) {
     static Server instance(host, port);
     return instance;
@@ -147,4 +151,20 @@ void Server::debanIP(const std::string& ipAddress) {
 // ÅÐ¶Ï IP ÊÇ·ñ±»·â½û£¨¸¨Öú·½·¨£©
 bool Server::isBanned(const std::string& ipAddress) const {
     return bannedIPs.find(ipAddress) != bannedIPs.end();
+}
+
+void Server::setHOST(std::string x) {
+    HOST = x;
+}
+
+void Server::setPORT(int x) {
+    PORT = x;
+}
+
+string Server::getHOST() {
+    return HOST;
+}
+
+int Server::getPORT() {
+    return PORT;
 }

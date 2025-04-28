@@ -26,6 +26,9 @@ private:
     deque<Json::Value> chatMessages;
     string chatTitle;
     int roomid;
+
+    string passwordHash;
+
     int type;// 3为隐藏 2为禁止加入
     // Removed unused type variable
 
@@ -71,6 +74,8 @@ private:
 
     const std::vector<std::string> allowedImageTypes = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" ,"webp" };
 
+    std::string password; // Store the password for the chatroom.
+
 public:
     
 
@@ -95,9 +100,17 @@ public:
 
     void settittle(string Tittle);
 
+    void setPasswordHash(const std::string& hash);
+    std::string getPasswordHash() const;
+
     void setRoomID(int id);
 
     void init();
+
+    // Method to set the password for the chatroom.
+    void setPassword(const std::string& Newpassword);
+
+    string GetPassword();
 };
 
 void delroom(int x);

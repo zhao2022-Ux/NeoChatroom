@@ -3,6 +3,8 @@
 #include "../include/datamanage.h"
 #include <map>
 #include <mutex>
+#include <vector>
+#include <tuple>
 
 using namespace std;
 
@@ -243,4 +245,17 @@ namespace manager {
         }
         DataFile.write(path, filename); //±£´æ
     }
+
+    // Function to return a vector of tuples containing username, password, and uid
+    std::vector<std::tuple<std::string, std::string, int>> GetUserDetails() {
+        lock_guard<std::mutex> lock(mtx); // Protect shared data with a mutex
+        std::vector<std::tuple<std::string, std::string, int>> userDetails;
+
+        for (auto& [uid, user] : userList) {
+            userDetails.emplace_back(user.getname(), user.getpassword(), user.getuid());
+        }
+
+        return userDetails;
+    }
+
 }

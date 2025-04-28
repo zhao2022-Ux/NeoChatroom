@@ -31,6 +31,10 @@ void delroom(int x) {
         used[x] = false;
         room[x].init();
     }
+    else {
+        Logger& logger = logger.getInstance();
+        logger.logWarning("chatroom::roomManager", "未能删除");
+    }
 }
 
 int editroom(int x, string Roomtittle) {
@@ -175,43 +179,103 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
     res.set_content(response.toStyledString(), "application/json");
 }
 
-void AddRoomToUser(int uid, int roomId) {
-    // 查找用户
+enum class RoomResult {
+    Success,
+    UserNotFound,
+    RoomNotFound,
+    PasswordMismatch,
+    RoomAlreadyAdded,
+    RoomNotJoined
+};
+
+enum class RoomOperation {
+    JOIN,
+    QUIT
+};
+
+RoomResult AddRoomToUser(int uid, int roomId, const std::string& passwordHash) {
+    // Check if the user exists
     manager::user* user = manager::FindUser(uid);
     if (user == nullptr) {
-        // 用户不存在，直接返回
-        return;
+        return RoomResult::UserNotFound;
     }
 
-    // 获取当前的 cookie 字符串
-    std::string cookie = user->getcookie();
+    // Check if the room exists and is in use
+    if (roomId < 1 || roomId >= MAXROOM || !used[roomId]) {
+        return RoomResult::RoomNotFound;
+    }
 
-    // 把roomId转成字符串
+    // Check if the password hash matches
+    if (!room[roomId].getPasswordHash().empty() && room[roomId].getPasswordHash() != passwordHash) {
+        return RoomResult::PasswordMismatch;
+    }
+
+    // Get the current cookie string
+    std::string cookie = user->getcookie();
     std::string roomIdStr = std::to_string(roomId);
 
-    // 检查是否已经存在，避免重复添加
+    // Check if the room is already added
     std::stringstream ss(cookie);
     std::string token;
     while (std::getline(ss, token, '&')) {
         if (token == roomIdStr) {
-            // 已经存在，不需要再添加
-            return;
+            return RoomResult::RoomAlreadyAdded;
         }
     }
 
-    // 如果原本有内容，添加分隔符
+    // Add the room to the user's cookie
     if (!cookie.empty()) {
         cookie += "&";
     }
     cookie += roomIdStr;
-
-    // 更新用户cookie
     user->setcookie(cookie);
+
+    return RoomResult::Success;
 }
 
-// 新增路由 /addroom，用于加入聊天室
-void addRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
-    // 获取 Cookie 并解析用户 uid
+RoomResult QuitRoomToUser(int uid, int roomId) {
+    // Check if the user exists
+    manager::user* user = manager::FindUser(uid);
+    if (user == nullptr) {
+        return RoomResult::UserNotFound;
+    }
+
+    // Check if the room exists
+    if (roomId < 1 || roomId >= MAXROOM) {
+        return RoomResult::RoomNotFound;
+    }
+
+    // Get the current cookie string
+    std::string cookie = user->getcookie();
+    std::string roomIdStr = std::to_string(roomId);
+
+    // Split the cookie string and rebuild without the target room
+    std::stringstream ss(cookie);
+    std::string token;
+    std::string newCookie;
+    bool found = false;
+
+    while (std::getline(ss, token, '&')) {
+        if (token == roomIdStr) {
+            found = true;
+            continue;
+        }
+        if (!newCookie.empty()) {
+            newCookie += "&";
+        }
+        newCookie += token;
+    }
+
+    if (!found) {
+        return RoomResult::RoomNotJoined;
+    }
+
+    user->setcookie(newCookie);
+    return RoomResult::Success;
+}
+
+void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
+    // Parse the user ID from the cookie
     std::string cookies = req.get_header_value("Cookie");
     std::string password, uid;
     transCookie(password, uid, cookies);
@@ -221,13 +285,8 @@ void addRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
         res.set_content("Invalid UID format", "text/plain");
         return;
     }
-    manager::user* user = manager::FindUser(uid_);
-    if (user == nullptr) {
-        res.status = 404;
-        res.set_content("User not found", "text/plain");
-        return;
-    }
-    // 获取请求参数 roomId（例如 /addroom?roomId=5）
+
+    // Parse the room ID from the request parameters
     if (!req.has_param("roomId")) {
         res.status = 400;
         res.set_content("Missing roomId parameter", "text/plain");
@@ -240,27 +299,78 @@ void addRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
         res.set_content("Invalid roomId format", "text/plain");
         return;
     }
-    // 检查该聊天室是否存在且已使用
-    if (roomId < 1 || roomId >= MAXROOM || !used[roomId]) {
-        res.status = 404;
-        res.set_content("Room not found", "text/plain");
+
+    // Parse operation type
+    if (!req.has_param("operation")) {
+        res.status = 400;
+        res.set_content("Missing operation parameter", "text/plain");
         return;
     }
-    // 如果聊天室的 gettype 返回 2，则不可加入
-    if (room[roomId].gettype() == 2) {
-        res.status = 403;
-        res.set_content("Cannot join this room", "text/plain");
-        return;
+    std::string op = req.get_param_value("operation");
+    RoomOperation operation = (op == "join") ? RoomOperation::JOIN : RoomOperation::QUIT;
+
+    RoomResult result;
+    if (operation == RoomOperation::JOIN) {
+        std::string passwordHash = req.has_param("passwordHash") ? req.get_param_value("passwordHash") : "";
+        result = AddRoomToUser(uid_, roomId, passwordHash);
+    } else {
+        result = QuitRoomToUser(uid_, roomId);
     }
-    // 调用 AddRoomToUser 来更新用户的 cookie（避免重复加入在内部已判断）
-    AddRoomToUser(uid_, roomId);
-    res.status = 200;
-    res.set_content("Joined successfully", "text/plain");
+    Logger& logger = logger.getInstance();
+    // Handle the result
+    switch (result) {
+        case RoomResult::Success:
+            res.status = 200;
+            res.set_content(operation == RoomOperation::JOIN ? "Joined successfully" : "Quit successfully", "text/plain");
+			logger.logInfo("RoomManager", "用户 " + std::to_string(uid_) + " " + (operation == RoomOperation::JOIN ? "joined" : "quit") + " room " + std::to_string(roomId));
+            break;
+        case RoomResult::UserNotFound:
+            res.status = 404;
+            res.set_content("User not found", "text/plain");
+			logger.logWarning("RoomManager", "用户 " + std::to_string(uid_) + " not found");
+            break;
+        case RoomResult::RoomNotFound:
+            res.status = 404;
+            res.set_content("Room not found", "text/plain");
+			logger.logWarning("RoomManager", "Room " + std::to_string(roomId) + " not found");
+            break;
+        case RoomResult::PasswordMismatch:
+            res.status = 403;
+            res.set_content("Password mismatch", "text/plain");
+			logger.logWarning("RoomManager", "密码错误 " + std::to_string(uid_) + " in room " + std::to_string(roomId));
+            break;
+        case RoomResult::RoomAlreadyAdded:
+            res.status = 409;
+            res.set_content("Room already added", "text/plain");
+            break;
+        case RoomResult::RoomNotJoined:
+            res.status = 404;
+            res.set_content("Room not joined", "text/plain");
+            break;
+    }
+}
+
+std::vector<std::tuple<int, std::string, std::string>> GetRoomListDetails() {
+    std::vector<std::tuple<int, std::string, std::string>> roomDetails;
+    
+    // Iterate through all rooms
+    for (int i = 1; i < MAXROOM; i++) {
+        if (used[i]) {
+            // Get room name and password
+            std::string name = room[i].gettittle();
+            std::string password = room[i].GetPassword();
+            
+            // Add tuple to vector
+            roomDetails.emplace_back(i, name, password);
+        }
+    }
+    
+    return roomDetails;
 }
 
 void start_manager() {
     Server& server = Server::getInstance(HOST);
     server.handleRequest("/list", getRoomList);
     server.handleRequest("/allchatlist", getAllList);
-    server.handleRequest("/addroom", addRoomToUserRoute);
+    server.handleRequest("/joinquitroom", editRoomToUserRoute); // Updated route
 }

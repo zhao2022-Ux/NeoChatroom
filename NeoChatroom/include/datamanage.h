@@ -33,7 +33,6 @@ namespace manager {
 		void ban();
 
 		bool setname(string str);
-
 		int getuid();
 		bool operator <(user x);
 		user(string name_ = "NULL", string password_ = "", string cookie_ = "", string labei_ = "NULL");
@@ -56,5 +55,8 @@ namespace manager {
 	void ReadUserData(string path, string filename);
 	//保存当前用户列表
 	void WriteUserData(string path, string filename);
+
+	// Declaration of the function to get user details
+	std::vector<std::tuple<std::string, std::string, int>> GetUserDetails();
 }
 #endif

@@ -82,7 +82,11 @@ function flashTaskbar() {
 
 async function fetchChatMessages() {
     try {
-        const response = await fetch(`${serverUrl}/chat/messages`);
+        // Extract roomID from current URL path
+        const path = window.location.pathname;
+        const roomID = path.match(/^\/chat(\d+)$/)[1];
+        
+        const response = await fetch(`${serverUrl}/chat/${roomID}/messages`);
         if (response.ok) {
             const messages = await response.json();
             const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 1;
@@ -222,11 +226,14 @@ imageInput.addEventListener('change', function () {
 });
 
 async function uploadImage(file) {
+    const path = window.location.pathname;
+    const roomID = path.match(/^\/chat(\d+)$/)[1];
+    
     console.log("Uploading file: ", file);
     const formData = new FormData();
     formData.append('file', file);
     try {
-        const response = await fetch(`${serverUrl}/chat/upload`, {
+        const response = await fetch(`${serverUrl}/chat/${roomID}/upload`, {
             method: 'POST',
             body: formData
         });
@@ -246,10 +253,14 @@ async function uploadImage(file) {
 async function sendMessage() {
     const messageText = messageInput.value.trim();
     const imageFile = imageInput.files[0];
-
+    
     if (messageText === '' && !imageFile) {
         return;
     }
+
+    // Extract roomID from current URL path
+    const path = window.location.pathname;
+    const roomID = path.match(/^\/chat(\d+)$/)[1];
 
     let imageUrl = '';
     if (imageFile) {
@@ -264,7 +275,7 @@ async function sendMessage() {
     };
 
     try {
-        const response = await fetch(`${serverUrl}/chat/messages`, {
+        const response = await fetch(`${serverUrl}/chat/${roomID}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(message)

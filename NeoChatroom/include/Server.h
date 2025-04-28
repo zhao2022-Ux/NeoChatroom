@@ -6,8 +6,8 @@
 #include <functional>
 #include <unordered_set>  // 添加 unordered_set，用于存储被封禁的 IP
 #include "../json/json.h"  // 引入 json 库
-const std::string HOST = "0.0.0.0";
-const int PORT = 80;
+extern std::string HOST;
+extern int PORT;
 const std::string ROOTURL = "/chat";
 class Server {
 public:
@@ -47,6 +47,11 @@ public:
 
     void debanIP(const std::string& ipAddress);
 
+    void setHOST(std::string x);
+    void setPORT(int x);
+    std::string getHOST();
+    int getPORT();
+
 private:
     Server(const std::string& host, int port);
     ~Server() = default;
@@ -63,6 +68,8 @@ private:
 
     // 存储被封禁的 IP 地址
     std::unordered_set<std::string> bannedIPs;
+
+    
 
     // 判断 IP 是否被封禁
     bool isBanned(const std::string& ipAddress) const;

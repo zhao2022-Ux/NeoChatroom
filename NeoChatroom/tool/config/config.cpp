@@ -215,16 +215,21 @@ using namespace std;
 	}
 	//写入整个项目
 	void config::write(string path, string filename) {
-		vis.clear();
-		vis.reserve(list.size());
-		vis.insert(vis.end(), (list.size()>0? list.size():1) - 1, 0);
-		for (int i = 0; i < (int)list.size(); i++) {
-			if (i >= vis.size()) vis.insert(vis.end(), i - vis.size() + 1, 0);
+	    // Clear the file first using ConfigFile's ClearFile method
+	    ConfigFile.ClearFile(path, filename);
 
-			if (vis[i]) continue;
-			
-			writeitem(path, filename, list[i],0);
-			vis[i] = true;
-		}
+	    // Reset visibility tracking
+	    vis.clear();
+	    vis.reserve(list.size());
+	    vis.insert(vis.end(), (list.size()>0? list.size():1) - 1, 0);
+
+	    // Write all items to the now-empty file
+	    for (int i = 0; i < (int)list.size(); i++) {
+	        if (i >= vis.size()) vis.insert(vis.end(), i - vis.size() + 1, 0);
+	        if (vis[i]) continue;
+	        
+	        writeitem(path, filename, list[i], 0);
+	        vis[i] = true;
+	    }
 	}
 //---------------config
