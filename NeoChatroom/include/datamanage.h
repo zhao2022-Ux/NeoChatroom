@@ -5,6 +5,10 @@
 #include "tool.h"
 #include "config.h"
 #include<map>
+#include <string>
+#include <vector>
+#include <tuple>
+
 namespace manager {
 	const string banedName = "封禁用户";
 	const string AluserType = "AllUser";
@@ -29,8 +33,8 @@ namespace manager {
 		string getlabei();
 		string getpassword();
 
-		void setcookie(string new_cookie);
-		void ban();
+		void setcookie(string new_cookie); // Updates cookie in memory and database
+		void ban(); // Updates labei in memory and database
 
 		bool setname(string str);
 		int getuid();
@@ -39,7 +43,7 @@ namespace manager {
 		void setuid(int value = -1);
 	};
 	//向数据中新增用户
-	bool AddUser(string name, string psw, string cookie, string labei, int uuid = -1);
+	bool AddUser(const std::string name, const std::string& psw, const std::string& cookie, const std::string& labei); // Updated signature
 	//通过uid查找用户
 	user* FindUser(int uid);
 	//通过id查找用户
@@ -61,5 +65,13 @@ namespace manager {
 
 	// Declaration of the function to get user details
 	std::vector<std::tuple<std::string, std::string, int>> GetUserDetails();
+
+	// Database management functions
+	void InitDatabase(const std::string& dbPath);
+	void CloseDatabase();
+
+	// Function to invalidate user cache
+	void InvalidateUserCache(int uid, const std::string& name);
 }
+
 #endif

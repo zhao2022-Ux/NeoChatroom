@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\data\datamanage.cpp">
+      <Filter>源文件\data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\ctrl.cpp">
+      <Filter>源文件\http server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\server.cpp">
+      <Filter>源文件\http server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\server\chatroom.cpp">
+      <Filter>源文件\http server\server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\server\guide.cpp">
+      <Filter>源文件\http server\server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\server\roommanager.cpp">
+      <Filter>源文件\http server\server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\tool\config\config.cpp">
+      <Filter>源文件\tool</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\tool\tool.cpp">
+      <Filter>源文件\tool</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\log\log.cpp">
+      <Filter>源文件\tool\log</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\include\datamanage.h">
+      <Filter>源文件\data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\server\chatroom.h">
+      <Filter>源文件\http server\server</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\http server\server\roommanager.h">
+      <Filter>源文件\http server\server</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\json\json-forwards.h">
+      <Filter>源文件\json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\json\json.h">
+      <Filter>源文件\json</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\html\chatlist.html">
+      <Filter>源文件\html</Filter>
+    </None>
+    <None Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\html\chatlist.js">
+      <Filter>源文件\html</Filter>
+    </None>
+    <None Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\html\chatroom.js">
+      <Filter>源文件\html</Filter>
+    </None>
+    <None Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\html\files\updates.html">
+      <Filter>源文件\html</Filter>
+    </None>
+    <None Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\html\index.html">
+      <Filter>源文件\html</Filter>
+    </None>
+    <None Include="C:\Users\71415\Documents\Visual Studio 2022\project\NeoChatroomCmake\NeoChatroom\html\login.html">
+      <Filter>源文件\html</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{D7484523-3487-310F-B55B-AFF32B297BC1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\data">
+      <UniqueIdentifier>{2BDE1DC6-78E7-3FCC-95B0-E9235E720A2E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\html">
+      <UniqueIdentifier>{EBD3352D-60C3-322B-8905-88F7AE106503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\http server">
+      <UniqueIdentifier>{5FDA2EFE-4D78-305F-8213-61DE41DFFBC2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\http server\server">
+      <UniqueIdentifier>{85E7A99C-D770-3915-AA00-CD7B01ECAE91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\json">
+      <UniqueIdentifier>{8AD28155-D0F8-3AF8-B0D0-F50492B510F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\tool">
+      <UniqueIdentifier>{4EE88DD9-E87D-3396-80DA-0C3C09388617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\tool\log">
+      <UniqueIdentifier>{6F0F9EE8-05FC-3079-923B-F0A662D05B2D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -79,6 +79,26 @@ function decodeBase64(base64Str) {
         return base64Str;
     }
 }
+function utf8ToGbk(utf8Str) {
+    // 将 UTF-8 字符串转换为 Unicode 码点数组
+    const unicodeArray = Encoding.stringToCode(utf8Str);
+    // 转换为 GBK 字节数组
+    const gbkBytes = Encoding.convert(unicodeArray, 'GBK', 'UNICODE');
+    // 将字节数组转换为 ISO-8859-1 字符串（每个字节一个字符）
+    return String.fromCharCode(...gbkBytes);
+}
+
+function gbkToUtf8(gbkStr) {
+    // 将伪 GBK 字符串转为字节数组
+    const gbkBytes = [];
+    for (let i = 0; i < gbkStr.length; i++) {
+        gbkBytes.push(gbkStr.charCodeAt(i));
+    }
+    // 转换为 Unicode 字符数组
+    const unicodeArray = Encoding.convert(gbkBytes, 'UNICODE', 'GBK');
+    // 返回 UTF-8 字符串
+    return Encoding.codeToString(unicodeArray);
+}
 
 // 增强的LaTeX检测
 function containsLaTeX(text) {
@@ -196,7 +216,9 @@ function createMessageElement(msg) {
     const isOwnMessage = (msg.user === currentUsername);
     const messageClass = isOwnMessage ? 'message user' : 'message';
 
-    const decodedMessage = decodeBase64(msg.message);
+    // 修改处：获取解码后的消息，并对系统消息（msg.labei === 'GM'）转换为GBK
+    let decodedMessage = decodeBase64(msg.message);
+    
     const renderMarkdown = /[#*_`$]/.test(decodedMessage);
     const processedMessage = renderMarkdown ? marked.parse(decodedMessage) : decodedMessage;
 
@@ -564,6 +586,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const hasAccess = await checkChatroomAccess();
+
+
+
+    // 新增：更新顶部栏中央聊天室名称
+    if (hasAccess) {
+        const path = window.location.pathname;
+        const match = path.match(/^\/chat(\d+)$/);
+        if (match) {
+            const roomID = match[1];
+            const chatroomNameElement = document.getElementById("chatroomName");
+            if (chatroomNameElement) {
+                // Fetch the chatroom name using the API
+                fetch(`${serverUrl}/chatroomname?roomId=${roomID}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch chatroom name");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        chatroomNameElement.textContent = data.name || `无名的聊天室`;
+                    })
+                    .catch(error => {
+                        console.error("Error fetching chatroom name:", error);
+                        chatroomNameElement.textContent = `无名的聊天室`; // Fallback to room ID
+                    });
+            }
+        }
+    }
+
     if (hasAccess) {
         await fetchUsername();
         fetchWithRetry();
@@ -592,6 +644,8 @@ function cleanup() {
     document.removeEventListener('visibilitychange', handleVisibilityChange);
     window.removeEventListener('focus', fetchWithRetry);
 }
+
+
 
 // 页面卸载时清理
 window.addEventListener('beforeunload', cleanup);

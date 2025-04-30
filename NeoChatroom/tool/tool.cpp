@@ -364,6 +364,12 @@ namespace Base64 {
 
 namespace Keyword {
 #include <unordered_set>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <algorithm>
+
+    using namespace std;
 
     // 用于读取文件中所有的敏感词
     unordered_set<string> load_keywords(const string& filename) {
@@ -391,7 +397,7 @@ namespace Keyword {
 
     // 转义字符串中的XML注入关键字
     void escape_xml(std::string& input) {
-        std::stringstream escaped;  // 使用字符串流来累积处理过的字符
+        std::stringstream escaped;
         for (char c : input) {
             switch (c) {
             case '<':
@@ -410,24 +416,63 @@ namespace Keyword {
                 escaped << "&quot;";
                 break;
             default:
-                escaped << c;  // 其他字符保持不变
+                escaped << c;
             }
         }
-        input = escaped.str();  // 将处理后的结果赋回原字符串
+        input = escaped.str();
+    }
+
+    // 替换字符串中的SQL注入关键字（递归）
+    void replace_sql_injection_keywords(string& input) {
+        const vector<string> sql_keywords = {
+            "SELECT", "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE",
+            "EXEC", "UNION", " OR ", " AND ", "--", ";", "/*", "*/", "@@", "@",
+            "CHAR", "NCHAR", "VARCHAR", "NVARCHAR", "CAST", "CONVERT"
+        };
+
+        bool replaced;
+        do {
+            replaced = false;
+            for (const auto& keyword : sql_keywords) {
+                string lower_input = input;
+                string lower_keyword = keyword;
+                transform(lower_input.begin(), lower_input.end(), lower_input.begin(), ::toupper);
+                transform(lower_keyword.begin(), lower_keyword.end(), lower_keyword.begin(), ::toupper);
+
+                size_t pos = lower_input.find(lower_keyword);
+                if (pos != string::npos) {
+                    input.replace(pos, keyword.length(), string(keyword.length(), '*'));
+                    replaced = true;
+                    break;  // 重新开始循环以确保递归处理嵌套关键字
+                }
+            }
+        } while (replaced);
     }
 
     std::unordered_set<std::string> keywords = load_keywords("keyword.txt");
-    // 处理字符串：替换敏感词并转义XML关键字
-    string process_string(const string& input) {
 
+    // 处理字符串：替换敏感词、SQL注入关键词，并转义XML关键字
+    string process_string(const string& input) {
         string result = input;
 
         // 替换敏感词
-        replace_sensitive_words(result, keywords);
+        //replace_sensitive_words(result, keywords);
+
+        // 替换SQL注入关键词
+        //replace_sql_injection_keywords(result);
 
         // 转义XML注入关键字
         escape_xml(result);
 
         return result;
     }
+
+
+    bool check_sql_keywords(string imput) {
+        string temp = imput;
+        replace_sql_injection_keywords(imput);
+        if (temp != imput) return true;
+        return false;
+    }
 }
+

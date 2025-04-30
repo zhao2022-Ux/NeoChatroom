@@ -70,10 +70,10 @@ namespace Base64 {
 #include <unordered_set>
 namespace Keyword {
     using namespace std;
-    string process_string(const string& input);
+    string process_string(const string& input); //Ìæ»»SQL×¢ÈëºÍxml×¢Èë
+    void replace_sql_injection_keywords(string& input);
+    bool check_sql_keywords(string imput);
 }
 
 
-
 #endif // FILE_H
-       

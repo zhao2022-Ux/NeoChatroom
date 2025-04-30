@@ -25,10 +25,6 @@ const string CONFIG_FILE = "./config.json";
 // Forward declaration for login system starter
 void start_loginSystem();
 
-// Dummy implementation for UTF8 conversion (modify if needed)
-std::string convertToUTF8(const std::string& input) {
-    return input;
-}
 
 // -------------------------------------------------------------------
 // Configuration file related functions using jsoncpp
@@ -149,6 +145,15 @@ void command_runner(string command, int roomid) {
         }
         else if (command == "start") {  // 完整匹配 start 命令
             logger.logInfo("Control", "服务器已开启");
+            try {
+                // Initialize the database
+                manager::InitDatabase("./database.db");
+                logger.logInfo("Control", "数据库已初始化");
+            } catch (const std::exception& e) {
+                logger.logFatal("Control", "数据库初始化失败: " + string(e.what()));
+                return;
+            }
+
             start_manager();
             start_loginSystem();
             manager::ReadUserData("./", manager::datafile);
@@ -233,6 +238,9 @@ void command_runner(string command, int roomid) {
         }
         else if (cmd == "stop") {
             manager::WriteUserData("./", manager::datafile);
+            // Close the database before exiting
+            manager::CloseDatabase();
+            logger.logInfo("Control", "数据库已关闭");
             exit(0);
         }
         else if (cmd == "say" && !args.empty()) {
@@ -241,7 +249,6 @@ void command_runner(string command, int roomid) {
                 int roomId = stoi(args.substr(0, msgPos));
                 string message = args.substr(msgPos + 1);
                 if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
-                    // The message is already in UTF-8, systemMessage will handle the conversion
                     room[roomId].systemMessage(message);
                     logger.logInfo("Control", "消息已发送到聊天室 " + to_string(roomId));
                 }

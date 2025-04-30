@@ -17,8 +17,8 @@ using namespace std;
         initialMessage["user"] = "system";
         initialMessage["labei"] = "GM";
         initialMessage["timestamp"] = static_cast<Json::Int64>(time(0)); // Ensure timestamp is stored as Int64
-        initialMessage["message"] = Base64::base64_encode("wellcome!");
-        chatMessages.push_back(initialMessage);
+        initialMessage["message"] = Base64::base64_encode("&#x4ECE;&#x6765;&#x5982;&#x6B64;&#xFF0C;&#x4FBF;&#x5BF9;&#x4E48;&#xFF1F;");
+        if(chatMessages.empty())chatMessages.push_back(initialMessage);
     }
 
     string chatroom::transJsonMessage(Json::Value m) {
@@ -62,12 +62,6 @@ using namespace std;
     }
 
     void chatroom::getChatMessages(const httplib::Request& req, httplib::Response& res) {
-        if (!checkCookies(req)) {
-            res.status = 400;
-            res.set_content("Invalid Cookie", "text/plain");
-            return;
-        }
-
         std::string requested_path = req.path;
         std::string expected_path = "/chat/" + std::to_string(roomid) + "/messages";
         if (requested_path != expected_path) {
@@ -100,21 +94,43 @@ using namespace std;
             return;
         }
 
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Content-Type", "application/json");
-        res.set_content(response.toStyledString(), "application/json");
-    }
+        if (response.empty()) {
+            res.status = 200;
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_header("Content-Type", "application/json");
+            res.set_content(response.toStyledString(), "application/json");
+            return;
+        }
 
-    void chatroom::getAllChatMessages(const httplib::Request& req, httplib::Response& res) {
         if (!checkCookies(req)) {
             res.status = 400;
             res.set_content("Invalid Cookie", "text/plain");
             return;
         }
 
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Content-Type", "application/json");
+        res.set_content(response.toStyledString(), "application/json");
+    }
+
+    void chatroom::getAllChatMessages(const httplib::Request& req, httplib::Response& res) {
         Json::Value response;
         for (const auto& msg : chatMessages) {
             response.append(msg);
+        }
+
+        if (response.empty()) {
+            res.status = 200;
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_header("Content-Type", "application/json");
+            res.set_content(response.toStyledString(), "application/json");
+            return;
+        }
+
+        if (!checkCookies(req)) {
+            res.status = 400;
+            res.set_content("Invalid Cookie", "text/plain");
+            return;
         }
 
         res.set_header("Access-Control-Allow-Origin", "*");
@@ -183,6 +199,21 @@ using namespace std;
             return;
         }
 
+        // Decode base64 message and process it
+        string decodedMsg = Base64::base64_decode(root["message"].asString());
+        if (decodedMsg.empty()) {
+            res.status = 400;
+            res.set_content("Message content is empty", "text/plain");
+            return;
+        }
+
+        if (!checkCookies(req)) {
+            res.status = 400;
+            res.set_content("Invalid Cookie", "text/plain");
+            logger.logInfo("ChatSys", req.remote_addr + "的cookie无效 ");
+            return;
+        }
+
         // 验证 uid 和密码
         int uid_;
         str::safeatoi(uid, uid_);
@@ -229,8 +260,6 @@ using namespace std;
         newMessage["labei"] = nowuser.getlabei();
         
         // Decode base64 message and process it
-        string decodedMsg = Base64::base64_decode(root["message"].asString());
-        // Convert UTF-8 input to GBK for storage and frontend display
         string gbkMsg = decodedMsg.c_str();
         string msgSafe = Keyword::process_string(gbkMsg);
         string codedmsg = Base64::base64_encode(msgSafe);

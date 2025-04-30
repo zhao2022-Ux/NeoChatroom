@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/images/logo16.ico" type="image/x-icon">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/images/logo16.ico" type="image/x-icon" />
     <title>seve's chatroom</title>
     <style>
         body {
@@ -39,61 +39,96 @@
         * {
             scrollbar-width: thin;
             scrollbar-color: #999 #e0e0e0;
+            box-sizing: border-box;
         }
 
         .header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             background-color: #007BFF;
             color: white;
-            padding: 5px 20px;
-            justify-content: space-between;
+            padding: 8px 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            flex-wrap: wrap;
         }
 
-            .header img {
+        .header-left,
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+            .header-left img {
                 height: 40px;
                 margin-right: 10px;
             }
 
-            .header .chatroom-title {
-                font-size: 22px;
-                font-weight: bold;
+        .chatroom-title {
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .badge {
+            background-color: #ffebee;
+            color: #f44336;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            border: 1px solid #f44336;
+        }
+
+        .notification-toggle,
+        .theme-toggle,
+        .return-button,
+        .login-button {
+            font-size: 14px;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #dcdcdc;
+            color: #007BFF;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s ease;
+            margin-left: 8px;
+            height: 32px;
+            min-width: 80px;
+        }
+
+            .notification-toggle:hover,
+            .theme-toggle:hover,
+            .return-button:hover,
+            .login-button:hover {
+                background-color: #c0c0c0;
+                transform: scale(1.05);
             }
 
-            .header .notification-toggle {
-                margin-left: 20px;
-                font-size: 14px;
-                padding: 5px;
-                border-radius: 5px;
-                border: none;
-                background-color: #dcdcdc;
-                color: #007BFF;
-                cursor: pointer;
-                transition: background-color 0.2s, transform 0.1s ease;
-            }
+        .username {
+            margin-right: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
 
-                .header .notification-toggle:hover {
-                    background-color: #c0c0c0;
-                    transform: scale(1.05);
-                }
+        #chatroomName {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-size: clamp(14px, 2vw, 20px);
+            color: #eef;
+            pointer-events: none;
+            margin: 0 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-            .header button {
-                padding: 8px 12px;
-                border-radius: 5px;
-                cursor: pointer;
-                color: #007BFF;
-                border: none;
-                font-size: 16px;
-                margin-right: 20px;
-                background-color: #dcdcdc;
-                transition: background-color 0.2s, transform 0.1s ease;
-            }
-
-                .header button:hover {
-                    background-color: #c0c0c0;
-                    transform: scale(1.1);
-                }
+        body.dark-mode #chatroomName {
+            color: #ccc;
+        }
 
         .chat-container {
             max-width: 600px;
@@ -156,16 +191,15 @@
 
             .input-box textarea {
                 flex: 1;
-                padding: 6px 10px; /* 根据实际情况调整内边距 */
+                padding: 6px 10px;
                 border: 1px solid #ccc;
                 border-radius: 5px;
                 resize: none;
                 font-family: inherit;
                 font-size: 14px;
                 line-height: 1.5;
-                transition: border-color 0.2s;
-                height: auto; /* 移除固定高度 */
-                min-height: 24px; /* 设置最小高度 */
+                height: auto;
+                min-height: 24px;
                 max-height: 120px;
                 overflow-y: auto;
             }
@@ -254,21 +288,6 @@
                     color: #66aaff;
                 }
 
-            body.dark-mode #burnAfterReadingToggle {
-                background-color: #444;
-                color: #fff;
-            }
-
-                body.dark-mode #burnAfterReadingToggle:hover {
-                    background-color: #555;
-                }
-
-                body.dark-mode #burnAfterReadingToggle.active {
-                    background-color: #ff4444;
-                    color: #fff;
-                }
-
-            /* 深色模式滚动条样式 */
             body.dark-mode ::-webkit-scrollbar-track {
                 background-color: #444;
             }
@@ -294,14 +313,6 @@
                 transform: scale(0.95);
             }
 
-        .header .username {
-            margin-right: 20px;
-        }
-
-        .header .theme-toggle {
-            margin-left: 20px;
-        }
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -316,7 +327,6 @@
             animation: fadeIn 0.5s ease-out;
         }
 
-        /* Footer */
         .footer {
             background-color: #f1f1f1;
             padding: 10px 20px;
@@ -336,45 +346,68 @@
                 }
 
         .message-body {
-            padding: 2px 4px; /* 减少上下的内边距 */
-            margin: 0; /* 清除默认外边距 */
-            line-height: 1.2; /* 调整行高，让文字更紧凑 */
+            padding: 2px 4px;
+            margin: 0;
+            line-height: 1.2;
         }
+
+        #notificationSelect {
+            font-size: 14px;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #dcdcdc;
+            color: #007BFF;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s ease;
+            margin-left: 8px;
+            height: 32px;
+            min-width: 120px;
+        }
+
+            #notificationSelect:hover {
+                background-color: #c0c0c0;
+                transform: scale(1.05);
+            }
+
+        body.dark-mode #notificationSelect {
+            background-color: #444;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+            body.dark-mode #notificationSelect:hover {
+                background-color: #555;
+            }
     </style>
 </head>
 <body>
-
     <div class="header">
-        <div style="display: flex; align-items: center;">
-            <img src="logo.png" alt="Logo">
-            <div class="chatroom-title">seve's chatroom</div>
-            <div style="background-color: #ffebee; color: #f44336; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 10px; border: 1px solid #f44336;">
-                NEO
-            </div>
-            <!-- 新增通知模式下拉选择 -->
+        <div class="header-left">
+            <img src="logo.png" alt="Logo" />
+            <span class="chatroom-title">seve's chatroom</span>
+            <span class="badge">NEO</span>
             <select id="notificationSelect" class="notification-toggle">
                 <option value="none">不弹出通知</option>
                 <option value="mention">仅包含用户名时</option>
                 <option value="always">始终弹出通知</option>
             </select>
-            <!-- 删除阅后即焚按钮 -->
-            <!-- <button id="burnAfterReadingToggle" class="notification-toggle" style="margin-left: 10px;">阅后即焚</button> -->
         </div>
-        <div style="display: flex; align-items: center;">
-            <div class="username" id="usernameDisplay"></div>
+        <div id="chatroomName">聊天室名称展示区域</div>
+        <div class="header-right">
+            <span class="username" id="usernameDisplay"></span>
             <button class="login-button" id="loginButton" style="display: none;" onclick="window.location.href='/login'">登录</button>
             <button class="theme-toggle" id="themeToggle">D/B</button>
-            <!-- 添加返回列表按钮 -->
             <button class="return-button" onclick="window.location.href='/chatlist'">返回列表</button>
         </div>
     </div>
 
     <div class="chat-container">
         <div class="chat-box" id="chatBox">
-            <!-- 聊天内容会显示在这里 -->
+            <!-- 聊天内容 -->
         </div>
         <div class="input-box">
-            <textarea type="text" id="messageInput" rows="1" maxrows="6" placeholder="输入消息... shift+enter换行"></textarea>
+            <textarea id="messageInput" rows="1" placeholder="输入消息... shift+enter换行"></textarea>
             <input type="file" id="imageInput" accept="image/*" style="display: none;" />
             <button onclick="sendMessage()">发送</button>
             <button onclick="selectImage()">上传图片</button>
@@ -388,19 +421,12 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']]
-            },
-            svg: {
-                fontCache: 'global'
-            }
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.0.0/encoding.min.js"></script>
     <script src="/chat/js"></script>
-
-
-
 </body>
 </html>

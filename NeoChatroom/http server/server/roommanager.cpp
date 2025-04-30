@@ -370,7 +370,6 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
     }
 }
 
-
 std::vector<std::tuple<int, std::string, std::string>> GetRoomListDetails() {
     std::vector<std::tuple<int, std::string, std::string>> roomDetails;
     
@@ -389,9 +388,47 @@ std::vector<std::tuple<int, std::string, std::string>> GetRoomListDetails() {
     return roomDetails;
 }
 
+void getChatroomName(const httplib::Request& req, httplib::Response& res) {
+    // Validate if the roomId parameter exists
+    if (!req.has_param("roomId")) {
+        res.status = 400; // Bad Request
+        res.set_content("Missing roomId parameter", "text/plain");
+        return;
+    }
+
+    // Parse the roomId parameter
+    std::string roomIdStr = req.get_param_value("roomId");
+    int roomId;
+    if (!str::safeatoi(roomIdStr, roomId)) {
+        res.status = 400; // Bad Request
+        res.set_content("Invalid roomId format", "text/plain");
+        return;
+    }
+
+    // Check if the roomId is valid and in use
+    if (roomId < 1 || roomId >= MAXROOM || !used[roomId]) {
+        res.status = 404; // Not Found
+        res.set_content("Room not found", "text/plain");
+        return;
+    }
+
+    // Retrieve the room name
+    std::string roomName = room[roomId].gettittle();
+
+    // Respond with the room name
+    Json::Value response;
+    response["id"] = roomIdStr;
+    response["name"] = roomName;
+
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Content-Type", "application/json");
+    res.set_content(response.toStyledString(), "application/json");
+}
+
 void start_manager() {
     Server& server = Server::getInstance(HOST);
     server.handleRequest("/list", getRoomList);
     server.handleRequest("/allchatlist", getAllList);
     server.handleRequest("/joinquitroom", editRoomToUserRoute); // Updated route
+    server.handleRequest("/chatroomname", getChatroomName); // New route
 }

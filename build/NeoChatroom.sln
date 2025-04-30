@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CMakePredefinedTargets", "CMakePredefinedTargets", "{34AF138B-1EB4-3AA1-8682-E3CD5C8DBE77}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ALL_BUILD", "ALL_BUILD.vcxproj", "{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{038A3A29-1F38-31B0-93B3-0752957D3124} = {038A3A29-1F38-31B0-93B3-0752957D3124}
+		{56EE389D-DBBA-33CE-842F-3AF08E509050} = {56EE389D-DBBA-33CE-842F-3AF08E509050}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "INSTALL", "INSTALL.vcxproj", "{9275FBEE-AFA8-3D39-9E45-1BB4BCCED2D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE} = {67FD3A14-94C7-3D6C-9048-0A1C52AAADFE}
+		{56EE389D-DBBA-33CE-842F-3AF08E509050} = {56EE389D-DBBA-33CE-842F-3AF08E509050}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NeoChatroom", "NeoChatroom\NeoChatroom.vcxproj", "{038A3A29-1F38-31B0-93B3-0752957D3124}"
+	ProjectSection(ProjectDependencies) = postProject
+		{56EE389D-DBBA-33CE-842F-3AF08E509050} = {56EE389D-DBBA-33CE-842F-3AF08E509050}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZERO_CHECK", "ZERO_CHECK.vcxproj", "{56EE389D-DBBA-33CE-842F-3AF08E509050}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE}.Debug|x64.ActiveCfg = Debug|x64
+		{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE}.Debug|x64.Build.0 = Debug|x64
+		{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE}.Release|x64.ActiveCfg = Release|x64
+		{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE}.Release|x64.Build.0 = Release|x64
+		{9275FBEE-AFA8-3D39-9E45-1BB4BCCED2D5}.Debug|x64.ActiveCfg = Debug|x64
+		{9275FBEE-AFA8-3D39-9E45-1BB4BCCED2D5}.Release|x64.ActiveCfg = Release|x64
+		{038A3A29-1F38-31B0-93B3-0752957D3124}.Debug|x64.ActiveCfg = Debug|x64
+		{038A3A29-1F38-31B0-93B3-0752957D3124}.Debug|x64.Build.0 = Debug|x64
+		{038A3A29-1F38-31B0-93B3-0752957D3124}.Release|x64.ActiveCfg = Release|x64
+		{038A3A29-1F38-31B0-93B3-0752957D3124}.Release|x64.Build.0 = Release|x64
+		{56EE389D-DBBA-33CE-842F-3AF08E509050}.Debug|x64.ActiveCfg = Debug|x64
+		{56EE389D-DBBA-33CE-842F-3AF08E509050}.Debug|x64.Build.0 = Debug|x64
+		{56EE389D-DBBA-33CE-842F-3AF08E509050}.Release|x64.ActiveCfg = Release|x64
+		{56EE389D-DBBA-33CE-842F-3AF08E509050}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{67FD3A14-94C7-3D6C-9048-0A1C52AAADFE} = {34AF138B-1EB4-3AA1-8682-E3CD5C8DBE77}
+		{9275FBEE-AFA8-3D39-9E45-1BB4BCCED2D5} = {34AF138B-1EB4-3AA1-8682-E3CD5C8DBE77}
+		{56EE389D-DBBA-33CE-842F-3AF08E509050} = {34AF138B-1EB4-3AA1-8682-E3CD5C8DBE77}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B9AE6304-9C8D-3411-9584-E87C65BB9701}
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
