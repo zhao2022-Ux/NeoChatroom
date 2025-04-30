@@ -16,28 +16,34 @@ using namespace std;
         Json::Value initialMessage;
         initialMessage["user"] = "system";
         initialMessage["labei"] = "GM";
-        initialMessage["timestamp"] = time(0);
+        initialMessage["timestamp"] = static_cast<Json::Int64>(time(0)); // Ensure timestamp is stored as Int64
         initialMessage["message"] = Base64::base64_encode("wellcome!");
         chatMessages.push_back(initialMessage);
     }
 
     string chatroom::transJsonMessage(Json::Value m) {
-        string message = m["message"].asString();
-        return "[" + m["user"].asString() + "][" + Base64::base64_decode(message) + "]";
+        string message = Base64::base64_decode(m["message"].asString());
+        // Convert GBK message back to UTF-8 for logging
+        string utf8Message = message.c_str()
+            ;
+        return "[" + m["user"].asString() + "][" + utf8Message + "]";
     }
+
     void chatroom::systemMessage(string message) {
         Json::Value initialMessage;
         initialMessage["user"] = "system";
         initialMessage["labei"] = "GM";
         initialMessage["timestamp"] = time(0);
-        initialMessage["message"] = Base64::base64_encode(message);
-
+        
+        // Convert UTF-8 message to GBK for frontend display
+        string gbkMessage = (message.c_str());
+        initialMessage["message"] = Base64::base64_encode(gbkMessage);
 
         chatMessages.push_back(initialMessage);
 
-
-        Logger& logger = logger.getInstance();
-        logger.logInfo("chatroom::message", WordCode::GbkToUtf8(transJsonMessage(initialMessage).c_str()));
+        // Log the message in UTF-8 for proper log display
+        Logger& logger = Logger::getInstance();
+        logger.logInfo("chatroom::message", transJsonMessage(initialMessage));
     }
 
     bool chatroom::checkAllowId(const int ID) {
@@ -56,14 +62,12 @@ using namespace std;
     }
 
     void chatroom::getChatMessages(const httplib::Request& req, httplib::Response& res) {
-
         if (!checkCookies(req)) {
             res.status = 400;
             res.set_content("Invalid Cookie", "text/plain");
             return;
         }
 
-        // Validate that the requested room matches this chatroom instance
         std::string requested_path = req.path;
         std::string expected_path = "/chat/" + std::to_string(roomid) + "/messages";
         if (requested_path != expected_path) {
@@ -72,16 +76,49 @@ using namespace std;
             return;
         }
 
+        long long lastTimestamp = 0;
+        if (req.has_param("lastTimestamp")) {
+            try {
+                lastTimestamp = std::stoll(req.get_param_value("lastTimestamp"));
+            } catch (const std::exception&) {
+                res.status = 400;
+                res.set_content("Invalid lastTimestamp parameter", "text/plain");
+                return;
+            }
+        }
+
+        Json::Value response;
+        try {
+            for (const auto& msg : chatMessages) {
+                if (msg["timestamp"].asInt64() > lastTimestamp) {
+                    response.append(msg);
+                }
+            }
+        } catch (const std::exception&) {
+            res.status = 500;
+            res.set_content("Internal Server Error", "text/plain");
+            return;
+        }
+
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Content-Type", "application/json");
+        res.set_content(response.toStyledString(), "application/json");
+    }
+
+    void chatroom::getAllChatMessages(const httplib::Request& req, httplib::Response& res) {
+        if (!checkCookies(req)) {
+            res.status = 400;
+            res.set_content("Invalid Cookie", "text/plain");
+            return;
+        }
+
         Json::Value response;
         for (const auto& msg : chatMessages) {
             response.append(msg);
         }
 
-        // 设置响应头，支持跨域
         res.set_header("Access-Control-Allow-Origin", "*");
         res.set_header("Content-Type", "application/json");
-
-        // 将聊天记录转为 JSON 并返回给前端
         res.set_content(response.toStyledString(), "application/json");
     }
 
@@ -117,6 +154,9 @@ using namespace std;
         }
         manager::user nowuser = *manager::FindUser(uid_);
         if (nowuser.getpassword() != password) {
+            return false;
+        }
+        if (!manager::checkInRoom(roomid, uid_)) {
             return false;
         }
         return true;
@@ -160,6 +200,20 @@ using namespace std;
             return;
         }
 
+        // Check if the user is banned
+        if (nowuser.getlabei() == "BAN") {
+            res.status = 403;
+            res.set_content("User is banned", "text/plain");
+            logger.logInfo("ChatSys", req.remote_addr + "尝试发送消息，但用户已被封禁 ");
+            return;
+        }
+
+        if (!manager::checkInRoom(roomid, uid_)) {
+            res.status = 403;
+            res.set_content("Haven't joined the room yet", "text/plain");
+            return;
+        }
+
         // Validate that the requested room matches this chatroom instance
         std::string requested_path = req.path;
         std::string expected_path = "/chat/" + std::to_string(roomid) + "/messages";
@@ -173,8 +227,14 @@ using namespace std;
         Json::Value newMessage;
         newMessage["user"] = nowuser.getname();
         newMessage["labei"] = nowuser.getlabei();
-        string msgSafe = Keyword::process_string(Base64::base64_decode(root["message"].asString()));
+        
+        // Decode base64 message and process it
+        string decodedMsg = Base64::base64_decode(root["message"].asString());
+        // Convert UTF-8 input to GBK for storage and frontend display
+        string gbkMsg = decodedMsg.c_str();
+        string msgSafe = Keyword::process_string(gbkMsg);
         string codedmsg = Base64::base64_encode(msgSafe);
+        
         if (codedmsg.length() > 50000) {
             res.status = 401;
             res.set_content("Message too long", "text/plain");
@@ -182,18 +242,18 @@ using namespace std;
         }
         newMessage["message"] = codedmsg;
         newMessage["imageUrl"] = root["imageUrl"];
-        newMessage["timestamp"] = root["timestamp"];
+        newMessage["timestamp"] = static_cast<Json::Int64>(time(0)); // Ensure timestamp is stored as Int64
 
         lock_guard<mutex> lock(mtx);
-        //if (chatMessages.back() != newMessage) 
         chatMessages.push_back(newMessage);
         if (chatMessages.size() >= MAXSIZE) chatMessages.pop_front();
 
-        //Logger& logger = logger.getInstance();
-        logger.logInfo("chatroom::message", (("[roomID:" + to_string(roomid) + "][" + nowuser.getname() + "][" + WordCode::GbkToUtf8(msgSafe.c_str()) + "]")));
+        // Log message in UTF-8 for proper display
+        logger.logInfo("chatroom::message", 
+            ("[roomID:" + to_string(roomid) + "][" + 
+             nowuser.getname() + "][" + 
+             (msgSafe.c_str()) + "]"));
 
-
-        // 响应 OK
         res.status = 200;
         res.set_content("Message received", "text/plain");
     }
@@ -258,13 +318,28 @@ using namespace std;
             if (jsFile) {
                 std::stringstream buffer;
                 buffer << jsFile.rdbuf();
-                res.set_content(buffer.str(), "application/javascript");
+                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // 修改编码
             }
             else {
                 res.status = 404;
                 res.set_content("chatroom.js not found", "text/plain");
             }
             });
+
+        // 提供 JS 文件 /chatlist/js
+        server.getInstance().handleRequest("/chatlist/js", [](const httplib::Request& req, httplib::Response& res) {
+            std::ifstream jsFile("html/chatlist.js", std::ios::binary);
+            if (jsFile) {
+                std::stringstream buffer;
+                buffer << jsFile.rdbuf();
+                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // 修改编码
+            }
+            else {
+                res.status = 404;
+                res.set_content("chatlist.js not found", "text/plain");
+            }
+            });
+
 
         // 添加 chatlist.html 的路由
         server.getInstance().serveFile("/chatlist", "html/chatlist.html"); // 确保路径正确
@@ -384,8 +459,10 @@ using namespace std;
         server.getInstance().handleRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res) {
             getChatMessages(req, res);
             });
-        //server.getInstance().handleRequest("/chat/messages", getChatMessages);
 
+        server.getInstance().handleRequest("/chat/" + to_string(roomid) + "/all-messages", [this](const httplib::Request& req, httplib::Response& res) {
+            getAllChatMessages(req, res);
+            });
 
         // 处理 POST 请求，接收并保存新的聊天消息
         server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res , const Json::Value& root) {
@@ -440,11 +517,8 @@ using namespace std;
         clearMessage();
         allowID.clear();
     }
-    int chatroom::gettype() {
-        return type;
-    }
-    void chatroom::settype(int x) {
-        type = x;
+    void chatroom::setflag(int x) {
+        flags = x;
     }
     void chatroom::settittle(string Tittle) {
         chatTitle = Tittle;
@@ -464,6 +538,21 @@ using namespace std;
 
     string chatroom::GetPassword() {
         return password;
+    }
+
+    // 设置标志
+    void chatroom::setFlag(RoomFlags flag) {
+        flags |= flag;
+    }
+
+    // 清除标志
+    void chatroom::clearFlag(RoomFlags flag) {
+        flags &= ~flag;
+    }
+
+    // 检查标志
+    bool chatroom::hasFlag(RoomFlags flag) const {
+        return flags & flag;
     }
 //---------chatroom
 

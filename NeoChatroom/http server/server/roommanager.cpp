@@ -45,7 +45,7 @@ int editroom(int x, string Roomtittle) {
 
 int setroomtype(int x, int type) {
     if (x >= room.size()) return 1;
-    room[x].settype(type);
+    room[x].setflag(type);
     return 0;
 }
 
@@ -156,24 +156,20 @@ void getRoomList(const httplib::Request& req, httplib::Response& res) {
 }
 
 void getAllList(const httplib::Request& req, httplib::Response& res) {
-    // 创建 JSON 数组对象，用于存储所有要返回的聊天室
     Json::Value response(Json::arrayValue);
 
-    // 遍历所有聊天室（假设聊天室编号从 1 开始）
     for (int i = 1; i < MAXROOM; i++) {
-        // 如果该聊天室未被使用，则跳过
         if (!used[i]) continue;
-        // 如果聊天室的 getype 返回 3（隐藏聊天室），跳过
-        if (room[i].gettype() == 3) continue;
 
-        // 构造聊天室 JSON 对象（这里只返回 id 和 tittle）
+        // 跳过隐藏的聊天室
+        if (room[i].hasFlag(chatroom::RoomFlags::ROOM_HIDDEN)) continue;
+
         Json::Value roomObj;
         roomObj["id"] = std::to_string(i);
         roomObj["name"] = room[i].gettittle();
         response.append(roomObj);
     }
 
-    // 设置响应头，支持跨域
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Content-Type", "application/json");
     res.set_content(response.toStyledString(), "application/json");
@@ -185,7 +181,8 @@ enum class RoomResult {
     RoomNotFound,
     PasswordMismatch,
     RoomAlreadyAdded,
-    RoomNotJoined
+    RoomNotJoined,
+    RoomUnableJoin
 };
 
 enum class RoomOperation {
@@ -209,7 +206,10 @@ RoomResult AddRoomToUser(int uid, int roomId, const std::string& passwordHash) {
     if (!room[roomId].getPasswordHash().empty() && room[roomId].getPasswordHash() != passwordHash) {
         return RoomResult::PasswordMismatch;
     }
-
+    // 跳过隐藏的聊天室
+    if (room[roomId].hasFlag(chatroom::RoomFlags::ROOM_NO_JOIN)) {
+        return RoomResult::RoomUnableJoin;
+    }
     // Get the current cookie string
     std::string cookie = user->getcookie();
     std::string roomIdStr = std::to_string(roomId);
@@ -274,6 +274,15 @@ RoomResult QuitRoomToUser(int uid, int roomId) {
     return RoomResult::Success;
 }
 
+bool verifyCookiePassword(int uid, string password) {
+    Logger& logger = logger.getInstance();
+    manager::user nowuser = *manager::FindUser(uid);
+    if (nowuser.getpassword() != password) {
+        return false;
+    }
+    return true;
+}
+
 void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
     // Parse the user ID from the cookie
     std::string cookies = req.get_header_value("Cookie");
@@ -283,6 +292,13 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
     if (!str::safeatoi(uid, uid_)) {
         res.status = 400;
         res.set_content("Invalid UID format", "text/plain");
+        return;
+    }
+
+    // === 新增: 校验cookie密码是否正确 ===
+    if (!verifyCookiePassword(uid_, password)) {   // 这里调用你的验证逻辑
+        res.status = 403;
+        res.set_content("Invalid cookie authentication", "text/plain");
         return;
     }
 
@@ -313,42 +329,47 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
     if (operation == RoomOperation::JOIN) {
         std::string passwordHash = req.has_param("passwordHash") ? req.get_param_value("passwordHash") : "";
         result = AddRoomToUser(uid_, roomId, passwordHash);
-    } else {
+    }
+    else {
         result = QuitRoomToUser(uid_, roomId);
     }
     Logger& logger = logger.getInstance();
     // Handle the result
     switch (result) {
-        case RoomResult::Success:
-            res.status = 200;
-            res.set_content(operation == RoomOperation::JOIN ? "Joined successfully" : "Quit successfully", "text/plain");
-			logger.logInfo("RoomManager", "用户 " + std::to_string(uid_) + " " + (operation == RoomOperation::JOIN ? "joined" : "quit") + " room " + std::to_string(roomId));
-            break;
-        case RoomResult::UserNotFound:
-            res.status = 404;
-            res.set_content("User not found", "text/plain");
-			logger.logWarning("RoomManager", "用户 " + std::to_string(uid_) + " not found");
-            break;
-        case RoomResult::RoomNotFound:
-            res.status = 404;
-            res.set_content("Room not found", "text/plain");
-			logger.logWarning("RoomManager", "Room " + std::to_string(roomId) + " not found");
-            break;
-        case RoomResult::PasswordMismatch:
-            res.status = 403;
-            res.set_content("Password mismatch", "text/plain");
-			logger.logWarning("RoomManager", "密码错误 " + std::to_string(uid_) + " in room " + std::to_string(roomId));
-            break;
-        case RoomResult::RoomAlreadyAdded:
-            res.status = 409;
-            res.set_content("Room already added", "text/plain");
-            break;
-        case RoomResult::RoomNotJoined:
-            res.status = 404;
-            res.set_content("Room not joined", "text/plain");
-            break;
+    case RoomResult::Success:
+        res.status = 200;
+        res.set_content(operation == RoomOperation::JOIN ? "Joined successfully" : "Quit successfully", "text/plain");
+        logger.logInfo("RoomManager", "用户 " + std::to_string(uid_) + " " + (operation == RoomOperation::JOIN ? "joined" : "quit") + " room " + std::to_string(roomId));
+        break;
+    case RoomResult::UserNotFound:
+        res.status = 404;
+        res.set_content("User not found", "text/plain");
+        logger.logWarning("RoomManager", "用户 " + std::to_string(uid_) + " not found");
+        break;
+    case RoomResult::RoomNotFound:
+        res.status = 404;
+        res.set_content("Room not found", "text/plain");
+        logger.logWarning("RoomManager", "Room " + std::to_string(roomId) + " not found");
+        break;
+    case RoomResult::PasswordMismatch:
+        res.status = 403;
+        res.set_content("Password mismatch", "text/plain");
+        logger.logWarning("RoomManager", "密码错误 " + std::to_string(uid_) + " in room " + std::to_string(roomId));
+        break;
+    case RoomResult::RoomAlreadyAdded:
+        res.status = 409;
+        res.set_content("Room already added", "text/plain");
+        break;
+    case RoomResult::RoomNotJoined:
+        res.status = 404;
+        res.set_content("Room not joined", "text/plain");
+        break;
+    case RoomResult::RoomUnableJoin:
+        res.status = 403;
+		res.set_content("Room Unable to Join", "text/plain");
     }
 }
+
 
 std::vector<std::tuple<int, std::string, std::string>> GetRoomListDetails() {
     std::vector<std::tuple<int, std::string, std::string>> roomDetails;

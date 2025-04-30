@@ -29,7 +29,8 @@ private:
 
     string passwordHash;
 
-    int type;// 3为隐藏 2为禁止加入
+    unsigned int flags = 0;
+    int type;// 3为隐藏 2为禁止加入 已弃用
     // Removed unused type variable
 
     // 初始化聊天室
@@ -50,6 +51,9 @@ private:
 
     // 获取聊天消息
     void getChatMessages(const httplib::Request& req, httplib::Response& res);
+
+    // 获取全部聊天消息
+    void getAllChatMessages(const httplib::Request& req, httplib::Response& res);
 
     // 处理 POST 请求发送消息
     void postChatMessage(const httplib::Request& req, httplib::Response& res, const Json::Value& root);
@@ -92,9 +96,7 @@ public:
     // 启动聊天室
     bool start();
 
-    int gettype();
-
-    void settype(int x);
+    void setflag(int x);
 
     string gettittle();
 
@@ -111,6 +113,20 @@ public:
     void setPassword(const std::string& Newpassword);
 
     string GetPassword();
+
+    enum RoomFlags { //标志
+        ROOM_HIDDEN = 1 << 0,       // 0001
+        ROOM_NO_JOIN = 1 << 1       // 0010
+
+    };
+    // 设置标志
+    void setFlag(RoomFlags flag);
+
+    // 清除标志
+    void clearFlag(RoomFlags flag);
+
+    // 检查标志
+    bool hasFlag(RoomFlags flag) const;
 };
 
 void delroom(int x);

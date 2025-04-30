@@ -187,19 +187,29 @@ void command_runner(string command, int roomid) {
             size_t spacePos = args.find(' ');
             if (spacePos != string::npos) {
                 string idPart = args.substr(0, spacePos);
-                int neetype = atoi(args.substr(spacePos + 1).c_str());
-                int roomId = stoi(idPart);
-                if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
-                    setroomtype(roomId, neetype);
-                    logger.logInfo("Control", "聊天室类型已更新 " + to_string(roomId) + "，新类型: " + to_string(neetype));
-                    // （可选）如果类型需要保存，则调用 saveConfig() 
+                string typePart = args.substr(spacePos + 1);
+                int roomId = -1, newType = -1;
+
+                try {
+                    roomId = stoi(idPart);
+                    newType = stoi(typePart);
+                } catch (...) {
+                    logger.logError("Control", "settype 命令格式错误，ID 和类型必须为整数");
+                    return;
                 }
-                else {
+
+                if (roomId < 0 || roomId >= MAXROOM) {
                     logger.logError("Control", "无效的聊天室 ID: " + to_string(roomId));
+                } else if (!used[roomId]) {
+                    logger.logError("Control", "聊天室未创建，ID: " + to_string(roomId));
+                } else {
+                    setroomtype(roomId, newType);
+                    logger.logInfo("Control", "聊天室类型已更新，ID: " + to_string(roomId) + "，新类型: " + to_string(newType));
+                    // Optionally save configuration if type changes need persistence
+                    saveConfig();
                 }
-            }
-            else {
-                logger.logError("Control", "settype 命令格式错误，需要提供 ID 和新名称");
+            } else {
+                logger.logError("Control", "settype 命令格式错误，需要提供 ID 和类型");
             }
         }
         else if (cmd == "rename" && !args.empty()) {
@@ -231,9 +241,8 @@ void command_runner(string command, int roomid) {
                 int roomId = stoi(args.substr(0, msgPos));
                 string message = args.substr(msgPos + 1);
                 if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
-                    string UTF8msg = message;
-                    string GBKmsg = WordCode::Utf8ToGbk(UTF8msg.c_str());
-                    room[roomId].systemMessage(convertToUTF8(GBKmsg));
+                    // The message is already in UTF-8, systemMessage will handle the conversion
+                    room[roomId].systemMessage(message);
                     logger.logInfo("Control", "消息已发送到聊天室 " + to_string(roomId));
                 }
                 else {
@@ -269,8 +278,14 @@ void command_runner(string command, int roomid) {
                 string password = args.substr(spacePos + 1);
                 int roomId = stoi(idPart);
                 if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
-                    room[roomId].setPassword(password);
-                    logger.logInfo("Control", "聊天室密码已设置，ID: " + to_string(roomId));
+                    if (password == "clear") {
+                        room[roomId].setPassword(""); // 清空密码
+                        logger.logInfo("Control", "聊天室密码已清空，ID: " + to_string(roomId));
+                    }
+                    else {
+                        room[roomId].setPassword(password); // 设置新密码
+                        logger.logInfo("Control", "聊天室密码已设置，ID: " + to_string(roomId));
+                    }
                     saveConfig();
                 }
                 else {
@@ -280,7 +295,8 @@ void command_runner(string command, int roomid) {
             else {
                 logger.logError("Control", "setpassword 命令格式错误，需要提供 ID 和密码");
             }
-        }
+            }
+
         else if (cmd == "listuser") {
             auto userDetails = manager::GetUserDetails();
             if (userDetails.empty()) {
@@ -303,6 +319,20 @@ void command_runner(string command, int roomid) {
                 }
             }
         }
+        else if (cmd == "rmuser" && !args.empty()) {
+            try {
+                int userId = stoi(args);
+                if (manager::RemoveUser(userId)) {
+                    logger.logInfo("Control", "用户已成功删除，UID: " + to_string(userId));
+                    manager::WriteUserData("./", manager::datafile);
+                } else {
+                    logger.logError("Control", "删除用户失败，可能找不到UID: " + to_string(userId));
+                }
+            } catch (...) {
+                
+                logger.logError("Control", "无效的用户ID格式");
+            }
+        }
         else if (cmd == "help") {
             logger.logInfo("Control", "可用指令:\n"
                 "  userdata save - 保存用户数据\n"
@@ -312,7 +342,7 @@ void command_runner(string command, int roomid) {
                 "  create - 创建并启动一个新的聊天室\n"
                 "  delete <roomId> - 删除指定聊天室\n"
                 "  rename <roomId> <name> - 为指定聊天室重命名\n"
-                "  settype <roomId> <type> - 为指定聊天室更改类型 2-禁止访问 3-隐藏\n"
+                "  settype <roomId> <type> - 为指定聊天室更改类型 (ROOM_HIDDEN = 1 << 0,ROOM_NO_JOIN = 1 << 1)\n"
                 "  say <roomId> <message> - 向指定聊天室发送消息\n"
                 "  clear <roomId> - 清空指定聊天室的消息\n"
                 "  ban <ip> - 封禁指定IP\n"
@@ -320,6 +350,7 @@ void command_runner(string command, int roomid) {
                 "  setpassword <roomId> <password> - 为指定聊天室设置密码\n"
                 "  listuser - 列出所有用户\n"
                 "  listroom - 列出所有聊天室\n"
+                "  rmuser <userId> - 删除指定用户ID的用户\n"
                 "  help - 显示此帮助信息");
                 }
         else {

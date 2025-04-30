@@ -73,25 +73,7 @@ namespace Keyword {
     string process_string(const string& input);
 }
 
-#ifndef WORDCODE_H
-#define WORDCODE_H
 
-#include <string>
-
-namespace WordCode {
-    // Windows 平台下的编码转换函数声明
-#ifdef _WIN32
-    std::string GbkToUtf8(const char* src_str);
-    std::string Utf8ToGbk(const char* src_str);
-#else
-    // 非 Windows 平台下的编码转换函数声明
-    int GbkToUtf8(char* str_str, size_t src_len, char* dst_str, size_t dst_len);
-    int Utf8ToGbk(char* src_str, size_t src_len, char* dst_str, size_t dst_len);
-#endif
-
-}
-
-#endif // WORDCODE_H
 
 #endif // FILE_H
        

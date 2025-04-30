@@ -148,7 +148,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="html\chatlist.html" />
+    <None Include="html\chatlist.js" />
     <None Include="html\chatroom.js" />
+    <None Include="html\files\updates.html" />
     <None Include="html\index.html" />
     <None Include="html\login.html" />
   </ItemGroup>

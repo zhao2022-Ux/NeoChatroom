@@ -46,6 +46,9 @@ namespace manager {
 	user* FindUser(string name);
 	//移除用户
 	bool RemoveUser(int uid);
+	//检查是否在聊天室中
+	bool checkInRoom(int number, int uid);
+
 	//读取时的缓冲区
 	extern config DataFile;
 	extern std::vector<item> list;

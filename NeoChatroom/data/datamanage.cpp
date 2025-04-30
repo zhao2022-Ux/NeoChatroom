@@ -119,12 +119,50 @@ namespace manager {
 
     //移除用户
     bool RemoveUser(int uid) {
-        lock_guard<mutex> lock(mtx); // 加锁保护共享数据
+        //lock_guard<mutex> lock(mtx); // 加锁保护共享数据
 
         user* duser = FindUser(uid);
         if (duser == nullptr) return false;
         duser->ban();
         return true;
+    }
+
+
+    bool checkInRoom(int number, int uid) {
+        
+
+        user* targetUser = FindUser(uid);
+        if (targetUser == nullptr) {
+            return false; // User not found
+        }
+
+        string cookie = targetUser->getcookie();
+        if (cookie.empty()) {
+            return false; // Empty cookie
+        }
+        lock_guard<mutex> lock(mtx); // Protect shared data access
+        // Split the cookie string by '&' and check each number
+        size_t start = 0;
+        size_t end = cookie.find('&');
+
+        while (end != string::npos) {
+            string numStr = cookie.substr(start, end - start);
+            int currentNum;
+            if (str::safeatoi(numStr, currentNum) && currentNum == number) {
+                return true;
+            }
+            start = end + 1;
+            end = cookie.find('&', start);
+        }
+
+        // Check the last number after the last '&'
+        string lastNumStr = cookie.substr(start);
+        int lastNum;
+        if (str::safeatoi(lastNumStr, lastNum) && lastNum == number) {
+            return true;
+        }
+
+        return false;
     }
 
     //读取时的缓冲区

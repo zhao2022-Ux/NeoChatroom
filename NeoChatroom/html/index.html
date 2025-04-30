@@ -15,6 +15,32 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        /* 通用滚动条样式（浅色模式） */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #999;
+            border-radius: 4px;
+            border: 2px solid #e0e0e0;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background-color: #777;
+            }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #999 #e0e0e0;
+        }
+
         .header {
             display: flex;
             align-items: center;
@@ -35,7 +61,6 @@
                 font-weight: bold;
             }
 
-            /* 新增样式：通知模式选择下拉框 */
             .header .notification-toggle {
                 margin-left: 20px;
                 font-size: 14px;
@@ -85,23 +110,8 @@
             overflow-y: auto;
             padding: 10px;
             background-color: #fafafa;
-            scrollbar-width: thin;
-            scrollbar-color: #888 #e0e0e0;
             animation: fadeIn 1.5s ease-out;
         }
-
-            .chat-box::-webkit-scrollbar {
-                width: 8px;
-            }
-
-            .chat-box::-webkit-scrollbar-thumb {
-                background-color: #888;
-                border-radius: 4px;
-            }
-
-            .chat-box::-webkit-scrollbar-track {
-                background-color: #e0e0e0;
-            }
 
         .message {
             padding: 8px 12px;
@@ -114,7 +124,6 @@
             flex-direction: column;
         }
 
-            /* 自己的消息右对齐 */
             .message.user {
                 background-color: #d0f0c0;
                 margin-left: auto;
@@ -145,16 +154,25 @@
             border-top: 1px solid #ddd;
         }
 
-            .input-box input {
+            .input-box textarea {
                 flex: 1;
-                padding: 10px;
+                padding: 6px 10px; /* 根据实际情况调整内边距 */
                 border: 1px solid #ccc;
                 border-radius: 5px;
+                resize: none;
+                font-family: inherit;
+                font-size: 14px;
+                line-height: 1.5;
                 transition: border-color 0.2s;
+                height: auto; /* 移除固定高度 */
+                min-height: 24px; /* 设置最小高度 */
+                max-height: 120px;
+                overflow-y: auto;
             }
 
-                .input-box input:focus {
+                .input-box textarea:focus {
                     border-color: #007BFF;
+                    outline: none;
                 }
 
             .input-box button {
@@ -199,7 +217,7 @@
                 background-color: #444;
             }
 
-                body.dark-mode .input-box input {
+                body.dark-mode .input-box textarea {
                     background-color: #666;
                     color: #fff;
                     border: 1px solid #555;
@@ -226,6 +244,47 @@
                 body.dark-mode .theme-toggle:hover {
                     background-color: #555;
                 }
+
+            body.dark-mode .footer {
+                background-color: #444;
+                color: #fff;
+            }
+
+                body.dark-mode .footer a {
+                    color: #66aaff;
+                }
+
+            body.dark-mode #burnAfterReadingToggle {
+                background-color: #444;
+                color: #fff;
+            }
+
+                body.dark-mode #burnAfterReadingToggle:hover {
+                    background-color: #555;
+                }
+
+                body.dark-mode #burnAfterReadingToggle.active {
+                    background-color: #ff4444;
+                    color: #fff;
+                }
+
+            /* 深色模式滚动条样式 */
+            body.dark-mode ::-webkit-scrollbar-track {
+                background-color: #444;
+            }
+
+            body.dark-mode ::-webkit-scrollbar-thumb {
+                background-color: #888;
+                border: 2px solid #444;
+            }
+
+                body.dark-mode ::-webkit-scrollbar-thumb:hover {
+                    background-color: #aaa;
+                }
+
+            body.dark-mode * {
+                scrollbar-color: #aaa #444;
+            }
 
         #sendButton {
             transition: transform 0.1s ease;
@@ -267,37 +326,20 @@
             border-top: 1px solid #ddd;
         }
 
-        body.dark-mode .footer {
-            background-color: #444;
-            color: #fff;
-        }
-
-        .footer a {
-            color: #007BFF;
-            text-decoration: none;
-        }
-
-            .footer a:hover {
-                text-decoration: underline;
+            .footer a {
+                color: #007BFF;
+                text-decoration: none;
             }
 
-        body.dark-mode .footer a {
-            color: #66aaff;
+                .footer a:hover {
+                    text-decoration: underline;
+                }
+
+        .message-body {
+            padding: 2px 4px; /* 减少上下的内边距 */
+            margin: 0; /* 清除默认外边距 */
+            line-height: 1.2; /* 调整行高，让文字更紧凑 */
         }
-
-        body.dark-mode #burnAfterReadingToggle {
-            background-color: #444;
-            color: #fff;
-        }
-
-            body.dark-mode #burnAfterReadingToggle:hover {
-                background-color: #555;
-            }
-
-            body.dark-mode #burnAfterReadingToggle.active {
-                background-color: #ff4444;
-                color: #fff;
-            }
     </style>
 </head>
 <body>
@@ -332,7 +374,7 @@
             <!-- 聊天内容会显示在这里 -->
         </div>
         <div class="input-box">
-            <input type="text" id="messageInput" placeholder="请输入消息..." />
+            <textarea type="text" id="messageInput" rows="1" maxrows="6" placeholder="输入消息... shift+enter换行"></textarea>
             <input type="file" id="imageInput" accept="image/*" style="display: none;" />
             <button onclick="sendMessage()">发送</button>
             <button onclick="selectImage()">上传图片</button>
@@ -341,12 +383,24 @@
     </div>
 
     <div class="footer">
-        <p>© 2025 seve's chatroom | <a href="/files/terms.html">使用条款</a></p>
+        <p>© 2025 seve's chatroom | <a href="/files/terms.html">使用条款</a> | <a href="/files/updates.html">更新日志</a></p>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
     <script src="/chat/js"></script>
 
-    
+
 
 </body>
 </html>
