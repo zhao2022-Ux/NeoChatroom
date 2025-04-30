@@ -148,6 +148,7 @@ async function fetchChatMessages() {
         const fragment = document.createDocumentFragment();
 
         messages.forEach(msg => {
+            //console.log("Timestamp received:", msg.timestamp);
             const msgTimestamp = new Date(msg.timestamp).getTime();
             if (msgTimestamp > lastTimestamp) {
                 lastTimestamp = msgTimestamp;
@@ -174,6 +175,7 @@ async function fetchChatMessages() {
             await new Promise(resolve => setTimeout(resolve, 50)); // Ensure DOM update
             await MathJax.typesetPromise();
         }
+        
 
         if (!isScrolledToBottom) {
             chatBox.scrollTop = previousScrollTop;
@@ -189,7 +191,8 @@ async function fetchChatMessages() {
 
 
 function createMessageElement(msg) {
-    const messageTime = new Date(msg.timestamp).toLocaleTimeString();
+    // 将时间戳从秒转换为毫秒
+    const messageTime = new Date(msg.timestamp * 1000).toLocaleTimeString();
     const isOwnMessage = (msg.user === currentUsername);
     const messageClass = isOwnMessage ? 'message user' : 'message';
 
@@ -244,26 +247,40 @@ function createMessageElement(msg) {
     messageDiv.appendChild(headerDiv);
 
     const bodyDiv = document.createElement('div');
+    // 如果是图片消息，则设置对应的 class 名称
     bodyDiv.className = msg.imageUrl ? 'image-message' : 'message-body';
 
+    // 如果有图片，先添加图片及其事件绑定
     if (msg.imageUrl) {
+        const brStart = document.createElement('br');
         const img = document.createElement('img');
         img.src = msg.imageUrl;
         img.alt = "Image";
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
         img.style.cursor = 'pointer';
-        img.addEventListener('click', () => toggleFullScreen(img));
-        bodyDiv.appendChild(document.createElement('br'));
+        // 绑定点击事件
+        img.addEventListener('click', function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            toggleFullScreen(this);
+        });
+        const brEnd = document.createElement('br');
+        bodyDiv.appendChild(brStart);
         bodyDiv.appendChild(img);
-        bodyDiv.appendChild(document.createElement('br'));
+        bodyDiv.appendChild(brEnd);
     }
 
-    bodyDiv.innerHTML += processedMessage;
-    messageDiv.appendChild(bodyDiv);
+    // 使用 DOM 方法添加 Markdown 渲染内容，避免 innerHTML 覆盖前面添加的元素
+    const markdownContainer = document.createElement('div');
+    markdownContainer.innerHTML = processedMessage;
+    bodyDiv.appendChild(markdownContainer);
 
+    messageDiv.appendChild(bodyDiv);
     return messageDiv;
 }
+
+
 
 function checkForNotification(msg) {
     const msgId = `${msg.timestamp}_${msg.user}_${msg.message}`;
@@ -391,6 +408,7 @@ async function sendMessage() {
 
 // 优化全屏图片查看
 function toggleFullScreen(imgElement) {
+    console.log("114514");
     const existingOverlay = document.getElementById("imageFullscreen");
     if (existingOverlay) {
         existingOverlay.remove();
@@ -407,7 +425,12 @@ function toggleFullScreen(imgElement) {
 
     const fullImg = document.createElement("img");
     fullImg.src = imgElement.src;
-    fullImg.style.cssText = "max-width: 90%; max-height: 90%; box-shadow: 0 0 20px rgba(255,255,255,0.5);";
+    fullImg.style.cssText = `
+        max-width: 90%; max-height: 90%; 
+        object-fit: contain; /* 等比例拉伸 */
+        box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        cursor: pointer;
+    `;
 
     overlay.appendChild(fullImg);
     overlay.addEventListener("click", () => overlay.remove(), { once: true });

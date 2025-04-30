@@ -34,16 +34,9 @@
             .header .right-section {
                 display: flex;
                 align-items: center;
-                margin-left: auto;
-                gap: 10px; /* Add spacing between elements to prevent overlap */
+                gap: 10px; /* 添加间距 */
             }
 
-            .header .username {
-                max-width: 150px; /* Optional: Limit the width of the username display */
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
 
             .header .theme-toggle {
                 margin-right: 20px; /* 调整按钮之间的间距 */
@@ -57,6 +50,15 @@
             .header .chatroom-title {
                 font-size: 22px;
                 font-weight: bold;
+            }
+
+            .header .username {
+                max-width: 150px; /* 限制用户名的最大宽度 */
+                white-space: nowrap; /* 防止换行 */
+                overflow: hidden; /* 超出部分隐藏 */
+                text-overflow: ellipsis; /* 显示省略号 */
+                color: #fff; /* 确保用户名颜色与导航栏一致 */
+                font-size: 16px; /* 调整字体大小 */
             }
 
             .header button {
@@ -354,3 +356,41 @@
 
     <!-- 顶部导航栏 -->
     <div class="header">
+        <div class="left-section">
+            <img src="/images/logo16.ico" alt="Logo">
+            <div class="chatroom-title">seve's chatroom</div>
+        </div>
+        <div class="right-section">
+            <div class="username" id="usernameDisplay"></div>
+            <button class="login-button" id="loginButton" onclick="window.location.href='/login'">登录</button>
+            <button class="theme-toggle" id="themeToggle">D/B</button>
+        </div>
+    </div>
+
+
+    <!-- 已加入的聊天室 -->
+    <div class="container">
+        <h2>已加入的聊天室</h2>
+        <div id="joined-chatrooms" class="room-list">
+            <!-- 加入的聊天室卡片 -->
+        </div>
+    </div>
+
+    <!-- 所有聊天室 -->
+    <div class="container">
+        <h2>所有聊天室</h2>
+        <div id="all-chatrooms" class="room-list">
+            <!-- 所有聊天室卡片 -->
+        </div>
+    </div>
+
+    <!-- 指定加入面板 -->
+    <div class="join-panel">
+        <h2>指定加入</h2>
+        <input type="text" id="join-room-input" placeholder="请输入聊天室ID (≥3)">
+        <button id="join-room-btn">加入聊天室</button>
+    </div>
+
+    <script src="/chatlist/js" charset="utf-8"> </script>
+</body>
+</html>
