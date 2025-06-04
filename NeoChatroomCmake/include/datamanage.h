@@ -8,18 +8,18 @@
 #include <string>
 #include <vector>
 #include <tuple>
-
+#include <string>
 namespace manager {
-	const string banedName = "·â½ûÓÃ»§";
+	const string banedName = "å°ç¦ç”¨æˆ·";
 	const string AluserType = "AllUser";
-	const string GMlabei = "GM";//¹ÜÀíÔ±
-	const string Usuallabei = "U";//ÆÕÍ¨ÓÃ»§
-	const string BanedLabei = "BAN";//·â½ûÓÃ»§
-	//¼ì²écharÊÇ·ñ°²È«
+	const string GMlabei = "GM";//ç®¡ç†å‘˜
+	const string Usuallabei = "U";//æ™®é€šç”¨æˆ·
+	const string BanedLabei = "BAN";//å°ç¦ç”¨æˆ·
+	//æ£€æŸ¥charæ˜¯å¦å®‰å…¨
 	bool SafeWord(char word);
-	//¼ì²éÓÃ»§ÃûÊÇ·ñºÏ·¨
+	//æ£€æŸ¥ç”¨æˆ·åæ˜¯å¦åˆæ³•
 	bool CheckUserName(string name);
-	//´æ´¢Êı¾İµÄÎÄ¼şµÄÂ·¾¶
+	//å­˜å‚¨æ•°æ®çš„æ–‡ä»¶çš„è·¯å¾„
 	const string datafile = "data.txt";
 	extern int usernum;
 
@@ -42,25 +42,26 @@ namespace manager {
 		user(string name_ = "NULL", string password_ = "", string cookie_ = "", string labei_ = "NULL");
 		void setuid(int value = -1);
 	};
-	//ÏòÊı¾İÖĞĞÂÔöÓÃ»§
+	//å‘æ•°æ®ä¸­æ–°å¢ç”¨æˆ·
 	bool AddUser(const std::string& name, const std::string& psw, const std::string& cookie, const std::string& labei); // Updated signature
-	//Í¨¹ıuid²éÕÒÓÃ»§
+	//é€šè¿‡uidæŸ¥æ‰¾ç”¨æˆ·
 	user* FindUser(int uid);
-	//Í¨¹ıid²éÕÒÓÃ»§
+	//é€šè¿‡idæŸ¥æ‰¾ç”¨æˆ·
 	user* FindUser(string name);
-	//ÒÆ³ıÓÃ»§
+	//ç§»é™¤ç”¨æˆ·
 	bool RemoveUser(int uid);
-	//¼ì²éÊÇ·ñÔÚÁÄÌìÊÒÖĞ
+	bool BanUser(int uid);
+	//æ£€æŸ¥æ˜¯å¦åœ¨èŠå¤©å®¤ä¸­
 	bool checkInRoom(int number, int uid);
 
-	//¶ÁÈ¡Ê±µÄ»º³åÇø
+	//è¯»å–æ—¶çš„ç¼“å†²åŒº
 	extern config DataFile;
 	extern std::vector<item> list;
-	//´òÓ¡Òì³£
+	//æ‰“å°å¼‚å¸¸
 	void LogError(string path, string filename, int line);
-	//¶ÁÈ¡Õû¸öÎÄ¼ş
+	//è¯»å–æ•´ä¸ªæ–‡ä»¶
 	void ReadUserData(string path, string filename);
-	//±£´æµ±Ç°ÓÃ»§ÁĞ±í
+	//ä¿å­˜å½“å‰ç”¨æˆ·åˆ—è¡¨
 	void WriteUserData(string path, string filename);
 
 	// Declaration of the function to get user details

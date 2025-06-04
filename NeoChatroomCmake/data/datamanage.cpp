@@ -424,21 +424,21 @@ namespace manager {
     }
 
     // 移除用户
-    bool RemoveUser(int uid) {
+    bool BanUser(int uid) {
         try {
             const char* updateQuery = R"(
                 UPDATE users SET labei = ? WHERE uid = ?;
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, updateQuery, -1, &stmt, nullptr) != SQLITE_OK) {
-                Logger::getInstance().logError("database", "准备移除用户时发生错误: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "准备封禁用户时发生错误: " + std::string(sqlite3_errmsg(db)));
                 return false;
             }
             sqlite3_bind_text(stmt, 1, BanedLabei.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_int(stmt, 2, uid);
             bool success = (sqlite3_step(stmt) == SQLITE_DONE);
             if (success) {
-                Logger::getInstance().logInfo("database", "UID为 " + std::to_string(uid) + " 的用户已被移除。");
+                Logger::getInstance().logInfo("database", "UID为 " + std::to_string(uid) + " 的用户已被封禁。");
                 // 使缓存无效
                 lock_guard<mutex> lock(mtx);
                 auto it = userCacheById.find(uid);
@@ -449,7 +449,7 @@ namespace manager {
                 }
             }
             else {
-                Logger::getInstance().logError("database", "移除用户失败: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "封禁用户失败: " + std::string(sqlite3_errmsg(db)));
             }
             sqlite3_finalize(stmt);
             return success;
@@ -459,6 +459,43 @@ namespace manager {
             return false;
         }
     }
+
+    bool RemoveUser(int uid) {
+        try {
+            const char* deleteQuery = R"(
+            DELETE FROM users WHERE uid = ?;
+        )";
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, deleteQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "准备删除用户时发生错误: " + std::string(sqlite3_errmsg(db)));
+                return false;
+            }
+            sqlite3_bind_int(stmt, 1, uid);
+            bool success = (sqlite3_step(stmt) == SQLITE_DONE);
+            if (success) {
+                Logger::getInstance().logInfo("database", "UID为 " + std::to_string(uid) + " 的用户已被永久删除。");
+
+                // 清除缓存
+                lock_guard<mutex> lock(mtx);
+                auto it = userCacheById.find(uid);
+                if (it != userCacheById.end()) {
+                    std::string name = it->second.userPtr->getname();
+                    userCacheByName.erase(name);
+                    delete it->second.userPtr;
+                    userCacheById.erase(it);
+                }
+            } else {
+                Logger::getInstance().logError("database", "删除用户失败: " + std::string(sqlite3_errmsg(db)));
+            }
+            sqlite3_finalize(stmt);
+            return success;
+        }
+        catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "删除用户时发生异常: " + std::string(e.what()));
+            return false;
+        }
+    }
+
 
     bool checkInRoom(int number, int uid) {
         try {

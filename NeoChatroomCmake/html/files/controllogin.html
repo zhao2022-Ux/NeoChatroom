@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>控制面板登录 - Seve's Chatroom</title>
+    <link rel="icon" href="/images/logo.png" type="image/png" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .login-container h2 {
+            margin: 0 0 1.5rem 0;
+            text-align: center;
+            font-size: 1.25rem;
+            color: #007BFF;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        .login-container input[type="password"]:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        #msg {
+            margin-top: 0.75rem;
+            text-align: center;
+            color: #f44336;
+            font-size: 0.8rem;
+            min-height: 1rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #222;
+                color: #eee;
+            }
+
+            .login-container {
+                background-color: #333;
+            }
+
+            .login-container input[type="password"] {
+                background-color: #444;
+                color: #eee;
+                border-color: #555;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h2>控制面板登录</h2>
+    <div class="input-group">
+        <input type="password" id="pwd" placeholder="请输入密码" />
+    </div>
+    <button onclick="login()">登录</button>
+    <p id="msg"></p>
+</div>
+
+<script>
+    function login() {
+        const pwd = document.getElementById('pwd').value;
+        if (!pwd) {
+            document.getElementById('msg').textContent = '请输入密码';
+            return;
+        }
+
+        fetch('/control/auth', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: pwd })
+        })
+            .then(r => r.json())
+            .then(j => {
+                if (j.status === 'success') {
+                    location.href = j.redirect;
+                } else {
+                    document.getElementById('msg').textContent = j.message || '密码错误';
+                }
+            })
+            .catch(() => {
+                document.getElementById('msg').textContent = '请求失败，请稍后重试';
+            });
+    }
+
+    document.getElementById('pwd').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') login();
+    });
+</script>
+</body>
+</html>
