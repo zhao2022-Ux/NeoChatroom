@@ -4,6 +4,122 @@ C++高性能网络聊天室
 
 VS2022编写的sln版截至到v0.1.2，请使用cmake构建。
 
+## how to build?
+windows用户可以直接下载Release
+下面是为 **NeoChatroom** 项目撰写的跨平台构建说明文档，分别适用于 **Linux** 和 **Windows** 环境。
+---
+
+#### 📦 项目依赖
+
+* CMake ≥ 3.14
+* C++17 编译器（如 g++, clang++, MSVC）
+* OpenSSL 开发库
+* SQLite3 开发库
+* Git（可选）
+
+---
+
+#### 🐧 Linux 下构建指南
+
+##### 1️⃣ 安装依赖
+
+Debian/Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install build-essential cmake libssl-dev libsqlite3-dev
+```
+
+Fedora/RHEL:
+
+```bash
+sudo dnf install gcc-c++ cmake openssl-devel sqlite-devel
+```
+
+Arch:
+
+```bash
+sudo pacman -S base-devel cmake openssl sqlite
+```
+
+##### 2️⃣ 克隆项目并构建
+
+```bash
+git clone https://github.com/Dreamersseve/NeoChatroom.git
+cd NeoChatroom
+cd NeoChatroomCmake
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+##### 3️⃣ 运行程序
+
+```bash
+./NeoChatroom
+```
+
+---
+
+#### 🪟 Windows 下构建指南
+
+##### 1️⃣ 安装工具
+
+* [Visual Studio](https://visualstudio.microsoft.com/)（需要勾选 **C++ CMake 工具集**）
+* [CMake](https://cmake.org/download/)（建议安装并添加到 PATH）
+* [vcpkg](https://github.com/microsoft/vcpkg)（推荐用于管理 OpenSSL 和 SQLite3）
+
+##### 2️⃣ 使用 vcpkg 安装依赖
+
+```powershell
+git clone https://github.com/microsoft/vcpkg.git
+.\vcpkg\bootstrap-vcpkg.bat
+.\vcpkg\vcpkg install openssl sqlite3
+```
+
+> 记下 `vcpkg` 路径，稍后 CMake 配置时需要用到。
+
+##### 3️⃣ 使用 CMake 配置项目
+
+在 PowerShell 或 CMD 中切换到NeoChatroomCmake：
+
+```powershell
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=[vcpkg路径]\scripts\buildsystems\vcpkg.cmake -G "Visual Studio 17 2022"
+cmake --build . --config Release
+```
+
+> 请替换 `[vcpkg路径]` 为你的实际路径，比如：`C:/dev/vcpkg`。
+
+##### 4️⃣ 运行程序
+
+你可以在 `build/Release` 或 `x64/Release` 目录下找到 `NeoChatroom.exe`，双击运行或在终端中执行：
+
+```powershell
+.\Release\NeoChatroom.exe
+```
+
+---
+
+#### 🧪 测试运行
+
+确认如下内容：
+
+* `config.json` 存在于运行目录
+* `database.db` 存在或可自动生成
+* `html/` 静态文件目录正确
+
+---
+
+#### 📎 附加说明
+
+* 编译输出的 SSL 证书 (`server.crt`, `server.key`) 可用于 HTTPS 支持
+* 如果你遇到找不到依赖库，使用 `cmake-gui` 或确保系统库路径配置正确
+
+
+
+
 [![License](https://img.shields.io/github/license/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/stargazers)
 [![Last Commit](https://img.shields.io/github/last-commit/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/commits/main)
