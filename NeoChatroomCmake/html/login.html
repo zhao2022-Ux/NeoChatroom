@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录或注册</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+            body.dark-mode {
+                background-color: #333;
+                color: #fff;
+                transition: background-color 0.3s, color 0.3s; /* 添加平滑过渡 */
+            }
+
+                body.dark-mode input {
+                    background-color: #555;
+                    color: #fff;
+                    border: 1px solid #888;
+                }
+
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeInUp 0.5s forwards; /* 添加淡入和滑动动画 */
+        }
+
+            .container.dark-mode {
+                background: #444;
+            }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.6s forwards;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            opacity: 0;
+            animation: fadeIn 0.6s forwards; /* 添加淡入动画 */
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.3s;
+        }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
+            button:active {
+                transform: scale(0.95);
+            }
+
+        .link {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+            .link a {
+                color: #007BFF;
+                text-decoration: none;
+            }
+
+                .link a:hover {
+                    text-decoration: underline;
+                }
+
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+            .theme-toggle:hover {
+                background-color: #0056b3;
+            }
+
+            .theme-toggle:active {
+                transform: scale(0.95);
+            }
+
+        /* 添加淡入和滑动效果的动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" id="theme-toggle">D/B</button>
+
+    <div class="container" id="login-section">
+        <h1>登录</h1>
+        <form id="login-form">
+            <label for="login-username">用户名:</label>
+            <input type="text" id="login-username" name="username">
+
+            <label for="login-password">密码:</label>
+            <input type="password" id="login-password" name="password">
+
+            <button type="submit">登入</button>
+        </form>
+        <div class="link">
+            <a href="#" id="switch-to-register">还没有账户？现在注册</a>
+        </div>
+    </div>
+
+    <div class="container" id="register-section" style="display: none;">
+        <h1>注册新账户</h1>
+        <form id="register-form">
+            <label for="register-username">新的用户名:</label>
+            <input type="text" id="register-username" name="username" required placeholder="用户名必须为a-z, A-Z与0-9或'_'">
+
+            <label for="register-password">密码:</label>
+            <input type="password" id="register-password" name="password" required placeholder="密码格式要求与用户名一致">
+
+            <label for="register-confirm-password">确认密码:</label>
+            <input type="password" id="register-confirm-password" name="confirm-password" required placeholder="请确认您的密码">
+
+            <!-- 用户协议复选框 -->
+            <label>
+                <input type="checkbox" id="agree-terms" required>
+                我同意<a href="/files/terms.html" target="_blank">用户协议</a>
+            </label>
+
+            <button type="submit">注册</button>
+        </form>
+        <div class="link">
+            <a href="#" id="switch-to-login">已经拥有账户？点击登录</a>
+        </div>
+    </div>
+
+
+
+    <script>
+        function sha256(s) {
+            const chrsz = 8
+            const hexcase = 0
+
+            function safe_add(x, y) {
+                const lsw = (x & 0xFFFF) + (y & 0xFFFF)
+                const msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+                return (msw << 16) | (lsw & 0xFFFF)
+            }
+
+            function S(X, n) {
+                return (X >>> n) | (X << (32 - n))
+            }
+
+            function R(X, n) {
+                return (X >>> n)
+            }
+
+            function Ch(x, y, z) {
+                return ((x & y) ^ ((~x) & z))
+            }
+
+            function Maj(x, y, z) {
+                return ((x & y) ^ (x & z) ^ (y & z))
+            }
+
+            function Sigma0256(x) {
+                return (S(x, 2) ^ S(x, 13) ^ S(x, 22))
+            }
+
+            function Sigma1256(x) {
+                return (S(x, 6) ^ S(x, 11) ^ S(x, 25))
+            }
+
+            function Gamma0256(x) {
+                return (S(x, 7) ^ S(x, 18) ^ R(x, 3))
+            }
+
+            function Gamma1256(x) {
+                return (S(x, 17) ^ S(x, 19) ^ R(x, 10))
+            }
+
+            function core_sha256(m, l) {
+                const K = [0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0xFC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2]
+                const HASH = [0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19]
+                const W = new Array(64)
+                let a, b, c, d, e, f, g, h, i, j
+                let T1, T2
+                m[l >> 5] |= 0x80 << (24 - l % 32)
+                m[((l + 64 >> 9) << 4) + 15] = l
+                for (i = 0; i < m.length; i += 16) {
+                    a = HASH[0]
+                    b = HASH[1]
+                    c = HASH[2]
+                    d = HASH[3]
+                    e = HASH[4]
+                    f = HASH[5]
+                    g = HASH[6]
+                    h = HASH[7]
+                    for (j = 0; j < 64; j++) {
+                        if (j < 16) {
+                            W[j] = m[j + i]
+                        } else {
+                            W[j] = safe_add(safe_add(safe_add(Gamma1256(W[j - 2]), W[j - 7]), Gamma0256(W[j - 15])), W[j - 16])
+                        }
+                        T1 = safe_add(safe_add(safe_add(safe_add(h, Sigma1256(e)), Ch(e, f, g)), K[j]), W[j])
+                        T2 = safe_add(Sigma0256(a), Maj(a, b, c))
+                        h = g
+                        g = f
+                        f = e
+                        e = safe_add(d, T1)
+                        d = c
+                        c = b
+                        b = a
+                        a = safe_add(T1, T2)
+                    }
+                    HASH[0] = safe_add(a, HASH[0])
+                    HASH[1] = safe_add(b, HASH[1])
+                    HASH[2] = safe_add(c, HASH[2])
+                    HASH[3] = safe_add(d, HASH[3])
+                    HASH[4] = safe_add(e, HASH[4])
+                    HASH[5] = safe_add(f, HASH[5])
+                    HASH[6] = safe_add(g, HASH[6])
+                    HASH[7] = safe_add(h, HASH[7])
+                }
+                return HASH
+            }
+
+            function str2binb(str) {
+                const bin = []
+                const mask = (1 << chrsz) - 1
+                for (let i = 0; i < str.length * chrsz; i += chrsz) {
+                    bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32)
+                }
+                return bin
+            }
+
+            function Utf8Encode(string) {
+                string = string.replace(/\r\n/g, '\n')
+                let utfText = ''
+                for (let n = 0; n < string.length; n++) {
+                    const c = string.charCodeAt(n)
+                    if (c < 128) {
+                        utfText += String.fromCharCode(c)
+                    } else if ((c > 127) && (c < 2048)) {
+                        utfText += String.fromCharCode((c >> 6) | 192)
+                        utfText += String.fromCharCode((c & 63) | 128)
+                    } else {
+                        utfText += String.fromCharCode((c >> 12) | 224)
+                        utfText += String.fromCharCode(((c >> 6) & 63) | 128)
+                        utfText += String.fromCharCode((c & 63) | 128)
+                    }
+                }
+                return utfText
+            }
+
+            function binb2hex(binarray) {
+                const hex_tab = hexcase ? '0123456789ABCDEF' : '0123456789abcdef'
+                let str = ''
+                for (let i = 0; i < binarray.length * 4; i++) {
+                    str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
+                        hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF)
+                }
+                return str
+            }
+            s = Utf8Encode(s)
+            return binb2hex(core_sha256(str2binb(s), s.length * chrsz))
+        }
+
+
+
+        const loginSection = document.getElementById('login-section');
+        const registerSection = document.getElementById('register-section');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const themeToggleButton = document.getElementById('theme-toggle');
+
+
+
+
+        // Switching between Login and Register views
+        switchToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginSection.style.display = 'none';
+            registerSection.style.display = 'block';
+        });
+
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerSection.style.display = 'none';
+            loginSection.style.display = 'block';
+        });
+
+        // Regular expressions for validation
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        const passwordRegex = /^[a-zA-Z0-9_]+$/;
+
+        // Function to hash the password using SHA-256
+        async function hashPassword(password) {
+            return sha256(password);
+            /*
+            if (!password) {
+                console.error("密码不能为空！");
+                return null; // 返回 null 或其他适当的值来表示错误
+            }
+            try {
+                // 使用 Web Crypto API 生成 SHA-256 哈希
+                const encoder = new TextEncoder(); // 将字符串转换为 Uint8Array
+                const data = encoder.encode(password); // 将密码字符串编码为字节数组
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data); // 计算哈希
+
+                // 将 ArrayBuffer 转换为十六进制字符串
+                const hashArray = Array.from(new Uint8Array(hashBuffer)); // 将 ArrayBuffer 转换为字节数组
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // 将每个字节转换为十六进制并拼接
+
+                return hashHex; // 返回哈希值
+            } catch (error) {
+                alert('当前连接不安全，注册失败');
+                return 'error' // 返回 null 或其他适当的值来表示错误
+            }
+            */
+        }
+
+        // Handle Login form submission
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!usernameRegex.test(username)) {
+                alert('用户名格式不正确');
+                return;
+            }
+
+            if (!passwordRegex.test(password)) {
+                alert('密码格式不正确');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            if (hashedPassword == 'error') {
+                alert('连接被当前浏览器限制');
+
+            }
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, hashedPassword })
+            });
+
+            if (response.status === 200) {
+                alert('登录成功');
+                window.location.href = '/chatlist';
+            } else if (response.status === 401) {
+                alert('错误的用户名或密码');
+            } else {
+                alert('未知错误' + response.status);
+            }
+        });
+
+        // Handle Register form submission
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+
+            if (!usernameRegex.test(username)) {
+                alert('用户名格式不正确');
+                return;
+            }
+
+            if (!passwordRegex.test(password)) {
+                alert('密码格式不正确');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('两次密码输入不一致');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            if (hashedPassword == 'error') {
+                alert('连接被当前浏览器限制');
+                return;
+            }
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password: hashedPassword })
+            });
+
+            if (response.status === 200) {
+                alert('注册成功！');
+                window.location.href = '/login';
+            } else if (response.status === 500) {
+                alert('服务器繁忙，请稍后再试');
+            }
+            else if (response.status === 403) {
+                alert('注册失败，用户名可能重复');
+            }
+            else {
+                alert('注册失败，未知错误');
+            }
+        });
+
+        // Toggle between light and dark theme
+        let isUserChangingTheme = false;
+
+        function detectSystemTheme() {
+            const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (systemDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelectorAll('.container').forEach(container => {
+                    container.classList.add('dark-mode');
+                });
+            }
+        }
+
+        detectSystemTheme();
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!isUserChangingTheme) {
+                if (e.matches) {
+                    document.body.classList.add('dark-mode');
+                    document.querySelectorAll('.container').forEach(container => {
+                        container.classList.add('dark-mode');
+                    });
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    document.querySelectorAll('.container').forEach(container => {
+                        container.classList.remove('dark-mode');
+                    });
+                }
+            }
+        });
+
+        themeToggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            document.querySelectorAll('.container').forEach(container => {
+                container.classList.toggle('dark-mode');
+            });
+            isUserChangingTheme = true;
+        });
+    </script>
+
+</body>
+</html>

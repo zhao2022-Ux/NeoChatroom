@@ -1,0 +1,30 @@
+{
+	"rooms" : 
+	[
+		{
+			"id" : 1,
+			"name" : "",
+			"password" : ""
+		},
+		{
+			"id" : 2,
+			"name" : "",
+			"password" : ""
+		},
+		{
+			"id" : 3,
+			"name" : "",
+			"password" : ""
+		},
+		{
+			"id" : 4,
+			"name" : "",
+			"password" : ""
+		}
+	],
+	"server" : 
+	{
+		"host" : "0.0.0.0",
+		"port" : 443
+	}
+}
