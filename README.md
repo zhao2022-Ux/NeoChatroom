@@ -56,6 +56,7 @@ make -j$(nproc)
 
 ##### 3️⃣ 运行程序
 
+**注意，请将html和config.json放在同目录下，程序不会自动生成**
 ```bash
 ./NeoChatroom
 ```
@@ -95,7 +96,9 @@ cmake --build . --config Release
 
 ##### 4️⃣ 运行程序
 
+
 你可以在 `build/Release` 或 `x64/Release` 目录下找到 `NeoChatroom.exe`，双击运行或在终端中执行：
+**注意，请将html和config.json放在同目录下，程序不会自动生成**
 
 ```powershell
 .\Release\NeoChatroom.exe
