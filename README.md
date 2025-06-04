@@ -2,6 +2,7 @@
 # 🌐 seve'chatroom
 C++高性能网络聊天室
 
+VS2022编写的sln版截至到v0.1.2，请使用cmake构建。
 
 [![License](https://img.shields.io/github/license/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/stargazers)
