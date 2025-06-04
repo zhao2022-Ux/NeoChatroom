@@ -138,7 +138,7 @@ using namespace std;
         res.set_content(response.toStyledString(), "application/json");
     }
 
-    // ½âÎö Cookie
+    // è§£æ Cookie
     void chatroom::transCookie(std::string& cid, std::string& uid, std::string cookie) {
         std::string::size_type pos1 = cookie.find("clientid=");
         if (pos1 != std::string::npos) {
@@ -179,12 +179,12 @@ using namespace std;
     }
 
 
-    //Â·ÓÉ·¢ËÍÏûÏ¢ÇëÇó
+    //è·¯ç”±å‘é€æ¶ˆæ¯è¯·æ±‚
     void chatroom::postChatMessage(const httplib::Request& req, httplib::Response& res, const Json::Value& root) {
 
-        res.set_header("Access-Control-Allow-Origin", "*"); // ÔÊĞíËùÓĞÀ´Ô´·ÃÎÊ
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // ÔÊĞíµÄ HTTP ·½·¨
-        res.set_header("Access-Control-Allow-Headers", "Content-Type"); // ÔÊĞíµÄÍ·²¿×Ö¶Î
+        res.set_header("Access-Control-Allow-Origin", "*"); // å…è®¸æ‰€æœ‰æ¥æºè®¿é—®
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // å…è®¸çš„ HTTP æ–¹æ³•
+        res.set_header("Access-Control-Allow-Headers", "Content-Type"); // å…è®¸çš„å¤´éƒ¨å­—æ®µ
 
 
         Logger& logger = Logger::getInstance();
@@ -195,7 +195,7 @@ using namespace std;
         if (!root.isMember("message") || !root.isMember("uid")) {
             res.status = 400;
             res.set_content("Invalid data format", "text/plain");
-            logger.logInfo("ChatSys", req.remote_addr + "·¢ËÍÁËÒ»Ìõ²»ºÏ·¨ÇëÇó ");
+            logger.logInfo("ChatSys", req.remote_addr + "å‘é€äº†ä¸€æ¡ä¸åˆæ³•è¯·æ±‚ ");
             return;
         }
 
@@ -210,24 +210,24 @@ using namespace std;
         if (!checkCookies(req)) {
             res.status = 400;
             res.set_content("Invalid Cookie", "text/plain");
-            logger.logInfo("ChatSys", req.remote_addr + "µÄcookieÎŞĞ§ ");
+            logger.logInfo("ChatSys", req.remote_addr + "çš„cookieæ— æ•ˆ ");
             return;
         }
 
-        // ÑéÖ¤ uid ºÍÃÜÂë
+        // éªŒè¯ uid å’Œå¯†ç 
         int uid_;
         str::safeatoi(uid, uid_);
         if (manager::FindUser(uid_) == nullptr) {
             res.status = 400;
             res.set_content("Invalid Cookie", "text/plain");
-            logger.logInfo("ChatSys", req.remote_addr + "µÄcookieÎŞĞ§ ");
+            logger.logInfo("ChatSys", req.remote_addr + "çš„cookieæ— æ•ˆ ");
             return;
         }
         manager::user nowuser = *manager::FindUser(uid_);
         if (nowuser.getpassword() != password) {
             res.status = 400;
             res.set_content("Invalid Cookie", "text/plain");
-            logger.logInfo("ChatSys", req.remote_addr + "µÄcookieÎŞĞ§ ");
+            logger.logInfo("ChatSys", req.remote_addr + "çš„cookieæ— æ•ˆ ");
             return;
         }
 
@@ -235,7 +235,7 @@ using namespace std;
         if (nowuser.getlabei() == "BAN") {
             res.status = 403;
             res.set_content("User is banned", "text/plain");
-            logger.logInfo("ChatSys", req.remote_addr + "³¢ÊÔ·¢ËÍÏûÏ¢£¬µ«ÓÃ»§ÒÑ±»·â½û ");
+            logger.logInfo("ChatSys", req.remote_addr + "å°è¯•å‘é€æ¶ˆæ¯ï¼Œä½†ç”¨æˆ·å·²è¢«å°ç¦ ");
             return;
         }
 
@@ -254,7 +254,7 @@ using namespace std;
             return;
         }
 
-        // ±£´æÁÄÌìÏûÏ¢
+        // ä¿å­˜èŠå¤©æ¶ˆæ¯
         Json::Value newMessage;
         newMessage["user"] = nowuser.getname();
         newMessage["labei"] = nowuser.getlabei();
@@ -287,19 +287,19 @@ using namespace std;
         res.set_content("Message received", "text/plain");
     }
 
-    // »ñÈ¡ÓÃ»§Ãû½Ó¿Ú
+    // è·å–ç”¨æˆ·åæ¥å£
     void chatroom::getUsername(const httplib::Request& req, httplib::Response& res) {
 
-        res.set_header("Access-Control-Allow-Origin", "*"); // ÔÊĞíËùÓĞÀ´Ô´·ÃÎÊ
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // ÔÊĞíµÄ HTTP ·½·¨
-        res.set_header("Access-Control-Allow-Headers", "Content-Type"); // ÔÊĞíµÄÍ·²¿×Ö¶Î
+        res.set_header("Access-Control-Allow-Origin", "*"); // å…è®¸æ‰€æœ‰æ¥æºè®¿é—®
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // å…è®¸çš„ HTTP æ–¹æ³•
+        res.set_header("Access-Control-Allow-Headers", "Content-Type"); // å…è®¸çš„å¤´éƒ¨å­—æ®µ
 
 
         std::string cookies = req.get_header_value("Cookie");
         std::string uid;
         transCookie(uid, uid, cookies);
 
-        // »ñÈ¡ÓÃ»§Ãû
+        // è·å–ç”¨æˆ·å
         int uid_;
         str::safeatoi(uid, uid_);
         if (manager::FindUser(uid_) == nullptr) {
@@ -327,7 +327,7 @@ using namespace std;
     void chatroom::setupStaticRoutes() {
         Server& server = server.getInstance(HOST);
 
-        // Ìá¹©Í¼Æ¬ÎÄ¼ş /logo.png
+        // æä¾›å›¾ç‰‡æ–‡ä»¶ /logo.png
         server.getInstance().handleRequest("/logo.png", [](const httplib::Request& req, httplib::Response& res) {
             std::ifstream logoFile("html/logo.png", std::ios::binary);
             if (logoFile) {
@@ -341,13 +341,13 @@ using namespace std;
             }
             });
 
-        // Ìá¹© JS ÎÄ¼ş /chat/js
+        // æä¾› JS æ–‡ä»¶ /chat/js
         server.getInstance().handleRequest("/chat/js", [](const httplib::Request& req, httplib::Response& res) {
             std::ifstream jsFile("html/chatroom.js", std::ios::binary);
             if (jsFile) {
                 std::stringstream buffer;
                 buffer << jsFile.rdbuf();
-                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // ĞŞ¸Ä±àÂë
+                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // ä¿®æ”¹ç¼–ç 
             }
             else {
                 res.status = 404;
@@ -355,13 +355,13 @@ using namespace std;
             }
             });
 
-        // Ìá¹© JS ÎÄ¼ş /chatlist/js
+        // æä¾› JS æ–‡ä»¶ /chatlist/js
         server.getInstance().handleRequest("/chatlist/js", [](const httplib::Request& req, httplib::Response& res) {
             std::ifstream jsFile("html/chatlist.js", std::ios::binary);
             if (jsFile) {
                 std::stringstream buffer;
                 buffer << jsFile.rdbuf();
-                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // ĞŞ¸Ä±àÂë
+                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // ä¿®æ”¹ç¼–ç 
             }
             else {
                 res.status = 404;
@@ -370,19 +370,19 @@ using namespace std;
             });
 
 
-        // Ìí¼Ó chatlist.html µÄÂ·ÓÉ
-        server.getInstance().serveFile("/chatlist", "html/chatlist.html"); // È·±£Â·¾¶ÕıÈ·
+        // æ·»åŠ  chatlist.html çš„è·¯ç”±
+        server.getInstance().serveFile("/chatlist", "html/chatlist.html"); // ç¡®ä¿è·¯å¾„æ­£ç¡®
 
-        // Ìá¹©Í¼Æ¬ÎÄ¼ş /images/*£¬¶¯Ì¬Â·ÓÉ
+        // æä¾›å›¾ç‰‡æ–‡ä»¶ /images/*ï¼ŒåŠ¨æ€è·¯ç”±
         server.getInstance().handleRequest(R"(/images/([^/]+))", [](const httplib::Request& req, httplib::Response& res) {
-            std::string imagePath = "html/images/" + req.matches[1].str();  // »ñÈ¡Í¼Æ¬ÎÄ¼şÃû
+            std::string imagePath = "html/images/" + req.matches[1].str();  // è·å–å›¾ç‰‡æ–‡ä»¶å
             std::ifstream imageFile(imagePath, std::ios::binary);
 
             if (imageFile) {
                 std::stringstream buffer;
                 buffer << imageFile.rdbuf();
 
-                // ×Ô¶¯ÍÆ²âÍ¼Æ¬µÄ MIME ÀàĞÍ
+                // è‡ªåŠ¨æ¨æµ‹å›¾ç‰‡çš„ MIME ç±»å‹
                 std::string extension = imagePath.substr(imagePath.find_last_of('.') + 1);
                 std::string mimeType = "images/" + extension;
 
@@ -394,17 +394,17 @@ using namespace std;
             }
             });
 
-        // Ìá¹©ÎÄ¼ş /files/*£¬¶¯Ì¬Â·ÓÉ
-        // Ìá¹©ÎÄ¼ş /files/*£¬¶¯Ì¬Â·ÓÉ
+        // æä¾›æ–‡ä»¶ /files/*ï¼ŒåŠ¨æ€è·¯ç”±
+        // æä¾›æ–‡ä»¶ /files/*ï¼ŒåŠ¨æ€è·¯ç”±
         server.getInstance().handleRequest(R"(/files/([^/]+))", [](const httplib::Request& req, httplib::Response& res) {
-            std::string filePath = "html/files/" + req.matches[1].str();  // »ñÈ¡ÎÄ¼şÃû
+            std::string filePath = "html/files/" + req.matches[1].str();  // è·å–æ–‡ä»¶å
             std::ifstream file(filePath, std::ios::binary);
 
             if (file) {
                 std::stringstream buffer;
                 buffer << file.rdbuf();
 
-                // ×Ô¶¯ÍÆ²âÎÄ¼şµÄ MIME ÀàĞÍ
+                // è‡ªåŠ¨æ¨æµ‹æ–‡ä»¶çš„ MIME ç±»å‹
                 std::string mimeType = Server::detectMimeType(filePath);
 
                 res.set_content(buffer.str(), mimeType);
@@ -419,11 +419,11 @@ using namespace std;
 
 
     bool chatroom::isValidImage(const std::string& filename) {
-        // »ñÈ¡ÎÄ¼şÀ©Õ¹Ãû
+        // è·å–æ–‡ä»¶æ‰©å±•å
         std::string ext = filename.substr(filename.find_last_of("."));
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-        // ¼ì²éÎÄ¼şÀ©Õ¹ÃûÊÇ·ñÔÚ°×Ãûµ¥ÖĞ
+        // æ£€æŸ¥æ–‡ä»¶æ‰©å±•åæ˜¯å¦åœ¨ç™½åå•ä¸­
         return std::find(allowedImageTypes.begin(), allowedImageTypes.end(), ext) != allowedImageTypes.end();
     }
 
@@ -445,7 +445,7 @@ using namespace std;
         if (req.has_file("file")) {
             auto file = req.get_file_value("file");
 
-            // ¼ì²éÎÄ¼şÀàĞÍÊÇ·ñºÏ·¨
+            // æ£€æŸ¥æ–‡ä»¶ç±»å‹æ˜¯å¦åˆæ³•
             if (!isValidImage(file.filename)) {
                 res.status = 400;
                 res.set_content("{\"error\": \"Invalid file type\"}", "application/json");
@@ -485,7 +485,7 @@ using namespace std;
 
     void chatroom::setupChatRoutes() {
         Server& server = server.getInstance(HOST);
-        // Ìá¹©ÁÄÌì¼ÇÂ¼µÄ GET ÇëÇó
+        // æä¾›èŠå¤©è®°å½•çš„ GET è¯·æ±‚
         server.getInstance().handleRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res) {
             getChatMessages(req, res);
             });
@@ -494,27 +494,27 @@ using namespace std;
             getAllChatMessages(req, res);
             });
 
-        // ´¦Àí POST ÇëÇó£¬½ÓÊÕ²¢±£´æĞÂµÄÁÄÌìÏûÏ¢
+        // å¤„ç† POST è¯·æ±‚ï¼Œæ¥æ”¶å¹¶ä¿å­˜æ–°çš„èŠå¤©æ¶ˆæ¯
         server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res , const Json::Value& root) {
                 postChatMessage(req, res, root);  
         });
         //server.getInstance().handlePostRequest("/chat/messages", postChatMessage);
 
 
-        // »ñÈ¡ÓÃ»§ÃûµÄ GET ÇëÇó
+        // è·å–ç”¨æˆ·åçš„ GET è¯·æ±‚
         server.getInstance().handleRequest("/user/username", [this](const httplib::Request& req, httplib::Response& res) {
             getUsername(req, res);
             });
         //server.getInstance().handleRequest("/user/username", getUsername);
 
-        // Í¼Æ¬ÉÏ´«Â·ÓÉ
+        // å›¾ç‰‡ä¸Šä¼ è·¯ç”±
         server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/upload", [this](const httplib::Request& req, httplib::Response& res) {
             uploadImage(req, res);
         });
         //server.getInstance().handlePostRequest("/chat/upload", uploadImage);
         
 
-        // ÉèÖÃ¾²Ì¬ÎÄ¼şÂ·ÓÉ
+        // è®¾ç½®é™æ€æ–‡ä»¶è·¯ç”±
         setupStaticRoutes();
     
         
@@ -570,17 +570,17 @@ using namespace std;
         return password;
     }
 
-    // ÉèÖÃ±êÖ¾
+    // è®¾ç½®æ ‡å¿—
     void chatroom::setFlag(RoomFlags flag) {
         flags |= flag;
     }
 
-    // Çå³ı±êÖ¾
+    // æ¸…é™¤æ ‡å¿—
     void chatroom::clearFlag(RoomFlags flag) {
         flags &= ~flag;
     }
 
-    // ¼ì²é±êÖ¾
+    // æ£€æŸ¥æ ‡å¿—
     bool chatroom::hasFlag(RoomFlags flag) const {
         return flags & flag;
     }

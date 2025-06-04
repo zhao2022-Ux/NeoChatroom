@@ -33,7 +33,7 @@ void delroom(int x) {
     }
     else {
         Logger& logger = logger.getInstance();
-        logger.logWarning("chatroom::roomManager", "Î´ÄÜÉ¾³ı");
+        logger.logWarning("chatroom::roomManager", "æœªèƒ½åˆ é™¤");
     }
 }
 
@@ -85,7 +85,7 @@ string getRoomName(int roomid) {
 }
 
 void getRoomList(const httplib::Request& req, httplib::Response& res) {
-    // »ñÈ¡ Cookie ²¢½âÎö
+    // è·å– Cookie å¹¶è§£æ
     std::string cookies = req.get_header_value("Cookie");
     std::string password, uid;
     transCookie(password, uid, cookies);
@@ -95,7 +95,7 @@ void getRoomList(const httplib::Request& req, httplib::Response& res) {
         uid = cookies;
     }
 
-    // ×ª»» uid ÎªÕûÊı
+    // è½¬æ¢ uid ä¸ºæ•´æ•°
     int uid_;
     if (!str::safeatoi(uid, uid_)) {
         res.status = 400; // Bad Request
@@ -103,7 +103,7 @@ void getRoomList(const httplib::Request& req, httplib::Response& res) {
         return;
     }
 
-    // ²éÕÒÓÃ»§
+    // æŸ¥æ‰¾ç”¨æˆ·
     manager::user* user = manager::FindUser(uid_);
     if (user == nullptr) {
         res.status = 404; // Not Found
@@ -111,15 +111,15 @@ void getRoomList(const httplib::Request& req, httplib::Response& res) {
         return;
     }
 
-    // »ñÈ¡ÓÃ»§µÄÁÄÌìÊÒ ID ÁĞ±í
+    // è·å–ç”¨æˆ·çš„èŠå¤©å®¤ ID åˆ—è¡¨
     std::string List = user->getcookie();
     if (List.empty()) {
         res.status = 200; // OK
-        res.set_content("[]", "application/json"); // ·µ»Ø¿ÕµÄ JSON Êı×é
+        res.set_content("[]", "application/json"); // è¿”å›ç©ºçš„ JSON æ•°ç»„
         return;
     }
 
-    // ·Ö¸î List ×Ö·û´®£¬ÌáÈ¡Ã¿¸öÁÄÌìÊÒ ID
+    // åˆ†å‰² List å­—ç¬¦ä¸²ï¼Œæå–æ¯ä¸ªèŠå¤©å®¤ ID
     std::vector<std::string> roomIds;
     std::stringstream ss(List);
     std::string roomId;
@@ -127,31 +127,31 @@ void getRoomList(const httplib::Request& req, httplib::Response& res) {
         roomIds.push_back(roomId);
     }
 
-    // ´´½¨Ò»¸ö JSON ÏìÓ¦¶ÔÏó
+    // åˆ›å»ºä¸€ä¸ª JSON å“åº”å¯¹è±¡
     Json::Value response(Json::arrayValue);
 
-    // ±éÀúËùÓĞÁÄÌìÊÒ ID£¬»ñÈ¡¶ÔÓ¦µÄÁÄÌìÊÒÃû³Æ
+    // éå†æ‰€æœ‰èŠå¤©å®¤ IDï¼Œè·å–å¯¹åº”çš„èŠå¤©å®¤åç§°
     for (const std::string& roomId : roomIds) {
         int room_id;
         if (!str::safeatoi(roomId, room_id)) {
-            continue; // Ìø¹ıÎŞĞ§µÄÁÄÌìÊÒ ID
+            continue; // è·³è¿‡æ— æ•ˆçš„èŠå¤©å®¤ ID
         }
 
         std::string roomName = getRoomName(room_id);
 
-        // ¹¹ÔìÃ¿¸öÁÄÌìÊÒµÄ JSON ¶ÔÏó
+        // æ„é€ æ¯ä¸ªèŠå¤©å®¤çš„ JSON å¯¹è±¡
         Json::Value room;
-        room["id"] = roomId;  // Ìí¼ÓÁÄÌìÊÒµÄ ID
-        room["name"] = roomName;  // Ìí¼ÓÁÄÌìÊÒµÄÃû³Æ
+        room["id"] = roomId;  // æ·»åŠ èŠå¤©å®¤çš„ ID
+        room["name"] = roomName;  // æ·»åŠ èŠå¤©å®¤çš„åç§°
 
-        response.append(room);  // ½«ÁÄÌìÊÒ¶ÔÏóÌí¼Óµ½ JSON Êı×éÖĞ
+        response.append(room);  // å°†èŠå¤©å®¤å¯¹è±¡æ·»åŠ åˆ° JSON æ•°ç»„ä¸­
     }
 
-    // ÉèÖÃÏìÓ¦Í·£¬Ö§³Ö¿çÓò
+    // è®¾ç½®å“åº”å¤´ï¼Œæ”¯æŒè·¨åŸŸ
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Content-Type", "application/json");
 
-    // ÉèÖÃÏìÓ¦ÄÚÈİÎª JSON ¸ñÊ½µÄ×Ö·û´®
+    // è®¾ç½®å“åº”å†…å®¹ä¸º JSON æ ¼å¼çš„å­—ç¬¦ä¸²
     res.set_content(response.toStyledString(), "application/json");
 }
 
@@ -161,7 +161,7 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
     for (int i = 1; i < MAXROOM; i++) {
         if (!used[i]) continue;
 
-        // Ìø¹ıÒş²ØµÄÁÄÌìÊÒ
+        // è·³è¿‡éšè—çš„èŠå¤©å®¤
         if (room[i].hasFlag(chatroom::RoomFlags::ROOM_HIDDEN)) continue;
 
         Json::Value roomObj;
@@ -206,7 +206,7 @@ RoomResult AddRoomToUser(int uid, int roomId, const std::string& passwordHash) {
     if (!room[roomId].getPasswordHash().empty() && room[roomId].getPasswordHash() != passwordHash) {
         return RoomResult::PasswordMismatch;
     }
-    // Ìø¹ıÒş²ØµÄÁÄÌìÊÒ
+    // è·³è¿‡éšè—çš„èŠå¤©å®¤
     if (room[roomId].hasFlag(chatroom::RoomFlags::ROOM_NO_JOIN)) {
         return RoomResult::RoomUnableJoin;
     }
@@ -338,12 +338,12 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
     case RoomResult::Success:
         res.status = 200;
         res.set_content(operation == RoomOperation::JOIN ? "Joined successfully" : "Quit successfully", "text/plain");
-        logger.logInfo("RoomManager", "ÓÃ»§ " + std::to_string(uid_) + " " + (operation == RoomOperation::JOIN ? "joined" : "quit") + " room " + std::to_string(roomId));
+        logger.logInfo("RoomManager", "ç”¨æˆ· " + std::to_string(uid_) + " " + (operation == RoomOperation::JOIN ? "joined" : "quit") + " room " + std::to_string(roomId));
         break;
     case RoomResult::UserNotFound:
         res.status = 404;
         res.set_content("User not found", "text/plain");
-        logger.logWarning("RoomManager", "ÓÃ»§ " + std::to_string(uid_) + " not found");
+        logger.logWarning("RoomManager", "ç”¨æˆ· " + std::to_string(uid_) + " not found");
         break;
     case RoomResult::RoomNotFound:
         res.status = 404;
@@ -353,7 +353,7 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
     case RoomResult::PasswordMismatch:
         res.status = 403;
         res.set_content("Password mismatch", "text/plain");
-        logger.logWarning("RoomManager", "ÃÜÂë´íÎó " + std::to_string(uid_) + " in room " + std::to_string(roomId));
+        logger.logWarning("RoomManager", "å¯†ç é”™è¯¯ " + std::to_string(uid_) + " in room " + std::to_string(roomId));
         break;
     case RoomResult::RoomAlreadyAdded:
         res.status = 409;

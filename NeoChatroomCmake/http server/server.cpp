@@ -8,13 +8,13 @@
 
 namespace fs = std::filesystem;
 
-// È«¾Ö±äÁ¿Ö»¶¨ÒåÒ»´Î
+// å…¨å±€å˜é‡åªå®šä¹‰ä¸€æ¬¡
 std::string HOST = "0.0.0.0";
 int PORT = 443;
 bool startflag = false;
 Server& Server::getInstance(const std::string& host, int port) {
     static Server instance(host, port);
-    //if(!startflag) instance.start(); // È·±£·şÎñÆ÷ÔÚÊ×´Î»ñÈ¡ÊµÀıÊ±Æô¶¯
+    //if(!startflag) instance.start(); // ç¡®ä¿æœåŠ¡å™¨åœ¨é¦–æ¬¡è·å–å®ä¾‹æ—¶å¯åŠ¨
     return instance;
 }
 
@@ -22,14 +22,14 @@ Server::Server(const std::string& host, int port)
     : server_host(host), server_port(port) {
 }
 
-// Ìá¹© HTML ÄÚÈİÏìÓ¦
+// æä¾› HTML å†…å®¹å“åº”
 void Server::serveHtml(const std::string& endpoint, const std::string& htmlContent) {
     server->Get(endpoint.c_str(), [htmlContent](const httplib::Request&, httplib::Response& res) {
         res.set_content(htmlContent, "text/html");
         });
 }
 
-// Ìá¹©ÎÄ¼şÏìÓ¦
+// æä¾›æ–‡ä»¶å“åº”
 void Server::serveFile(const std::string& endpoint, const std::string& filePath) {
     server->Get(endpoint.c_str(), [filePath](const httplib::Request&, httplib::Response& res) {
         std::ifstream file(filePath, std::ios::binary);
@@ -45,7 +45,7 @@ void Server::serveFile(const std::string& endpoint, const std::string& filePath)
         });
 }
 
-// ´¦Àí GET ÇëÇó
+// å¤„ç† GET è¯·æ±‚
 void Server::handleRequest(const std::string& endpoint, const std::function<void(const httplib::Request&, httplib::Response&)>& handler) {
     if (!server) {
         Logger::getInstance().logError("Server", "Server instance is not initialized before calling handleRequest.");
@@ -54,7 +54,7 @@ void Server::handleRequest(const std::string& endpoint, const std::function<void
     server->Get(endpoint.c_str(), handler);
 }
 
-// ´¦Àí´ø JSON µÄ POST ÇëÇó
+// å¤„ç†å¸¦ JSON çš„ POST è¯·æ±‚
 void Server::handlePostRequest(const std::string& endpoint, const std::function<void(const httplib::Request&, httplib::Response&, const Json::Value&)>& jsonHandler) {
     server->Post(endpoint.c_str(), [jsonHandler](const httplib::Request& req, httplib::Response& res) {
         Json::Value root;
@@ -69,7 +69,7 @@ void Server::handlePostRequest(const std::string& endpoint, const std::function<
         });
 }
 
-// ´¦Àí´øÎÄ¼şÉÏ´«µÄ POST ÇëÇó
+// å¤„ç†å¸¦æ–‡ä»¶ä¸Šä¼ çš„ POST è¯·æ±‚
 void Server::handlePostRequest(const std::string& endpoint, const std::function<void(const httplib::Request&, httplib::Response&)>& fileHandler) {
     server->Post(endpoint.c_str(), [fileHandler](const httplib::Request& req, httplib::Response& res) {
         if (req.has_file("file")) {
@@ -82,7 +82,7 @@ void Server::handlePostRequest(const std::string& endpoint, const std::function<
         });
 }
 
-// Æô¶¯·şÎñÆ÷
+// å¯åŠ¨æœåŠ¡å™¨
 void Server::start() {
 
     setSSLCredentials("server.crt", "server.key");
@@ -90,7 +90,7 @@ void Server::start() {
 
     startflag = true;
     Logger& logger = Logger::getInstance();
-    logger.logInfo("Server", "·şÎñÆ÷ÔÚ" + server_host + "ÉÏ¼àÌı£¬¶Ë¿ÚÎª" + std::to_string(server_port));
+    logger.logInfo("Server", "æœåŠ¡å™¨åœ¨" + server_host + "ä¸Šç›‘å¬ï¼Œç«¯å£ä¸º" + std::to_string(server_port));
 
     // Initialize SSL server if not already created
     if (!server) {
@@ -99,17 +99,17 @@ void Server::start() {
                 server = std::make_unique<httplib::SSLServer>(cert_file.c_str(), key_file.c_str());
             }
             else {
-                logger.logWarning("Server", "È±ÉÙ SSL Ö¤Êé»òÃÜÔ¿£¬Ê¹ÓÃ·Ç SSL Ä£Ê½Æô¶¯·şÎñÆ÷¡£");
+                logger.logWarning("Server", "ç¼ºå°‘ SSL è¯ä¹¦æˆ–å¯†é’¥ï¼Œä½¿ç”¨é SSL æ¨¡å¼å¯åŠ¨æœåŠ¡å™¨ã€‚");
                 server = std::make_unique<httplib::Server>();
             }
         }
         catch (const std::exception& e) {
-            logger.logError("Server", std::string("³õÊ¼»¯·şÎñÆ÷Ê§°Ü: ") + e.what());
+            logger.logError("Server", std::string("åˆå§‹åŒ–æœåŠ¡å™¨å¤±è´¥: ") + e.what());
             throw;
         }
     }
 
-    // ×¢²áÔ¤Â·ÓÉ´¦ÀíÆ÷
+    // æ³¨å†Œé¢„è·¯ç”±å¤„ç†å™¨
     server->set_pre_routing_handler([this](const httplib::Request& req, httplib::Response& res) {
         if (this->isBanned(req.remote_addr)) {
             res.status = 403;
@@ -119,7 +119,7 @@ void Server::start() {
         return httplib::Server::HandlerResponse::Unhandled;
         });
 
-    // ¸ùÂ·¾¶ÖØ¶¨Ïòµ½ /chatlist
+    // æ ¹è·¯å¾„é‡å®šå‘åˆ° /chatlist
     server->Get("/", [](const httplib::Request&, httplib::Response& res) {
         res.set_redirect("/chatlist");
         });
@@ -128,7 +128,7 @@ void Server::start() {
 }
 
 
-// »ñÈ¡ MIME ÀàĞÍ
+// è·å– MIME ç±»å‹
 std::string Server::detectMimeType(const std::string& filePath) {
     auto pos = filePath.rfind('.');
     if (pos != std::string::npos) {
@@ -144,17 +144,17 @@ std::string Server::detectMimeType(const std::string& filePath) {
     return "application/octet-stream";
 }
 
-// ÉèÖÃÏìÓ¦µÄ Cookie
+// è®¾ç½®å“åº”çš„ Cookie
 void Server::setCookie(httplib::Response& res, const std::string& cookieName, const std::string& cookieValue) {
     res.set_header("Set-Cookie", cookieName + "=" + cookieValue);
 }
 
-// ·¢ËÍ JSON Êı¾İ×÷ÎªÏìÓ¦
+// å‘é€ JSON æ•°æ®ä½œä¸ºå“åº”
 void Server::sendJson(const Json::Value& jsonResponse, httplib::Response& res) {
     res.set_content(jsonResponse.toStyledString(), "application/json");
 }
 
-// ÉèÖÃ¿çÓòÇëÇóµÄ CORS Í·ĞÅÏ¢
+// è®¾ç½®è·¨åŸŸè¯·æ±‚çš„ CORS å¤´ä¿¡æ¯
 void Server::setCorsHeaders(httplib::Response& res) {
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -166,17 +166,17 @@ void Server::setToken(httplib::Response& res, const std::string& uid, const std:
     res.set_header("Set-Cookie", "clientid=" + clientid + "; Path=/; HttpOnly");
 }
 
-// Ìí¼Ó·â½û IP
+// æ·»åŠ å°ç¦ IP
 void Server::banIP(const std::string& ipAddress) {
     bannedIPs.insert(ipAddress);
 }
 
-// È¡Ïû·â½û IP
+// å–æ¶ˆå°ç¦ IP
 void Server::debanIP(const std::string& ipAddress) {
     bannedIPs.erase(ipAddress);
 }
 
-// ÅĞ¶Ï IP ÊÇ·ñ±»·â½û
+// åˆ¤æ–­ IP æ˜¯å¦è¢«å°ç¦
 bool Server::isBanned(const std::string& ipAddress) const {
     return bannedIPs.find(ipAddress) != bannedIPs.end();
 }
@@ -197,7 +197,7 @@ int Server::getPORT() {
     return PORT;
 }
 
-// ÉèÖÃ SSL Ö¤ÊéºÍÃÜÔ¿
+// è®¾ç½® SSL è¯ä¹¦å’Œå¯†é’¥
 void Server::setSSLCredentials(const std::string& cert, const std::string& key) {
     cert_file = cert;
     key_file = key;
