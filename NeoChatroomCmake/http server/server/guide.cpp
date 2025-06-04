@@ -4,7 +4,7 @@
 #include "../../include/datamanage.h"
 #include "../../include/log.h"
 using namespace std;
-//¼ì²éµÇÂ¼
+//æ£€æŸ¥ç™»å½•
 string login_sucess(string name, string pwd ,manager::user& nowuser) {
     auto userptr = manager::FindUser(name);
     if (userptr == nullptr) return "USER_NOT_FOUND";
@@ -20,17 +20,17 @@ string login_sucess(string name, string pwd ,manager::user& nowuser) {
     }
     return "WRONG_PIASSWORD";
 }
-//¼ì²éÖØÃû
+//æ£€æŸ¥é‡å
 bool check_uid_same(string name) {
     if (manager::FindUser(name) == nullptr) return true;
     else return false;
 }
-//´¦Àí¿Í»§¶ËµÇÂ¼ÇëÇó
+//å¤„ç†å®¢æˆ·ç«¯ç™»å½•è¯·æ±‚
 auto login = [](const httplib::Request& req, httplib::Response& res, const Json::Value& jsonData) {
 
-    res.set_header("Access-Control-Allow-Origin", "*"); // ÔÊĞíËùÓĞÀ´Ô´·ÃÎÊ
-    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // ÔÊĞíµÄ HTTP ·½·¨
-    res.set_header("Access-Control-Allow-Headers", "Content-Type"); // ÔÊĞíµÄÍ·²¿×Ö¶Î
+    res.set_header("Access-Control-Allow-Origin", "*"); // å…è®¸æ‰€æœ‰æ¥æºè®¿é—®
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // å…è®¸çš„ HTTP æ–¹æ³•
+    res.set_header("Access-Control-Allow-Headers", "Content-Type"); // å…è®¸çš„å¤´éƒ¨å­—æ®µ
 
 
     std::string username = jsonData["username"].asString();
@@ -48,21 +48,21 @@ auto login = [](const httplib::Request& req, httplib::Response& res, const Json:
         Server& server = Server::getInstance();
         server.setToken(res, to_string(nowuser.getuid()), password);
         //cout << password << endl;
-        logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " ³É¹¦µÇÂ¼:");
+        logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " æˆåŠŸç™»å½•:");
     }
     else {
         res.status = 401;
         res.set_content(Flagtext, "text/plain");
-        logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " ÔÚÊÔÍ¼µÇÂ¼Ê± ¿Í»§¶Ë´íÎó:" + Flagtext);
+        logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " åœ¨è¯•å›¾ç™»å½•æ—¶ å®¢æˆ·ç«¯é”™è¯¯:" + Flagtext);
     }
 
 };
-//´¦Àí×¢²áÇëÇó£¬Ä¬ÈÏÇ°¶Ë½Ó¿ÚÊı¾İ¸ñÊ½¾ø¶ÔºÏ·¨
+//å¤„ç†æ³¨å†Œè¯·æ±‚ï¼Œé»˜è®¤å‰ç«¯æ¥å£æ•°æ®æ ¼å¼ç»å¯¹åˆæ³•
 auto Register = [](const httplib::Request& req, httplib::Response& res, const Json::Value& jsonData) {
 
-    res.set_header("Access-Control-Allow-Origin", "*"); // ÔÊĞíËùÓĞÀ´Ô´·ÃÎÊ
-    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // ÔÊĞíµÄ HTTP ·½·¨
-    res.set_header("Access-Control-Allow-Headers", "Content-Type"); // ÔÊĞíµÄÍ·²¿×Ö¶Î
+    res.set_header("Access-Control-Allow-Origin", "*"); // å…è®¸æ‰€æœ‰æ¥æºè®¿é—®
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // å…è®¸çš„ HTTP æ–¹æ³•
+    res.set_header("Access-Control-Allow-Headers", "Content-Type"); // å…è®¸çš„å¤´éƒ¨å­—æ®µ
 
 
     std::string username = jsonData["username"].asString();
@@ -74,21 +74,21 @@ auto Register = [](const httplib::Request& req, httplib::Response& res, const Js
     Logger& logger = Logger::getInstance();
     if(check_uid_same(username) == true){
         if (!manager::AddUser(username, password, "", manager::Usuallabei)) {
-            res.status = 500;//·şÎñÆ÷ÎŞ·¨Íê³ÉÇëÇó
+            res.status = 500;//æœåŠ¡å™¨æ— æ³•å®Œæˆè¯·æ±‚
             res.set_content("unkown error", "text/plain");
-            logger.logError("LoginSys", req.remote_addr + " ÔÚÊÔÍ¼ÒÔ " + username + "×¢²áÊ±·¢ÉúÎ´Öª´íÎó");
+            logger.logError("LoginSys", req.remote_addr + " åœ¨è¯•å›¾ä»¥ " + username + "æ³¨å†Œæ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
         }
         else {
             res.set_content("Register successful", "text/plain");
             
-            logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " ³É¹¦×¢²á");
+            logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " æˆåŠŸæ³¨å†Œ");
         }
     }
     else {
         res.status = 403;
         res.set_content("samed name", "text/plain");
 
-        logger.logInfo("LoginSys", req.remote_addr + " ÔÚÊÔÍ¼ÒÔ " + username + "×¢²áÊ±³öÏÖÁËÓÃ»§ÃûÖØÃû");
+        logger.logInfo("LoginSys", req.remote_addr + " åœ¨è¯•å›¾ä»¥ " + username + "æ³¨å†Œæ—¶å‡ºç°äº†ç”¨æˆ·åé‡å");
     }
     
 };
@@ -117,8 +117,8 @@ Server& server = Server::getInstance("127.0.0.1");
         std::string username = jsonData["username"].asString();
         std::string password = jsonData["password"].asString();
 
-        // ÔÚÕâÀï£¬Äã¿ÉÒÔ½øĞĞ×¢²á²Ù×÷
-        // ÀıÈç£¬½«ÓÃ»§ĞÅÏ¢´æ´¢µ½Êı¾İ¿âÖĞ
+        // åœ¨è¿™é‡Œï¼Œä½ å¯ä»¥è¿›è¡Œæ³¨å†Œæ“ä½œ
+        // ä¾‹å¦‚ï¼Œå°†ç”¨æˆ·ä¿¡æ¯å­˜å‚¨åˆ°æ•°æ®åº“ä¸­
         res.set_content("Registration successful", "text/plain");
         });
     server.start();

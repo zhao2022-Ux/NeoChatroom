@@ -15,7 +15,7 @@
 #include "RedirectServer.h"
 using namespace std;
 
-// Ä¬ÈÏ·şÎñÆ÷ÅäÖÃ
+// é»˜è®¤æœåŠ¡å™¨é…ç½®
 static std::string CURRENT_HOST = "0.0.0.0";
 static int CURRENT_PORT = 443;
 
@@ -34,54 +34,54 @@ void saveConfig() {
     try {
         Json::Value root;
         Json::Value rooms(Json::arrayValue);
-        // ±éÀúËùÓĞÒÑÊ¹ÓÃµÄÁÄÌìÊÒ£¬½«ĞÅÏ¢Ğ´ÈëÅäÖÃÎÄ¼ş
+        // éå†æ‰€æœ‰å·²ä½¿ç”¨çš„èŠå¤©å®¤ï¼Œå°†ä¿¡æ¯å†™å…¥é…ç½®æ–‡ä»¶
         for (int i = 0; i < MAXROOM; i++) {
             if (used[i]) {
                 try {
                     Json::Value roomObj;
                     roomObj["id"] = i;
-                    // ¼Ù¶¨ÁÄÌìÊÒÓĞ gettittle() ·½·¨»ñÈ¡µ±Ç°Ãû³Æ
+                    // å‡å®šèŠå¤©å®¤æœ‰ gettittle() æ–¹æ³•è·å–å½“å‰åç§°
                     roomObj["name"] = room[i].gettittle();
-                    // ±£´æÁÄÌìÊÒÃÜÂë£¨²ÉÓÃ GetPassword »ñÈ¡£©
+                    // ä¿å­˜èŠå¤©å®¤å¯†ç ï¼ˆé‡‡ç”¨ GetPassword è·å–ï¼‰
                     roomObj["password"] = room[i].GetPassword();
                     rooms.append(roomObj);
                 }
                 catch (const std::exception& e) {
-                    logger.logError("Config", "±£´æÁÄÌìÊÒĞÅÏ¢Ê§°Ü£¬ID: " + to_string(i) + "£¬´íÎó: " + e.what());
-                    // ¼ÌĞø±£´æÆäËûÁÄÌìÊÒĞÅÏ¢
+                    logger.logError("Config", "ä¿å­˜èŠå¤©å®¤ä¿¡æ¯å¤±è´¥ï¼ŒID: " + to_string(i) + "ï¼Œé”™è¯¯: " + e.what());
+                    // ç»§ç»­ä¿å­˜å…¶ä»–èŠå¤©å®¤ä¿¡æ¯
                 }
                 catch (...) {
-                    logger.logError("Config", "±£´æÁÄÌìÊÒĞÅÏ¢Ê±·¢ÉúÎ´Öª´íÎó£¬ID: " + to_string(i));
+                    logger.logError("Config", "ä¿å­˜èŠå¤©å®¤ä¿¡æ¯æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒID: " + to_string(i));
                 }
             }
         }
         root["rooms"] = rooms;
 
-        // ±£´æ·şÎñÆ÷ÅäÖÃ£ºHOST ºÍ PORT
+        // ä¿å­˜æœåŠ¡å™¨é…ç½®ï¼šHOST å’Œ PORT
         root["server"]["host"] = CURRENT_HOST;
         root["server"]["port"] = CURRENT_PORT;
 
         ofstream ofs(CONFIG_FILE);
         if (!ofs.is_open()) {
-            logger.logError("Config", "ÎŞ·¨´ò¿ªÅäÖÃÎÄ¼ş½øĞĞĞ´Èë: " + CONFIG_FILE);
+            logger.logError("Config", "æ— æ³•æ‰“å¼€é…ç½®æ–‡ä»¶è¿›è¡Œå†™å…¥: " + CONFIG_FILE);
             return;
         }
         try {
             ofs << root;
         }
         catch (const std::exception& e) {
-            logger.logError("Config", "Ğ´ÈëÅäÖÃÎÄ¼şÊ§°Ü: " + string(e.what()));
+            logger.logError("Config", "å†™å…¥é…ç½®æ–‡ä»¶å¤±è´¥: " + string(e.what()));
         }
         catch (...) {
-            logger.logError("Config", "Ğ´ÈëÅäÖÃÎÄ¼şÊ±·¢ÉúÎ´Öª´íÎó");
+            logger.logError("Config", "å†™å…¥é…ç½®æ–‡ä»¶æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
         }
         ofs.close();
     }
     catch (const std::exception& e) {
-        logger.logFatal("Config", "±£´æÅäÖÃÊ±·¢ÉúÒì³£: " + string(e.what()));
+        logger.logFatal("Config", "ä¿å­˜é…ç½®æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
     }
     catch (...) {
-        logger.logFatal("Config", "±£´æÅäÖÃÊ±·¢ÉúÎ´ÖªÒì³£");
+        logger.logFatal("Config", "ä¿å­˜é…ç½®æ—¶å‘ç”ŸæœªçŸ¥å¼‚å¸¸");
     }
 }
 
@@ -90,8 +90,8 @@ void loadConfig() {
     try {
         ifstream ifs(CONFIG_FILE);
         if (!ifs.is_open()) {
-            // ÅäÖÃÎÄ¼ş²»´æÔÚ£¬ÎŞĞè¼ÓÔØ
-            logger.logInfo("Config", "ÅäÖÃÎÄ¼ş²»´æÔÚ£¬Ìø¹ı¼ÓÔØ: " + CONFIG_FILE);
+            // é…ç½®æ–‡ä»¶ä¸å­˜åœ¨ï¼Œæ— éœ€åŠ è½½
+            logger.logInfo("Config", "é…ç½®æ–‡ä»¶ä¸å­˜åœ¨ï¼Œè·³è¿‡åŠ è½½: " + CONFIG_FILE);
             return;
         }
 
@@ -100,18 +100,18 @@ void loadConfig() {
             ifs >> root;
         }
         catch (const std::exception& e) {
-            logger.logError("Config", "½âÎöÅäÖÃÎÄ¼şÊ§°Ü: " + string(e.what()));
+            logger.logError("Config", "è§£æé…ç½®æ–‡ä»¶å¤±è´¥: " + string(e.what()));
             ifs.close();
             return;
         }
         catch (...) {
-            logger.logError("Config", "½âÎöÅäÖÃÎÄ¼şÊ±·¢ÉúÎ´Öª´íÎó");
+            logger.logError("Config", "è§£æé…ç½®æ–‡ä»¶æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             ifs.close();
             return;
         }
         ifs.close();
 
-        // ÏÈ¼ÓÔØ·şÎñÆ÷ÅäÖÃ£¨Èç¹û´æÔÚÔò¸üĞÂÈ«¾Ö±äÁ¿²¢ÉèÖÃµ½·şÎñÆ÷ÊµÀıÉÏ£©
+        // å…ˆåŠ è½½æœåŠ¡å™¨é…ç½®ï¼ˆå¦‚æœå­˜åœ¨åˆ™æ›´æ–°å…¨å±€å˜é‡å¹¶è®¾ç½®åˆ°æœåŠ¡å™¨å®ä¾‹ä¸Šï¼‰
         if (!root["server"].isNull()) {
             try {
                 if (root["server"].isMember("host"))
@@ -120,42 +120,42 @@ void loadConfig() {
                     CURRENT_PORT = root["server"]["port"].asInt();
             }
             catch (const std::exception& e) {
-                logger.logError("Config", "¶ÁÈ¡·şÎñÆ÷ÅäÖÃÊ§°Ü: " + string(e.what()));
+                logger.logError("Config", "è¯»å–æœåŠ¡å™¨é…ç½®å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Config", "¶ÁÈ¡·şÎñÆ÷ÅäÖÃÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Config", "è¯»å–æœåŠ¡å™¨é…ç½®æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
 
             try {
-                // »ñÈ¡·şÎñÆ÷ÊµÀı²¢ÉèÖÃHOSTºÍPORT
+                // è·å–æœåŠ¡å™¨å®ä¾‹å¹¶è®¾ç½®HOSTå’ŒPORT
                 Server& server = Server::getInstance();
                 server.setHOST(CURRENT_HOST);
                 server.setPORT(CURRENT_PORT);
             }
             catch (const std::exception& e) {
-                logger.logError("Config", "ÉèÖÃ·şÎñÆ÷HOST/PORTÊ§°Ü: " + string(e.what()));
+                logger.logError("Config", "è®¾ç½®æœåŠ¡å™¨HOST/PORTå¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Config", "ÉèÖÃ·şÎñÆ÷HOST/PORTÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Config", "è®¾ç½®æœåŠ¡å™¨HOST/PORTæ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
     }
     catch (const std::exception& e) {
-        Logger::getInstance().logFatal("Config", "¼ÓÔØÅäÖÃÊ±·¢ÉúÒì³£: " + string(e.what()));
+        Logger::getInstance().logFatal("Config", "åŠ è½½é…ç½®æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
     }
     catch (...) {
-        Logger::getInstance().logFatal("Config", "¼ÓÔØÅäÖÃÊ±·¢ÉúÎ´ÖªÒì³£");
+        Logger::getInstance().logFatal("Config", "åŠ è½½é…ç½®æ—¶å‘ç”ŸæœªçŸ¥å¼‚å¸¸");
     }
 }
 
 void loadChatroomInConfig() {
     Logger& logger = Logger::getInstance();
     try {
-        // ¼ÓÔØÁÄÌìÊÒÅäÖÃ
+        // åŠ è½½èŠå¤©å®¤é…ç½®
         ifstream ifs(CONFIG_FILE);
         if (!ifs.is_open()) {
-            // ÅäÖÃÎÄ¼ş²»´æÔÚ£¬ÎŞĞè¼ÓÔØ
-            logger.logInfo("Config", "ÅäÖÃÎÄ¼ş²»´æÔÚ£¬Ìø¹ıÁÄÌìÊÒ¼ÓÔØ: " + CONFIG_FILE);
+            // é…ç½®æ–‡ä»¶ä¸å­˜åœ¨ï¼Œæ— éœ€åŠ è½½
+            logger.logInfo("Config", "é…ç½®æ–‡ä»¶ä¸å­˜åœ¨ï¼Œè·³è¿‡èŠå¤©å®¤åŠ è½½: " + CONFIG_FILE);
             return;
         }
 
@@ -164,12 +164,12 @@ void loadChatroomInConfig() {
             ifs >> root;
         }
         catch (const std::exception& e) {
-            logger.logError("Config", "½âÎöÁÄÌìÊÒÅäÖÃÊ§°Ü: " + string(e.what()));
+            logger.logError("Config", "è§£æèŠå¤©å®¤é…ç½®å¤±è´¥: " + string(e.what()));
             ifs.close();
             return;
         }
         catch (...) {
-            logger.logError("Config", "½âÎöÁÄÌìÊÒÅäÖÃÊ±·¢ÉúÎ´Öª´íÎó");
+            logger.logError("Config", "è§£æèŠå¤©å®¤é…ç½®æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             ifs.close();
             return;
         }
@@ -181,21 +181,21 @@ void loadChatroomInConfig() {
                 int id = roomObj["id"].asInt();
                 string name = roomObj["name"].asString();
                 if (id < 0 || id >= MAXROOM) {
-                    logger.logError("Config", "ÎŞĞ§µÄÁÄÌìÊÒ ID (ÅäÖÃÎÄ¼ş): " + to_string(id));
+                    logger.logError("Config", "æ— æ•ˆçš„èŠå¤©å®¤ ID (é…ç½®æ–‡ä»¶): " + to_string(id));
                     continue;
                 }
-                // Èç¹û¸ÃÁÄÌìÊÒÎ´´´½¨£¬Ôò³¢ÊÔ´´½¨
+                // å¦‚æœè¯¥èŠå¤©å®¤æœªåˆ›å»ºï¼Œåˆ™å°è¯•åˆ›å»º
                 if (!used[id]) {
                     int newId = -1;
                     try {
                         newId = addroom();
                     }
                     catch (const std::exception& e) {
-                        logger.logError("Config", "´´½¨ÁÄÌìÊÒÊ§°Ü (ID: " + to_string(id) + "): " + string(e.what()));
+                        logger.logError("Config", "åˆ›å»ºèŠå¤©å®¤å¤±è´¥ (ID: " + to_string(id) + "): " + string(e.what()));
                         continue;
                     }
                     catch (...) {
-                        logger.logError("Config", "´´½¨ÁÄÌìÊÒÊ±·¢ÉúÎ´Öª´íÎó (ID: " + to_string(id) + ")");
+                        logger.logError("Config", "åˆ›å»ºèŠå¤©å®¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ (ID: " + to_string(id) + ")");
                         continue;
                     }
 
@@ -204,135 +204,135 @@ void loadChatroomInConfig() {
                             newId = addroom();
                         }
                         catch (const std::exception& e) {
-                            logger.logError("Config", "¼ÌĞø´´½¨ÁÄÌìÊÒÊ§°Ü (ÆÚÍû ID: " + to_string(id) + "): " + string(e.what()));
+                            logger.logError("Config", "ç»§ç»­åˆ›å»ºèŠå¤©å®¤å¤±è´¥ (æœŸæœ› ID: " + to_string(id) + "): " + string(e.what()));
                             break;
                         }
                         catch (...) {
-                            logger.logError("Config", "¼ÌĞø´´½¨ÁÄÌìÊÒÊ±·¢ÉúÎ´Öª´íÎó (ÆÚÍû ID: " + to_string(id) + ")");
+                            logger.logError("Config", "ç»§ç»­åˆ›å»ºèŠå¤©å®¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ (æœŸæœ› ID: " + to_string(id) + ")");
                             break;
                         }
                     }
                 }
 
-                // ¸ù¾İÅäÖÃÉèÖÃÁÄÌìÊÒÃû³Æ
+                // æ ¹æ®é…ç½®è®¾ç½®èŠå¤©å®¤åç§°
                 try {
                     editroom(id, name);
                 }
                 catch (const std::exception& e) {
-                    logger.logError("Config", "±à¼­ÁÄÌìÊÒÃû³ÆÊ§°Ü (ID: " + to_string(id) + "): " + string(e.what()));
+                    logger.logError("Config", "ç¼–è¾‘èŠå¤©å®¤åç§°å¤±è´¥ (ID: " + to_string(id) + "): " + string(e.what()));
                 }
                 catch (...) {
-                    logger.logError("Config", "±à¼­ÁÄÌìÊÒÃû³ÆÊ±·¢ÉúÎ´Öª´íÎó (ID: " + to_string(id) + ")");
+                    logger.logError("Config", "ç¼–è¾‘èŠå¤©å®¤åç§°æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ (ID: " + to_string(id) + ")");
                 }
 
-                // ÈôÅäÖÃÖĞ°üº¬ÃÜÂë×Ö¶Î£¬ÔòÉèÖÃÁÄÌìÊÒÃÜÂë
+                // è‹¥é…ç½®ä¸­åŒ…å«å¯†ç å­—æ®µï¼Œåˆ™è®¾ç½®èŠå¤©å®¤å¯†ç 
                 if (roomObj.isMember("password")) {
                     try {
                         string pwd = roomObj["password"].asString();
                         room[id].setPassword(pwd);
                     }
                     catch (const std::exception& e) {
-                        logger.logError("Config", "ÉèÖÃÁÄÌìÊÒÃÜÂëÊ§°Ü (ID: " + to_string(id) + "): " + string(e.what()));
+                        logger.logError("Config", "è®¾ç½®èŠå¤©å®¤å¯†ç å¤±è´¥ (ID: " + to_string(id) + "): " + string(e.what()));
                     }
                     catch (...) {
-                        logger.logError("Config", "ÉèÖÃÁÄÌìÊÒÃÜÂëÊ±·¢ÉúÎ´Öª´íÎó (ID: " + to_string(id) + ")");
+                        logger.logError("Config", "è®¾ç½®èŠå¤©å®¤å¯†ç æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ (ID: " + to_string(id) + ")");
                     }
                 }
 
-                // ×Ô¶¯Æô¶¯ÁÄÌìÊÒ
+                // è‡ªåŠ¨å¯åŠ¨èŠå¤©å®¤
                 try {
                     if (!room[id].start()) {
-                        logger.logError("Control", "ÎŞ·¨Æô¶¯ÁÄÌìÊÒ£¬ID: " + to_string(id));
+                        logger.logError("Control", "æ— æ³•å¯åŠ¨èŠå¤©å®¤ï¼ŒID: " + to_string(id));
                     }
                 }
                 catch (const std::exception& e) {
-                    logger.logError("Control", "Æô¶¯ÁÄÌìÊÒÊ±Å×³öÒì³££¬ID: " + to_string(id) + "£¬´íÎó: " + string(e.what()));
+                    logger.logError("Control", "å¯åŠ¨èŠå¤©å®¤æ—¶æŠ›å‡ºå¼‚å¸¸ï¼ŒID: " + to_string(id) + "ï¼Œé”™è¯¯: " + string(e.what()));
                 }
                 catch (...) {
-                    logger.logError("Control", "Æô¶¯ÁÄÌìÊÒÊ±·¢ÉúÎ´Öª´íÎó£¬ID: " + to_string(id));
+                    logger.logError("Control", "å¯åŠ¨èŠå¤©å®¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒID: " + to_string(id));
                 }
             }
             catch (const std::exception& e) {
-                logger.logError("Config", "±éÀúÁÄÌìÊÒÅäÖÃÊ±·¢ÉúÒì³£: " + string(e.what()));
+                logger.logError("Config", "éå†èŠå¤©å®¤é…ç½®æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Config", "±éÀúÁÄÌìÊÒÅäÖÃÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Config", "éå†èŠå¤©å®¤é…ç½®æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
     }
     catch (const std::exception& e) {
-        Logger::getInstance().logFatal("Config", "¼ÓÔØÁÄÌìÊÒÅäÖÃÊ±·¢ÉúÒì³£: " + string(e.what()));
+        Logger::getInstance().logFatal("Config", "åŠ è½½èŠå¤©å®¤é…ç½®æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
     }
     catch (...) {
-        Logger::getInstance().logFatal("Config", "¼ÓÔØÁÄÌìÊÒÅäÖÃÊ±·¢ÉúÎ´ÖªÒì³£");
+        Logger::getInstance().logFatal("Config", "åŠ è½½èŠå¤©å®¤é…ç½®æ—¶å‘ç”ŸæœªçŸ¥å¼‚å¸¸");
     }
 }
 
 // -------------------------------------------------------------------
 // Command runner functions: loop and execute commands.
-// ÅäÖÃ±£´æ½«ÔÚ´´½¨¡¢É¾³ıºÍÖØÃüÃûÁÄÌìÊÒÊ±´¥·¢¡£
+// é…ç½®ä¿å­˜å°†åœ¨åˆ›å»ºã€åˆ é™¤å’Œé‡å‘½åèŠå¤©å®¤æ—¶è§¦å‘ã€‚
 // -------------------------------------------------------------------
 void command_runner(string command, int roomid) {
-    // È¥³ıÃüÁîÄ©Î²¶àÓà¿Õ¸ñ
+    // å»é™¤å‘½ä»¤æœ«å°¾å¤šä½™ç©ºæ ¼
     while (!command.empty() && command.back() == ' ') {
         command.pop_back();
     }
 
     Logger& logger = Logger::getInstance();
-    // ×¢ÒâÕâÀïÎªÁË±£³ÖÔ­Ê¼Âß¼­£¬ÒÀÈ»Ê¹ÓÃÄ¬ÈÏHOST²ÎÊı»ñµÃ·şÎñÆ÷ÊµÀı
+    // æ³¨æ„è¿™é‡Œä¸ºäº†ä¿æŒåŸå§‹é€»è¾‘ï¼Œä¾ç„¶ä½¿ç”¨é»˜è®¤HOSTå‚æ•°è·å¾—æœåŠ¡å™¨å®ä¾‹
     Server& server = Server::getInstance(HOST);
     try {
-        // ²ğ·ÖÃüÁîÎªÖ÷ÃüÁîºÍ²ÎÊı
+        // æ‹†åˆ†å‘½ä»¤ä¸ºä¸»å‘½ä»¤å’Œå‚æ•°
         string cmd = command;
         string args = "";
         size_t spacePos = command.find(' ');
         if (spacePos != string::npos) {
             cmd = command.substr(0, spacePos);
             args = command.substr(spacePos + 1);
-            // È¥³ı²ÎÊıÊ×Î²µÄ¿Õ¸ñ
+            // å»é™¤å‚æ•°é¦–å°¾çš„ç©ºæ ¼
             while (!args.empty() && args.front() == ' ') args.erase(0, 1);
             while (!args.empty() && args.back() == ' ') args.pop_back();
         }
 
-        if (command == "start") {  // ÍêÕûÆ¥Åä start ÃüÁî
-            logger.logInfo("Control", "³¢ÊÔ¿ªÆô·şÎñÆ÷...");
+        if (command == "start") {  // å®Œæ•´åŒ¹é… start å‘½ä»¤
+            logger.logInfo("Control", "å°è¯•å¼€å¯æœåŠ¡å™¨...");
             try {
                 std::thread redirectThread([]() {
                     try {
                         Redirection::startRedirectServer();
                     }
                     catch (const std::exception& e) {
-                        Logger::getInstance().logError("Redirect", "ÖØ¶¨Ïò·şÎñÆ÷Æô¶¯Ê§°Ü: " + string(e.what()));
+                        Logger::getInstance().logError("Redirect", "é‡å®šå‘æœåŠ¡å™¨å¯åŠ¨å¤±è´¥: " + string(e.what()));
                     }
                     catch (...) {
-                        Logger::getInstance().logError("Redirect", "ÖØ¶¨Ïò·şÎñÆ÷Æô¶¯Ê±·¢ÉúÎ´Öª´íÎó");
+                        Logger::getInstance().logError("Redirect", "é‡å®šå‘æœåŠ¡å™¨å¯åŠ¨æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
                     }
                     });
                 server.start();
                 redirectThread.join();
             }
             catch (const std::exception& e) {
-                logger.logFatal("Control", "Æô¶¯·şÎñÆ÷Ê±·¢ÉúÒì³£: " + string(e.what()));
+                logger.logFatal("Control", "å¯åŠ¨æœåŠ¡å™¨æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
                 return;
             }
             catch (...) {
-                logger.logFatal("Control", "Æô¶¯·şÎñÆ÷Ê±·¢ÉúÎ´ÖªÒì³£");
+                logger.logFatal("Control", "å¯åŠ¨æœåŠ¡å™¨æ—¶å‘ç”ŸæœªçŸ¥å¼‚å¸¸");
                 return;
             }
         }
-        else if (command == "load") {  // ÍêÕûÆ¥Åä load ÃüÁî
-            logger.logInfo("Control", "³¢ÊÔ¼ÓÔØÊı¾İ...");
+        else if (command == "load") {  // å®Œæ•´åŒ¹é… load å‘½ä»¤
+            logger.logInfo("Control", "å°è¯•åŠ è½½æ•°æ®...");
             try {
                 // Initialize the database
                 manager::InitDatabase("./database.db");
-                logger.logInfo("Control", "Êı¾İ¿âÒÑ³õÊ¼»¯");
+                logger.logInfo("Control", "æ•°æ®åº“å·²åˆå§‹åŒ–");
             }
             catch (const std::exception& e) {
-                logger.logFatal("Control", "Êı¾İ¿â³õÊ¼»¯Ê§°Ü: " + string(e.what()));
+                logger.logFatal("Control", "æ•°æ®åº“åˆå§‹åŒ–å¤±è´¥: " + string(e.what()));
                 return;
             }
             catch (...) {
-                logger.logFatal("Control", "Êı¾İ¿â³õÊ¼»¯Ê±·¢ÉúÎ´Öª´íÎó");
+                logger.logFatal("Control", "æ•°æ®åº“åˆå§‹åŒ–æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
                 return;
             }
 
@@ -340,20 +340,20 @@ void command_runner(string command, int roomid) {
                 start_loginSystem();
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "Æô¶¯µÇÂ¼ÏµÍ³Ê§°Ü: " + string(e.what()));
+                logger.logError("Control", "å¯åŠ¨ç™»å½•ç³»ç»Ÿå¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "Æô¶¯µÇÂ¼ÏµÍ³Ê±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "å¯åŠ¨ç™»å½•ç³»ç»Ÿæ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
 
             try {
                 start_manager();
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "Æô¶¯¹ÜÀíÏµÍ³Ê§°Ü: " + string(e.what()));
+                logger.logError("Control", "å¯åŠ¨ç®¡ç†ç³»ç»Ÿå¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "Æô¶¯¹ÜÀíÏµÍ³Ê±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "å¯åŠ¨ç®¡ç†ç³»ç»Ÿæ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
 
             loadChatroomInConfig();
@@ -362,32 +362,32 @@ void command_runner(string command, int roomid) {
             try {
                 int newRoomId = addroom();
                 if (newRoomId != -1) {
-                    // ×Ô¶¯Æô¶¯ĞÂ´´½¨µÄÁÄÌìÊÒ
+                    // è‡ªåŠ¨å¯åŠ¨æ–°åˆ›å»ºçš„èŠå¤©å®¤
                     try {
                         if (room[newRoomId].start()) {
-                            logger.logInfo("Control", "ÁÄÌìÊÒÒÑ´´½¨²¢Æô¶¯£¬ID: " + to_string(newRoomId));
-                            saveConfig();  // ´´½¨ºó±£´æÅäÖÃ
+                            logger.logInfo("Control", "èŠå¤©å®¤å·²åˆ›å»ºå¹¶å¯åŠ¨ï¼ŒID: " + to_string(newRoomId));
+                            saveConfig();  // åˆ›å»ºåä¿å­˜é…ç½®
                         }
                         else {
-                            logger.logError("Control", "ÁÄÌìÊÒÒÑ´´½¨µ«ÎŞ·¨Æô¶¯£¬ID: " + to_string(newRoomId));
+                            logger.logError("Control", "èŠå¤©å®¤å·²åˆ›å»ºä½†æ— æ³•å¯åŠ¨ï¼ŒID: " + to_string(newRoomId));
                         }
                     }
                     catch (const std::exception& e) {
-                        logger.logError("Control", "Æô¶¯ĞÂÁÄÌìÊÒÊ§°Ü£¬ID: " + to_string(newRoomId) + "£¬´íÎó: " + string(e.what()));
+                        logger.logError("Control", "å¯åŠ¨æ–°èŠå¤©å®¤å¤±è´¥ï¼ŒID: " + to_string(newRoomId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                     }
                     catch (...) {
-                        logger.logError("Control", "Æô¶¯ĞÂÁÄÌìÊÒÊ±·¢ÉúÎ´Öª´íÎó£¬ID: " + to_string(newRoomId));
+                        logger.logError("Control", "å¯åŠ¨æ–°èŠå¤©å®¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒID: " + to_string(newRoomId));
                     }
                 }
                 else {
-                    logger.logError("Control", "ÎŞ·¨´´½¨ÁÄÌìÊÒ£¬ÒÑ´ïµ½×î´óÊıÁ¿");
+                    logger.logError("Control", "æ— æ³•åˆ›å»ºèŠå¤©å®¤ï¼Œå·²è¾¾åˆ°æœ€å¤§æ•°é‡");
                 }
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "Ö´ĞĞ create ÃüÁîÊ±·¢ÉúÒì³£: " + string(e.what()));
+                logger.logError("Control", "æ‰§è¡Œ create å‘½ä»¤æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "Ö´ĞĞ create ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "æ‰§è¡Œ create å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "delete" && !args.empty()) {
@@ -395,21 +395,21 @@ void command_runner(string command, int roomid) {
                 int roomId = stoi(args);
                 if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
                     delroom(roomId);
-                    logger.logInfo("Control", "ÁÄÌìÊÒÒÑÉ¾³ı£¬ID: " + to_string(roomId));
-                    saveConfig();  // É¾³ıºó±£´æÅäÖÃ
+                    logger.logInfo("Control", "èŠå¤©å®¤å·²åˆ é™¤ï¼ŒID: " + to_string(roomId));
+                    saveConfig();  // åˆ é™¤åä¿å­˜é…ç½®
                 }
                 else {
-                    logger.logError("Control", "ÎŞĞ§µÄÁÄÌìÊÒ ID: " + to_string(roomId));
+                    logger.logError("Control", "æ— æ•ˆçš„èŠå¤©å®¤ ID: " + to_string(roomId));
                 }
             }
             catch (const std::invalid_argument&) {
-                logger.logError("Control", "delete ÃüÁî²ÎÊı¸ñÊ½´íÎó, ID ±ØĞëÎªÕûÊı");
+                logger.logError("Control", "delete å‘½ä»¤å‚æ•°æ ¼å¼é”™è¯¯, ID å¿…é¡»ä¸ºæ•´æ•°");
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "Ö´ĞĞ delete ÃüÁîÊ±·¢ÉúÒì³£: " + string(e.what()));
+                logger.logError("Control", "æ‰§è¡Œ delete å‘½ä»¤æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "Ö´ĞĞ delete ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "æ‰§è¡Œ delete å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "settype" && !args.empty()) {
@@ -424,33 +424,33 @@ void command_runner(string command, int roomid) {
                     newType = stoi(typePart);
                 }
                 catch (const std::exception&) {
-                    logger.logError("Control", "settype ÃüÁî¸ñÊ½´íÎó£¬ID ºÍÀàĞÍ±ØĞëÎªÕûÊı");
+                    logger.logError("Control", "settype å‘½ä»¤æ ¼å¼é”™è¯¯ï¼ŒID å’Œç±»å‹å¿…é¡»ä¸ºæ•´æ•°");
                     return;
                 }
 
                 if (roomId < 0 || roomId >= MAXROOM) {
-                    logger.logError("Control", "ÎŞĞ§µÄÁÄÌìÊÒ ID: " + to_string(roomId));
+                    logger.logError("Control", "æ— æ•ˆçš„èŠå¤©å®¤ ID: " + to_string(roomId));
                 }
                 else if (!used[roomId]) {
-                    logger.logError("Control", "ÁÄÌìÊÒÎ´´´½¨£¬ID: " + to_string(roomId));
+                    logger.logError("Control", "èŠå¤©å®¤æœªåˆ›å»ºï¼ŒID: " + to_string(roomId));
                 }
                 else {
                     try {
                         setroomtype(roomId, newType);
-                        logger.logInfo("Control", "ÁÄÌìÊÒÀàĞÍÒÑ¸üĞÂ£¬ID: " + to_string(roomId) + "£¬ĞÂÀàĞÍ: " + to_string(newType));
+                        logger.logInfo("Control", "èŠå¤©å®¤ç±»å‹å·²æ›´æ–°ï¼ŒID: " + to_string(roomId) + "ï¼Œæ–°ç±»å‹: " + to_string(newType));
                         // Optionally save configuration if type changes need persistence
                         saveConfig();
                     }
                     catch (const std::exception& e) {
-                        logger.logError("Control", "¸üĞÂÁÄÌìÊÒÀàĞÍÊ§°Ü£¬ID: " + to_string(roomId) + "£¬´íÎó: " + string(e.what()));
+                        logger.logError("Control", "æ›´æ–°èŠå¤©å®¤ç±»å‹å¤±è´¥ï¼ŒID: " + to_string(roomId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                     }
                     catch (...) {
-                        logger.logError("Control", "¸üĞÂÁÄÌìÊÒÀàĞÍÊ±·¢ÉúÎ´Öª´íÎó£¬ID: " + to_string(roomId));
+                        logger.logError("Control", "æ›´æ–°èŠå¤©å®¤ç±»å‹æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒID: " + to_string(roomId));
                     }
                 }
             }
             else {
-                logger.logError("Control", "settype ÃüÁî¸ñÊ½´íÎó£¬ĞèÒªÌá¹© ID ºÍÀàĞÍ");
+                logger.logError("Control", "settype å‘½ä»¤æ ¼å¼é”™è¯¯ï¼Œéœ€è¦æä¾› ID å’Œç±»å‹");
             }
         }
         else if (cmd == "rename" && !args.empty()) {
@@ -463,41 +463,41 @@ void command_runner(string command, int roomid) {
                     if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
                         try {
                             editroom(roomId, newName);
-                            logger.logInfo("Control", "ÁÄÌìÊÒÒÑÖØÃüÃû£¬ID: " + to_string(roomId) + "£¬ĞÂÃû³Æ: " + newName);
-                            saveConfig();  // ÖØÃüÃûºó±£´æÅäÖÃ
+                            logger.logInfo("Control", "èŠå¤©å®¤å·²é‡å‘½åï¼ŒID: " + to_string(roomId) + "ï¼Œæ–°åç§°: " + newName);
+                            saveConfig();  // é‡å‘½ååä¿å­˜é…ç½®
                         }
                         catch (const std::exception& e) {
-                            logger.logError("Control", "ÖØÃüÃûÁÄÌìÊÒÊ§°Ü£¬ID: " + to_string(roomId) + "£¬´íÎó: " + string(e.what()));
+                            logger.logError("Control", "é‡å‘½åèŠå¤©å®¤å¤±è´¥ï¼ŒID: " + to_string(roomId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                         }
                         catch (...) {
-                            logger.logError("Control", "ÖØÃüÃûÁÄÌìÊÒÊ±·¢ÉúÎ´Öª´íÎó£¬ID: " + to_string(roomId));
+                            logger.logError("Control", "é‡å‘½åèŠå¤©å®¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒID: " + to_string(roomId));
                         }
                     }
                     else {
-                        logger.logError("Control", "ÎŞĞ§µÄÁÄÌìÊÒ ID: " + to_string(roomId));
+                        logger.logError("Control", "æ— æ•ˆçš„èŠå¤©å®¤ ID: " + to_string(roomId));
                     }
                 }
                 catch (const std::exception&) {
-                    logger.logError("Control", "rename ÃüÁî²ÎÊı¸ñÊ½´íÎó£¬ID ±ØĞëÎªÕûÊı");
+                    logger.logError("Control", "rename å‘½ä»¤å‚æ•°æ ¼å¼é”™è¯¯ï¼ŒID å¿…é¡»ä¸ºæ•´æ•°");
                 }
                 catch (...) {
-                    logger.logError("Control", "rename ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                    logger.logError("Control", "rename å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
                 }
             }
             else {
-                logger.logError("Control", "rename ÃüÁî¸ñÊ½´íÎó£¬ĞèÒªÌá¹© ID ºÍĞÂÃû³Æ");
+                logger.logError("Control", "rename å‘½ä»¤æ ¼å¼é”™è¯¯ï¼Œéœ€è¦æä¾› ID å’Œæ–°åç§°");
             }
         }
         else if (cmd == "stop") {
             try {
                 manager::CloseDatabase();
-                logger.logInfo("Control", "Êı¾İ¿âÒÑ¹Ø±Õ");
+                logger.logInfo("Control", "æ•°æ®åº“å·²å…³é—­");
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "¹Ø±ÕÊı¾İ¿âÊ§°Ü: " + string(e.what()));
+                logger.logError("Control", "å…³é—­æ•°æ®åº“å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "¹Ø±ÕÊı¾İ¿âÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "å…³é—­æ•°æ®åº“æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
             exit(0);
         }
@@ -510,28 +510,28 @@ void command_runner(string command, int roomid) {
                     if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
                         try {
                             room[roomId].systemMessage(message);
-                            logger.logInfo("Control", "ÏûÏ¢ÒÑ·¢ËÍµ½ÁÄÌìÊÒ " + to_string(roomId));
+                            logger.logInfo("Control", "æ¶ˆæ¯å·²å‘é€åˆ°èŠå¤©å®¤ " + to_string(roomId));
                         }
                         catch (const std::exception& e) {
-                            logger.logError("Control", "·¢ËÍÏµÍ³ÏûÏ¢Ê§°Ü£¬ÁÄÌìÊÒ ID: " + to_string(roomId) + "£¬´íÎó: " + string(e.what()));
+                            logger.logError("Control", "å‘é€ç³»ç»Ÿæ¶ˆæ¯å¤±è´¥ï¼ŒèŠå¤©å®¤ ID: " + to_string(roomId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                         }
                         catch (...) {
-                            logger.logError("Control", "·¢ËÍÏµÍ³ÏûÏ¢Ê±·¢ÉúÎ´Öª´íÎó£¬ÁÄÌìÊÒ ID: " + to_string(roomId));
+                            logger.logError("Control", "å‘é€ç³»ç»Ÿæ¶ˆæ¯æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒèŠå¤©å®¤ ID: " + to_string(roomId));
                         }
                     }
                     else {
-                        logger.logError("Control", "ÎŞĞ§µÄÁÄÌìÊÒ ID: " + to_string(roomId));
+                        logger.logError("Control", "æ— æ•ˆçš„èŠå¤©å®¤ ID: " + to_string(roomId));
                     }
                 }
                 catch (const std::exception&) {
-                    logger.logError("Control", "say ÃüÁî²ÎÊı¸ñÊ½´íÎó£¬ID ±ØĞëÎªÕûÊı");
+                    logger.logError("Control", "say å‘½ä»¤å‚æ•°æ ¼å¼é”™è¯¯ï¼ŒID å¿…é¡»ä¸ºæ•´æ•°");
                 }
                 catch (...) {
-                    logger.logError("Control", "say ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                    logger.logError("Control", "say å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
                 }
             }
             else {
-                logger.logError("Control", "ÃüÁî¸ñÊ½´íÎó: say <roomId> <message>");
+                logger.logError("Control", "å‘½ä»¤æ ¼å¼é”™è¯¯: say <roomId> <message>");
             }
         }
         else if (cmd == "clear" && !args.empty()) {
@@ -540,48 +540,48 @@ void command_runner(string command, int roomid) {
                 if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
                     try {
                         room[roomId].clearMessage();
-                        logger.logInfo("Control", "ÁÄÌìÊÒ " + to_string(roomId) + " µÄÏûÏ¢ÁĞ±íÒÑÇå¿Õ");
+                        logger.logInfo("Control", "èŠå¤©å®¤ " + to_string(roomId) + " çš„æ¶ˆæ¯åˆ—è¡¨å·²æ¸…ç©º");
                     }
                     catch (const std::exception& e) {
-                        logger.logError("Control", "Çå¿ÕÏûÏ¢Ê§°Ü£¬ÁÄÌìÊÒ ID: " + to_string(roomId) + "£¬´íÎó: " + string(e.what()));
+                        logger.logError("Control", "æ¸…ç©ºæ¶ˆæ¯å¤±è´¥ï¼ŒèŠå¤©å®¤ ID: " + to_string(roomId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                     }
                     catch (...) {
-                        logger.logError("Control", "Çå¿ÕÏûÏ¢Ê±·¢ÉúÎ´Öª´íÎó£¬ÁÄÌìÊÒ ID: " + to_string(roomId));
+                        logger.logError("Control", "æ¸…ç©ºæ¶ˆæ¯æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒèŠå¤©å®¤ ID: " + to_string(roomId));
                     }
                 }
                 else {
-                    logger.logError("Control", "ÎŞĞ§µÄÁÄÌìÊÒ ID: " + to_string(roomId));
+                    logger.logError("Control", "æ— æ•ˆçš„èŠå¤©å®¤ ID: " + to_string(roomId));
                 }
             }
             catch (const std::exception&) {
-                logger.logError("Control", "clear ÃüÁî²ÎÊı¸ñÊ½´íÎó£¬ID ±ØĞëÎªÕûÊı");
+                logger.logError("Control", "clear å‘½ä»¤å‚æ•°æ ¼å¼é”™è¯¯ï¼ŒID å¿…é¡»ä¸ºæ•´æ•°");
             }
             catch (...) {
-                logger.logError("Control", "clear ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "clear å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "ban" && !args.empty()) {
             try {
                 server.banIP(args);
-                logger.logInfo("Control", "ÒÑ·â½û IP: " + args);
+                logger.logInfo("Control", "å·²å°ç¦ IP: " + args);
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "·â½û IP Ê§°Ü: " + string(e.what()));
+                logger.logError("Control", "å°ç¦ IP å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "·â½û IP Ê±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "å°ç¦ IP æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "deban" && !args.empty()) {
             try {
                 server.debanIP(args);
-                logger.logInfo("Control", "ÒÑ½â·â IP: " + args);
+                logger.logInfo("Control", "å·²è§£å° IP: " + args);
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "½â·â IP Ê§°Ü: " + string(e.what()));
+                logger.logError("Control", "è§£å° IP å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "½â·â IP Ê±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "è§£å° IP æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "setpassword" && !args.empty()) {
@@ -594,75 +594,75 @@ void command_runner(string command, int roomid) {
                     if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
                         try {
                             if (password == "clear") {
-                                room[roomId].setPassword(""); // Çå¿ÕÃÜÂë
-                                logger.logInfo("Control", "ÁÄÌìÊÒÃÜÂëÒÑÇå¿Õ£¬ID: " + to_string(roomId));
+                                room[roomId].setPassword(""); // æ¸…ç©ºå¯†ç 
+                                logger.logInfo("Control", "èŠå¤©å®¤å¯†ç å·²æ¸…ç©ºï¼ŒID: " + to_string(roomId));
                             }
                             else {
-                                room[roomId].setPassword(password); // ÉèÖÃĞÂÃÜÂë
-                                logger.logInfo("Control", "ÁÄÌìÊÒÃÜÂëÒÑÉèÖÃ£¬ID: " + to_string(roomId));
+                                room[roomId].setPassword(password); // è®¾ç½®æ–°å¯†ç 
+                                logger.logInfo("Control", "èŠå¤©å®¤å¯†ç å·²è®¾ç½®ï¼ŒID: " + to_string(roomId));
                             }
                             saveConfig();
                         }
                         catch (const std::exception& e) {
-                            logger.logError("Control", "ÉèÖÃÁÄÌìÊÒÃÜÂëÊ§°Ü, ID: " + to_string(roomId) + "£¬´íÎó: " + string(e.what()));
+                            logger.logError("Control", "è®¾ç½®èŠå¤©å®¤å¯†ç å¤±è´¥, ID: " + to_string(roomId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                         }
                         catch (...) {
-                            logger.logError("Control", "ÉèÖÃÁÄÌìÊÒÃÜÂëÊ±·¢ÉúÎ´Öª´íÎó, ID: " + to_string(roomId));
+                            logger.logError("Control", "è®¾ç½®èŠå¤©å®¤å¯†ç æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯, ID: " + to_string(roomId));
                         }
                     }
                     else {
-                        logger.logError("Control", "ÎŞĞ§µÄÁÄÌìÊÒ ID: " + to_string(roomId));
+                        logger.logError("Control", "æ— æ•ˆçš„èŠå¤©å®¤ ID: " + to_string(roomId));
                     }
                 }
                 catch (const std::exception&) {
-                    logger.logError("Control", "setpassword ÃüÁî²ÎÊı¸ñÊ½´íÎó£¬ID ±ØĞëÎªÕûÊı");
+                    logger.logError("Control", "setpassword å‘½ä»¤å‚æ•°æ ¼å¼é”™è¯¯ï¼ŒID å¿…é¡»ä¸ºæ•´æ•°");
                 }
                 catch (...) {
-                    logger.logError("Control", "setpassword ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                    logger.logError("Control", "setpassword å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
                 }
             }
             else {
-                logger.logError("Control", "setpassword ÃüÁî¸ñÊ½´íÎó£¬ĞèÒªÌá¹© ID ºÍÃÜÂë");
+                logger.logError("Control", "setpassword å‘½ä»¤æ ¼å¼é”™è¯¯ï¼Œéœ€è¦æä¾› ID å’Œå¯†ç ");
             }
         }
         else if (cmd == "listuser") {
             try {
                 auto userDetails = manager::GetUserDetails();
                 if (userDetails.empty()) {
-                    logger.logInfo("Control", "µ±Ç°Ã»ÓĞÓÃ»§");
+                    logger.logInfo("Control", "å½“å‰æ²¡æœ‰ç”¨æˆ·");
                 }
                 else {
-                    logger.logInfo("Control", "ÓÃ»§ÁĞ±í:");
+                    logger.logInfo("Control", "ç”¨æˆ·åˆ—è¡¨:");
                     for (const auto& [name, password, uid] : userDetails) {
-                        logger.logInfo("Control", "ÓÃ»§Ãû: " + name + ", ÃÜÂë: " + password + ", UID: " + to_string(uid));
+                        logger.logInfo("Control", "ç”¨æˆ·å: " + name + ", å¯†ç : " + password + ", UID: " + to_string(uid));
                     }
                 }
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "»ñÈ¡ÓÃ»§ÁĞ±íÊ§°Ü: " + string(e.what()));
+                logger.logError("Control", "è·å–ç”¨æˆ·åˆ—è¡¨å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "»ñÈ¡ÓÃ»§ÁĞ±íÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "è·å–ç”¨æˆ·åˆ—è¡¨æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "listroom") {
             try {
                 auto roomDetails = GetRoomListDetails();
                 if (roomDetails.empty()) {
-                    logger.logInfo("Control", "µ±Ç°Ã»ÓĞÁÄÌìÊÒ");
+                    logger.logInfo("Control", "å½“å‰æ²¡æœ‰èŠå¤©å®¤");
                 }
                 else {
-                    logger.logInfo("Control", "ÁÄÌìÊÒÁĞ±í:");
+                    logger.logInfo("Control", "èŠå¤©å®¤åˆ—è¡¨:");
                     for (const auto& [id, name, password] : roomDetails) {
-                        logger.logInfo("Control", "ID: " + to_string(id) + ", Ãû³Æ: " + name + ", ÃÜÂë: " + password);
+                        logger.logInfo("Control", "ID: " + to_string(id) + ", åç§°: " + name + ", å¯†ç : " + password);
                     }
                 }
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "»ñÈ¡ÁÄÌìÊÒÁĞ±íÊ§°Ü: " + string(e.what()));
+                logger.logError("Control", "è·å–èŠå¤©å®¤åˆ—è¡¨å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "»ñÈ¡ÁÄÌìÊÒÁĞ±íÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "è·å–èŠå¤©å®¤åˆ—è¡¨æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "rmuser" && !args.empty()) {
@@ -670,54 +670,54 @@ void command_runner(string command, int roomid) {
                 int userId = stoi(args);
                 try {
                     if (manager::RemoveUser(userId)) {
-                        logger.logInfo("Control", "ÓÃ»§ÒÑ³É¹¦É¾³ı£¬UID: " + to_string(userId));
+                        logger.logInfo("Control", "ç”¨æˆ·å·²æˆåŠŸåˆ é™¤ï¼ŒUID: " + to_string(userId));
                         //manager::WriteUserData("./", manager::datafile);
                     }
                     else {
-                        logger.logError("Control", "É¾³ıÓÃ»§Ê§°Ü£¬¿ÉÄÜÕÒ²»µ½UID: " + to_string(userId));
+                        logger.logError("Control", "åˆ é™¤ç”¨æˆ·å¤±è´¥ï¼Œå¯èƒ½æ‰¾ä¸åˆ°UID: " + to_string(userId));
                     }
                 }
                 catch (const std::exception& e) {
-                    logger.logError("Control", "É¾³ıÓÃ»§Ê±·¢ÉúÒì³££¬UID: " + to_string(userId) + "£¬´íÎó: " + string(e.what()));
+                    logger.logError("Control", "åˆ é™¤ç”¨æˆ·æ—¶å‘ç”Ÿå¼‚å¸¸ï¼ŒUID: " + to_string(userId) + "ï¼Œé”™è¯¯: " + string(e.what()));
                 }
                 catch (...) {
-                    logger.logError("Control", "É¾³ıÓÃ»§Ê±·¢ÉúÎ´Öª´íÎó£¬UID: " + to_string(userId));
+                    logger.logError("Control", "åˆ é™¤ç”¨æˆ·æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯ï¼ŒUID: " + to_string(userId));
                 }
             }
             catch (const std::exception&) {
-                logger.logError("Control", "ÎŞĞ§µÄÓÃ»§ID¸ñÊ½");
+                logger.logError("Control", "æ— æ•ˆçš„ç”¨æˆ·IDæ ¼å¼");
             }
             catch (...) {
-                logger.logError("Control", "rmuser ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "rmuser å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         else if (cmd == "help") {
-            logger.logInfo("Control", "¿ÉÓÃÖ¸Áî:\n"
-                "  start - Æô¶¯·şÎñÆ÷\n"
-                "  stop - Í£Ö¹·şÎñÆ÷\n"
-                "  create - ´´½¨²¢Æô¶¯Ò»¸öĞÂµÄÁÄÌìÊÒ\n"
-                "  delete <roomId> - É¾³ıÖ¸¶¨ÁÄÌìÊÒ\n"
-                "  rename <roomId> <name> - ÎªÖ¸¶¨ÁÄÌìÊÒÖØÃüÃû\n"
-                "  settype <roomId> <type> - ÎªÖ¸¶¨ÁÄÌìÊÒ¸ü¸ÄÀàĞÍ (ROOM_HIDDEN = 1 << 0,ROOM_NO_JOIN = 1 << 1)\n"
-                "  say <roomId> <message> - ÏòÖ¸¶¨ÁÄÌìÊÒ·¢ËÍÏûÏ¢\n"
-                "  clear <roomId> - Çå¿ÕÖ¸¶¨ÁÄÌìÊÒµÄÏûÏ¢\n"
-                "  ban <ip> - ·â½ûÖ¸¶¨IP\n"
-                "  deban <ip> - ½â·âÖ¸¶¨IP\n"
-                "  setpassword <roomId> <password> - ÎªÖ¸¶¨ÁÄÌìÊÒÉèÖÃÃÜÂë\n"
-                "  listuser - ÁĞ³öËùÓĞÓÃ»§\n"
-                "  listroom - ÁĞ³öËùÓĞÁÄÌìÊÒ\n"
-                "  rmuser <userId> - É¾³ıÖ¸¶¨ÓÃ»§IDµÄÓÃ»§\n"
-                "  help - ÏÔÊ¾´Ë°ïÖúĞÅÏ¢");
+            logger.logInfo("Control", "å¯ç”¨æŒ‡ä»¤:\n"
+                "  start - å¯åŠ¨æœåŠ¡å™¨\n"
+                "  stop - åœæ­¢æœåŠ¡å™¨\n"
+                "  create - åˆ›å»ºå¹¶å¯åŠ¨ä¸€ä¸ªæ–°çš„èŠå¤©å®¤\n"
+                "  delete <roomId> - åˆ é™¤æŒ‡å®šèŠå¤©å®¤\n"
+                "  rename <roomId> <name> - ä¸ºæŒ‡å®šèŠå¤©å®¤é‡å‘½å\n"
+                "  settype <roomId> <type> - ä¸ºæŒ‡å®šèŠå¤©å®¤æ›´æ”¹ç±»å‹ (ROOM_HIDDEN = 1 << 0,ROOM_NO_JOIN = 1 << 1)\n"
+                "  say <roomId> <message> - å‘æŒ‡å®šèŠå¤©å®¤å‘é€æ¶ˆæ¯\n"
+                "  clear <roomId> - æ¸…ç©ºæŒ‡å®šèŠå¤©å®¤çš„æ¶ˆæ¯\n"
+                "  ban <ip> - å°ç¦æŒ‡å®šIP\n"
+                "  deban <ip> - è§£å°æŒ‡å®šIP\n"
+                "  setpassword <roomId> <password> - ä¸ºæŒ‡å®šèŠå¤©å®¤è®¾ç½®å¯†ç \n"
+                "  listuser - åˆ—å‡ºæ‰€æœ‰ç”¨æˆ·\n"
+                "  listroom - åˆ—å‡ºæ‰€æœ‰èŠå¤©å®¤\n"
+                "  rmuser <userId> - åˆ é™¤æŒ‡å®šç”¨æˆ·IDçš„ç”¨æˆ·\n"
+                "  help - æ˜¾ç¤ºæ­¤å¸®åŠ©ä¿¡æ¯");
         }
         else {
-            logger.logError("Control", "²»ºÏ·¨µÄÖ¸Áî: " + command);
+            logger.logError("Control", "ä¸åˆæ³•çš„æŒ‡ä»¤: " + command);
         }
     }
     catch (const exception& e) {
-        logger.logFatal("Control", "ÃüÁîÖ´ĞĞÊ§°Ü: " + string(e.what()));
+        logger.logFatal("Control", "å‘½ä»¤æ‰§è¡Œå¤±è´¥: " + string(e.what()));
     }
     catch (...) {
-        logger.logFatal("Control", "ÃüÁîÖ´ĞĞÊ±·¢ÉúÎ´Öª´íÎó");
+        logger.logFatal("Control", "å‘½ä»¤æ‰§è¡Œæ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
     }
 }
 
@@ -727,26 +727,26 @@ void command() {
         try {
             string cmd;
             if (!getline(cin, cmd)) {
-                // Èç¹û¶ÁÈ¡Ê§°Ü»òEOF£¬ÍË³öÑ­»·
+                // å¦‚æœè¯»å–å¤±è´¥æˆ–EOFï¼Œé€€å‡ºå¾ªç¯
                 break;
             }
-            // Ã¿ÌõÃüÁî¾ùÔÚ·ÖÀëÏß³ÌÖĞ´¦Àí
+            // æ¯æ¡å‘½ä»¤å‡åœ¨åˆ†ç¦»çº¿ç¨‹ä¸­å¤„ç†
             try {
                 thread cmd_thread(command_runner, cmd, 0);
                 cmd_thread.detach();
             }
             catch (const std::exception& e) {
-                logger.logError("Control", "Æô¶¯ÃüÁîÏß³ÌÊ§°Ü: " + string(e.what()));
+                logger.logError("Control", "å¯åŠ¨å‘½ä»¤çº¿ç¨‹å¤±è´¥: " + string(e.what()));
             }
             catch (...) {
-                logger.logError("Control", "Æô¶¯ÃüÁîÏß³ÌÊ±·¢ÉúÎ´Öª´íÎó");
+                logger.logError("Control", "å¯åŠ¨å‘½ä»¤çº¿ç¨‹æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
             }
         }
         catch (const std::exception& e) {
-            logger.logError("Control", "¶ÁÈ¡ÃüÁîÊ±·¢ÉúÒì³£: " + string(e.what()));
+            logger.logError("Control", "è¯»å–å‘½ä»¤æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
         }
         catch (...) {
-            logger.logError("Control", "¶ÁÈ¡ÃüÁîÊ±·¢ÉúÎ´Öª´íÎó");
+            logger.logError("Control", "è¯»å–å‘½ä»¤æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
         }
     }
 }
@@ -754,31 +754,31 @@ void command() {
 void run() {
     Logger& logger = Logger::getInstance();
     try {
-        // ³õÊ¼»¯£º´´½¨¼¸¸öÄ¬ÈÏÁÄÌìÊÒ
-        //addroom(); // ´´½¨µÚÒ»¸öÁÄÌìÊÒ
-        //addroom(); // ´´½¨µÚ¶ş¸öÁÄÌìÊÒ
-        // Æô¶¯Ê±¼ÓÔØÅäÖÃ£¨°üÀ¨ÁÄÌìÊÒÅäÖÃ¼°·şÎñÆ÷ÅäÖÃ£©
-        logger.logInfo("Control", "¿ØÖÆÏß³ÌÒÑ¿ªÆô");
+        // åˆå§‹åŒ–ï¼šåˆ›å»ºå‡ ä¸ªé»˜è®¤èŠå¤©å®¤
+        //addroom(); // åˆ›å»ºç¬¬ä¸€ä¸ªèŠå¤©å®¤
+        //addroom(); // åˆ›å»ºç¬¬äºŒä¸ªèŠå¤©å®¤
+        // å¯åŠ¨æ—¶åŠ è½½é…ç½®ï¼ˆåŒ…æ‹¬èŠå¤©å®¤é…ç½®åŠæœåŠ¡å™¨é…ç½®ï¼‰
+        logger.logInfo("Control", "æ§åˆ¶çº¿ç¨‹å·²å¼€å¯");
         loadConfig();
-        logger.logInfo("Control", "ÒÑ¼ÓÔØÅäÖÃÎÄ¼ş");
+        logger.logInfo("Control", "å·²åŠ è½½é…ç½®æ–‡ä»¶");
         try {
             thread maint(command);
             maint.join();
         }
         catch (const std::exception& e) {
-            logger.logError("Control", "Æô¶¯¿ØÖÆÏß³ÌÊ§°Ü: " + string(e.what()));
+            logger.logError("Control", "å¯åŠ¨æ§åˆ¶çº¿ç¨‹å¤±è´¥: " + string(e.what()));
         }
         catch (...) {
-            logger.logError("Control", "Æô¶¯¿ØÖÆÏß³ÌÊ±·¢ÉúÎ´Öª´íÎó");
+            logger.logError("Control", "å¯åŠ¨æ§åˆ¶çº¿ç¨‹æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
         }
 
-        logger.logInfo("Control", "¿ØÖÆÏß³ÌÒÑ½áÊø");
+        logger.logInfo("Control", "æ§åˆ¶çº¿ç¨‹å·²ç»“æŸ");
     }
     catch (const std::exception& e) {
-        logger.logFatal("Control", "ÔËĞĞ¿ØÖÆÄ£¿éÊ±·¢ÉúÒì³£: " + string(e.what()));
+        logger.logFatal("Control", "è¿è¡Œæ§åˆ¶æ¨¡å—æ—¶å‘ç”Ÿå¼‚å¸¸: " + string(e.what()));
     }
     catch (...) {
-        logger.logFatal("Control", "ÔËĞĞ¿ØÖÆÄ£¿éÊ±·¢ÉúÎ´Öª´íÎó");
+        logger.logFatal("Control", "è¿è¡Œæ§åˆ¶æ¨¡å—æ—¶å‘ç”ŸæœªçŸ¥é”™è¯¯");
     }
     return;
 }

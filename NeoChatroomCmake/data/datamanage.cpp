@@ -1,7 +1,7 @@
 #include "../include/tool.h"
 #include "../include/config.h"
 #include "../include/datamanage.h"
-#include "../include/log.h" // °üº¬ÈÕÖ¾¿â
+#include "../include/log.h" // åŒ…å«æ—¥å¿—åº“
 #include <map>
 #include <mutex>
 #include <vector>
@@ -15,10 +15,10 @@
 using namespace std;
 
 namespace manager {
-    std::mutex mtx;  // ÓÃÓÚ±£»¤¹²ÏíÊı¾İµÄ»¥³âËø
+    std::mutex mtx;  // ç”¨äºä¿æŠ¤å…±äº«æ•°æ®çš„äº’æ–¥é”
     sqlite3* db = nullptr;
 
-    // ÓÃ»§Êı¾İ»º´æ£¬´øÊ±¼ä´Á
+    // ç”¨æˆ·æ•°æ®ç¼“å­˜ï¼Œå¸¦æ—¶é—´æˆ³
     struct CachedUser {
         user* userPtr;
         std::chrono::steady_clock::time_point lastAccess;
@@ -26,12 +26,12 @@ namespace manager {
     std::unordered_map<int, CachedUser> userCacheById;
     std::unordered_map<std::string, CachedUser> userCacheByName;
 
-    // »º´æ¹ÜÀíÉèÖÃ
-    const size_t MAX_CACHE_SIZE = 1000; // ×î´ó»º´æÓÃ»§ÊıÁ¿
-    const std::chrono::minutes CACHE_EXPIRY_TIME{ 30 }; // 30·ÖÖÓ¹ıÆÚÊ±¼ä
+    // ç¼“å­˜ç®¡ç†è®¾ç½®
+    const size_t MAX_CACHE_SIZE = 1000; // æœ€å¤§ç¼“å­˜ç”¨æˆ·æ•°é‡
+    const std::chrono::minutes CACHE_EXPIRY_TIME{ 30 }; // 30åˆ†é’Ÿè¿‡æœŸæ—¶é—´
     bool cacheCleanerRunning = false;
 
-    // °ïÖúº¯ÊıÒÔÇå³ıÓÃ»§»º´æ
+    // å¸®åŠ©å‡½æ•°ä»¥æ¸…é™¤ç”¨æˆ·ç¼“å­˜
     void InvalidateUserCache(int uid, const std::string& name) {
         try {
             lock_guard<mutex> lock(mtx);
@@ -42,16 +42,16 @@ namespace manager {
             }
             auto itByName = userCacheByName.find(name);
             if (itByName != userCacheByName.end()) {
-                // ²»ÔÚÕâÀïÉ¾³ı£¬ÒòÎªÕâÊÇÓëuserCacheByIdÏàÍ¬µÄÖ¸Õë
+                // ä¸åœ¨è¿™é‡Œåˆ é™¤ï¼Œå› ä¸ºè¿™æ˜¯ä¸userCacheByIdç›¸åŒçš„æŒ‡é’ˆ
                 userCacheByName.erase(itByName);
             }
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("cache", "Çå³ıÓÃ»§»º´æÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("cache", "æ¸…é™¤ç”¨æˆ·ç¼“å­˜æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
-    // »º´æÇåÀíÏß³Ìº¯Êı
+    // ç¼“å­˜æ¸…ç†çº¿ç¨‹å‡½æ•°
     void CleanCache() {
         try {
             while (cacheCleanerRunning) {
@@ -60,10 +60,10 @@ namespace manager {
                 size_t cleanedCount = 0;
                 {
                     lock_guard<mutex> lock(mtx);
-                    // ¸ù¾İ¹ıÆÚÊ±¼äÇåÀí
+                    // æ ¹æ®è¿‡æœŸæ—¶é—´æ¸…ç†
                     for (auto it = userCacheById.begin(); it != userCacheById.end(); ) {
                         if (now - it->second.lastAccess > CACHE_EXPIRY_TIME) {
-                            std::string username = it->second.userPtr->getname(); //SBÍæÒâ
+                            std::string username = it->second.userPtr->getname(); //SBç©æ„
                             delete it->second.userPtr;
                             userCacheByName.erase(username);
                             it = userCacheById.erase(it);
@@ -73,7 +73,7 @@ namespace manager {
                             ++it;
                         }
                     }
-                    // Èç¹ûÈÔÈ»¹ı´ó£¬Ôò¸ù¾İLRU£¨×î½ü×îÉÙÊ¹ÓÃ£©ÇåÀí
+                    // å¦‚æœä»ç„¶è¿‡å¤§ï¼Œåˆ™æ ¹æ®LRUï¼ˆæœ€è¿‘æœ€å°‘ä½¿ç”¨ï¼‰æ¸…ç†
                     if (userCacheById.size() > MAX_CACHE_SIZE) {
                         std::vector<std::pair<int, std::chrono::steady_clock::time_point>> entries;
                         for (const auto& entry : userCacheById) {
@@ -86,7 +86,7 @@ namespace manager {
                             if (it != userCacheById.end()) {
                                 std::string username;
                                 if (it->second.userPtr != nullptr) {
-                                    // ÏÈ±£´æÓÃ»§Ãû£¬ÔÙÉ¾³ı userPtr ÒÔ±ÜÃâ·ÃÎÊÎŞĞ§ÄÚ´æ
+                                    // å…ˆä¿å­˜ç”¨æˆ·åï¼Œå†åˆ é™¤ userPtr ä»¥é¿å…è®¿é—®æ— æ•ˆå†…å­˜
                                     username = it->second.userPtr->getname();
                                     delete it->second.userPtr;
                                     it->second.userPtr = nullptr;
@@ -102,9 +102,9 @@ namespace manager {
                     }
                 }
                 if (cleanedCount > 0) {
-                    Logger::getInstance().logInfo("cache", "ÇåÀíÁË " + std::to_string(cleanedCount) + " ¸ö¹ıÆÚ»ò×î½ü×îÉÙÊ¹ÓÃµÄ»º´æÌõÄ¿¡£");
+                    Logger::getInstance().logInfo("cache", "æ¸…ç†äº† " + std::to_string(cleanedCount) + " ä¸ªè¿‡æœŸæˆ–æœ€è¿‘æœ€å°‘ä½¿ç”¨çš„ç¼“å­˜æ¡ç›®ã€‚");
                 }
-                // Ôö¼Ó¶ÌÔİĞİÃß£¬·ÀÖ¹¸ßËÙÑ­»·µ¼ÖÂÈÕÖ¾ÏûÏ¢ÎŞÏŞÀÛ»ı
+                // å¢åŠ çŸ­æš‚ä¼‘çœ ï¼Œé˜²æ­¢é«˜é€Ÿå¾ªç¯å¯¼è‡´æ—¥å¿—æ¶ˆæ¯æ— é™ç´¯ç§¯
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         }
@@ -113,38 +113,38 @@ namespace manager {
             if (errMsg.size() > 512) {
                 errMsg = errMsg.substr(0, 512);
             }
-            Logger::getInstance().logError("cache", "»º´æÇåÀíÏß³Ì·¢Éú´íÎó: " + errMsg);
+            Logger::getInstance().logError("cache", "ç¼“å­˜æ¸…ç†çº¿ç¨‹å‘ç”Ÿé”™è¯¯: " + errMsg);
         }
     }
 
 
 
-    // Æô¶¯»º´æÇåÀíÏß³Ì
+    // å¯åŠ¨ç¼“å­˜æ¸…ç†çº¿ç¨‹
     void StartCacheCleaner() {
         try {
             if (!cacheCleanerRunning) {
                 cacheCleanerRunning = true;
                 std::thread(CleanCache).detach();
-                Logger::getInstance().logInfo("cache", "»º´æÇåÀíÏß³ÌÒÑÆô¶¯¡£");
+                Logger::getInstance().logInfo("cache", "ç¼“å­˜æ¸…ç†çº¿ç¨‹å·²å¯åŠ¨ã€‚");
             }
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("cache", "Æô¶¯»º´æÇåÀíÏß³ÌÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("cache", "å¯åŠ¨ç¼“å­˜æ¸…ç†çº¿ç¨‹æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
-    // Í£Ö¹»º´æÇåÀíÏß³Ì
+    // åœæ­¢ç¼“å­˜æ¸…ç†çº¿ç¨‹
     void StopCacheCleaner() {
         try {
             cacheCleanerRunning = false;
-            Logger::getInstance().logInfo("cache", "»º´æÇåÀíÏß³ÌÒÑÍ£Ö¹¡£");
+            Logger::getInstance().logInfo("cache", "ç¼“å­˜æ¸…ç†çº¿ç¨‹å·²åœæ­¢ã€‚");
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("cache", "Í£Ö¹»º´æÇåÀíÏß³ÌÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("cache", "åœæ­¢ç¼“å­˜æ¸…ç†çº¿ç¨‹æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
-    // ¼ì²é×Ö·ûÊÇ·ñ°²È«
+    // æ£€æŸ¥å­—ç¬¦æ˜¯å¦å®‰å…¨
     bool SafeWord(char word) {
         if (('0' <= word && word <= '9')
             || ('a' <= word && word <= 'z')
@@ -153,7 +153,7 @@ namespace manager {
         return false;
     }
 
-    // ¼ì²éÓÃ»§ÃûÊÇ·ñºÏ·¨
+    // æ£€æŸ¥ç”¨æˆ·åæ˜¯å¦åˆæ³•
     bool CheckUserName(string name) {
         if (name.length() > 50) return false;
         for (int i = 0; i < name.length(); i++) {
@@ -162,7 +162,7 @@ namespace manager {
         return true;
     }
 
-    // ´æ´¢Êı¾İµÄÎÄ¼şÂ·¾¶
+    // å­˜å‚¨æ•°æ®çš„æ–‡ä»¶è·¯å¾„
     int usernum = 0;
 
     string user::getname() { return name; }
@@ -175,7 +175,7 @@ namespace manager {
             lock_guard<mutex> lock(mtx);
             cookie = new_cookie;
             Keyword::replace_sql_injection_keywords(cookie);
-            // ¸üĞÂÊı¾İ¿â
+            // æ›´æ–°æ•°æ®åº“
             const char* updateQuery = R"(
                 UPDATE users SET cookie = ? WHERE uid = ?;
             )";
@@ -184,14 +184,14 @@ namespace manager {
                 sqlite3_bind_text(stmt, 1, new_cookie.c_str(), -1, SQLITE_STATIC);
                 sqlite3_bind_int(stmt, 2, uid);
                 if (sqlite3_step(stmt) != SQLITE_DONE) {
-                    Logger::getInstance().logError("database", "¸üĞÂÊı¾İ¿âÖĞµÄcookieÊ§°Ü: " + std::string(sqlite3_errmsg(db)));
+                    Logger::getInstance().logError("database", "æ›´æ–°æ•°æ®åº“ä¸­çš„cookieå¤±è´¥: " + std::string(sqlite3_errmsg(db)));
                 }
                 sqlite3_finalize(stmt);
             }
             else {
-                Logger::getInstance().logError("database", "×¼±¸¸üĞÂ²éÑ¯Óï¾äÊ±³ö´í: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "å‡†å¤‡æ›´æ–°æŸ¥è¯¢è¯­å¥æ—¶å‡ºé”™: " + std::string(sqlite3_errmsg(db)));
             }
-            // ¸üĞÂ»º´æÖĞµÄ·ÃÎÊÊ±¼ä
+            // æ›´æ–°ç¼“å­˜ä¸­çš„è®¿é—®æ—¶é—´
             auto now = std::chrono::steady_clock::now();
             auto it = userCacheById.find(uid);
             if (it != userCacheById.end()) {
@@ -203,7 +203,7 @@ namespace manager {
             }
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "ÉèÖÃcookieÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "è®¾ç½®cookieæ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
@@ -211,7 +211,7 @@ namespace manager {
         try {
             lock_guard<mutex> lock(mtx);
             labei = BanedLabei;
-            // ¸üĞÂÊı¾İ¿â
+            // æ›´æ–°æ•°æ®åº“
             const char* updateQuery = R"(
                 UPDATE users SET labei = ? WHERE uid = ?;
             )";
@@ -220,18 +220,18 @@ namespace manager {
                 sqlite3_bind_text(stmt, 1, BanedLabei.c_str(), -1, SQLITE_STATIC);
                 sqlite3_bind_int(stmt, 2, uid);
                 if (sqlite3_step(stmt) != SQLITE_DONE) {
-                    Logger::getInstance().logError("database", "¸üĞÂÊı¾İ¿âÖĞµÄlabeiÊ§°Ü: " + std::string(sqlite3_errmsg(db)));
+                    Logger::getInstance().logError("database", "æ›´æ–°æ•°æ®åº“ä¸­çš„labeiå¤±è´¥: " + std::string(sqlite3_errmsg(db)));
                 }
                 sqlite3_finalize(stmt);
             }
             else {
-                Logger::getInstance().logError("database", "×¼±¸¸üĞÂ²éÑ¯Óï¾äÊ±³ö´í: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "å‡†å¤‡æ›´æ–°æŸ¥è¯¢è¯­å¥æ—¶å‡ºé”™: " + std::string(sqlite3_errmsg(db)));
             }
-            // Ê¹»º´æÎŞĞ§
+            // ä½¿ç¼“å­˜æ— æ•ˆ
             InvalidateUserCache(uid, name);
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "½ûÓÃÓÃ»§Ê±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "ç¦ç”¨ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
@@ -262,12 +262,12 @@ namespace manager {
         else uid = ++usernum;
     }
 
-    // ³õÊ¼»¯SQLite3Êı¾İ¿â
+    // åˆå§‹åŒ–SQLite3æ•°æ®åº“
     void InitDatabase(const std::string& dbPath) {
         try {
             if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK) {
-                Logger::getInstance().logFatal("database", "´ò¿ªSQLite3Êı¾İ¿âÊ§°Ü: " + std::string(sqlite3_errmsg(db)));
-                throw std::runtime_error("´ò¿ªSQLite3Êı¾İ¿âÊ§°Ü");
+                Logger::getInstance().logFatal("database", "æ‰“å¼€SQLite3æ•°æ®åº“å¤±è´¥: " + std::string(sqlite3_errmsg(db)));
+                throw std::runtime_error("æ‰“å¼€SQLite3æ•°æ®åº“å¤±è´¥");
             }
             const char* createTableQuery = R"(
                 CREATE TABLE IF NOT EXISTS users (
@@ -280,7 +280,7 @@ namespace manager {
             )";
             char* errMsg = nullptr;
             if (sqlite3_exec(db, createTableQuery, nullptr, nullptr, &errMsg) != SQLITE_OK) {
-                std::string error = "´´½¨±íÊ§°Ü: " + std::string(errMsg);
+                std::string error = "åˆ›å»ºè¡¨å¤±è´¥: " + std::string(errMsg);
                 Logger::getInstance().logFatal("database", error);
                 sqlite3_free(errMsg);
                 throw std::runtime_error(error);
@@ -288,15 +288,15 @@ namespace manager {
             StartCacheCleaner();
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logFatal("database", "³õÊ¼»¯Êı¾İ¿âÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logFatal("database", "åˆå§‹åŒ–æ•°æ®åº“æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
-    // ÏòÊı¾İ¿âÖĞĞÂÔöÓÃ»§
+    // å‘æ•°æ®åº“ä¸­æ–°å¢ç”¨æˆ·
     bool AddUser(const std::string& name, const std::string& psw, const std::string& cookie, const std::string& labei) {
         try {
             if (!CheckUserName(name) || Keyword::check_sql_keywords(name)) {
-                Logger::getInstance().logError("database", "ÓÃ»§Ãû²»ºÏ·¨£¬·¢ÏÖ¿ÉÄÜµÄsql×¢Èë: " + name);
+                Logger::getInstance().logError("database", "ç”¨æˆ·åä¸åˆæ³•ï¼Œå‘ç°å¯èƒ½çš„sqlæ³¨å…¥: " + name);
                 return false;
             }
             const char* insertQuery = R"(
@@ -305,7 +305,7 @@ namespace manager {
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, insertQuery, -1, &stmt, nullptr) != SQLITE_OK) {
-                Logger::getInstance().logError("database", "×¼±¸²åÈëÓÃ»§Êı¾İÊ±·¢Éú´íÎó: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "å‡†å¤‡æ’å…¥ç”¨æˆ·æ•°æ®æ—¶å‘ç”Ÿé”™è¯¯: " + std::string(sqlite3_errmsg(db)));
                 return false;
             }
             sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
@@ -314,10 +314,10 @@ namespace manager {
             sqlite3_bind_text(stmt, 4, labei.c_str(), -1, SQLITE_STATIC);
             bool success = (sqlite3_step(stmt) == SQLITE_DONE);
             if (!success) {
-                Logger::getInstance().logError("database", "²åÈëÓÃ»§Êı¾İÊ§°Ü: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "æ’å…¥ç”¨æˆ·æ•°æ®å¤±è´¥: " + std::string(sqlite3_errmsg(db)));
             }
             else {
-                Logger::getInstance().logInfo("database", "ÓÃ»§ " + name + " ÒÑ³É¹¦Ìí¼Ó¡£");
+                Logger::getInstance().logInfo("database", "ç”¨æˆ· " + name + " å·²æˆåŠŸæ·»åŠ ã€‚");
                 // Retrieve the auto-generated UID
                 int newUid = (int)sqlite3_last_insert_rowid(db);
                 // Cache the new user
@@ -332,12 +332,12 @@ namespace manager {
             return success;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "Ìí¼ÓÓÃ»§Ê±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "æ·»åŠ ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
             return false;
         }
     }
 
-    // Í¨¹ıUID²éÕÒÓÃ»§
+    // é€šè¿‡UIDæŸ¥æ‰¾ç”¨æˆ·
     user* FindUser(int uid) {
         try {
             auto now = std::chrono::steady_clock::now();
@@ -345,7 +345,7 @@ namespace manager {
                 lock_guard<mutex> lock(mtx);
                 auto it = userCacheById.find(uid);
                 if (it != userCacheById.end()) {
-                    it->second.lastAccess = now; // ¸üĞÂ·ÃÎÊÊ±¼ä
+                    it->second.lastAccess = now; // æ›´æ–°è®¿é—®æ—¶é—´
                     return it->second.userPtr;
                 }
             }
@@ -354,7 +354,7 @@ namespace manager {
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, selectQuery, -1, &stmt, nullptr) != SQLITE_OK) {
-                Logger::getInstance().logError("database", "²éÕÒÓÃ»§Ê±·¢Éú´íÎó: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "æŸ¥æ‰¾ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + std::string(sqlite3_errmsg(db)));
                 return nullptr;
             }
             sqlite3_bind_int(stmt, 1, uid);
@@ -366,7 +366,7 @@ namespace manager {
                 std::string labei = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
                 foundUser = new user(name, password, cookie, labei);
                 foundUser->setuid(uid);
-                // »º´æÓÃ»§
+                // ç¼“å­˜ç”¨æˆ·
                 lock_guard<mutex> lock(mtx);
                 userCacheById[uid] = { foundUser, now };
                 userCacheByName[name] = { foundUser, now };
@@ -375,12 +375,12 @@ namespace manager {
             return foundUser;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "Í¨¹ıUID²éÕÒÓÃ»§Ê±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "é€šè¿‡UIDæŸ¥æ‰¾ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
             return nullptr;
         }
     }
 
-    // Í¨¹ıÃû³Æ²éÕÒÓÃ»§
+    // é€šè¿‡åç§°æŸ¥æ‰¾ç”¨æˆ·
     user* FindUser(string name) {
         try {
             auto now = std::chrono::steady_clock::now();
@@ -388,7 +388,7 @@ namespace manager {
                 lock_guard<mutex> lock(mtx);
                 auto it = userCacheByName.find(name);
                 if (it != userCacheByName.end()) {
-                    it->second.lastAccess = now; // ¸üĞÂ·ÃÎÊÊ±¼ä
+                    it->second.lastAccess = now; // æ›´æ–°è®¿é—®æ—¶é—´
                     return it->second.userPtr;
                 }
             }
@@ -409,7 +409,7 @@ namespace manager {
                 std::string labei = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
                 foundUser = new user(name, password, cookie, labei);
                 foundUser->setuid(uid);
-                // »º´æÓÃ»§
+                // ç¼“å­˜ç”¨æˆ·
                 lock_guard<mutex> lock(mtx);
                 userCacheById[uid] = { foundUser, now };
                 userCacheByName[name] = { foundUser, now };
@@ -418,12 +418,12 @@ namespace manager {
             return foundUser;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "Í¨¹ıÃû³Æ²éÕÒÓÃ»§Ê±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "é€šè¿‡åç§°æŸ¥æ‰¾ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
             return nullptr;
         }
     }
 
-    // ÒÆ³ıÓÃ»§
+    // ç§»é™¤ç”¨æˆ·
     bool RemoveUser(int uid) {
         try {
             const char* updateQuery = R"(
@@ -431,15 +431,15 @@ namespace manager {
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, updateQuery, -1, &stmt, nullptr) != SQLITE_OK) {
-                Logger::getInstance().logError("database", "×¼±¸ÒÆ³ıÓÃ»§Ê±·¢Éú´íÎó: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "å‡†å¤‡ç§»é™¤ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + std::string(sqlite3_errmsg(db)));
                 return false;
             }
             sqlite3_bind_text(stmt, 1, BanedLabei.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_int(stmt, 2, uid);
             bool success = (sqlite3_step(stmt) == SQLITE_DONE);
             if (success) {
-                Logger::getInstance().logInfo("database", "UIDÎª " + std::to_string(uid) + " µÄÓÃ»§ÒÑ±»ÒÆ³ı¡£");
-                // Ê¹»º´æÎŞĞ§
+                Logger::getInstance().logInfo("database", "UIDä¸º " + std::to_string(uid) + " çš„ç”¨æˆ·å·²è¢«ç§»é™¤ã€‚");
+                // ä½¿ç¼“å­˜æ— æ•ˆ
                 lock_guard<mutex> lock(mtx);
                 auto it = userCacheById.find(uid);
                 if (it != userCacheById.end()) {
@@ -449,13 +449,13 @@ namespace manager {
                 }
             }
             else {
-                Logger::getInstance().logError("database", "ÒÆ³ıÓÃ»§Ê§°Ü: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "ç§»é™¤ç”¨æˆ·å¤±è´¥: " + std::string(sqlite3_errmsg(db)));
             }
             sqlite3_finalize(stmt);
             return success;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "ÒÆ³ıÓÃ»§Ê±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "ç§»é™¤ç”¨æˆ·æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
             return false;
         }
     }
@@ -464,14 +464,14 @@ namespace manager {
         try {
             user* targetUser = FindUser(uid);
             if (targetUser == nullptr) {
-                return false; // ÓÃ»§Î´ÕÒµ½
+                return false; // ç”¨æˆ·æœªæ‰¾åˆ°
             }
             string cookie = targetUser->getcookie();
             if (cookie.empty()) {
-                return false; // ¿Õcookie
+                return false; // ç©ºcookie
             }
-            lock_guard<mutex> lock(mtx); // ±£»¤¹²ÏíÊı¾İ·ÃÎÊ
-            // ·Ö¸îcookie×Ö·û´®²¢¼ì²éÃ¿¸öÊı×Ö
+            lock_guard<mutex> lock(mtx); // ä¿æŠ¤å…±äº«æ•°æ®è®¿é—®
+            // åˆ†å‰²cookieå­—ç¬¦ä¸²å¹¶æ£€æŸ¥æ¯ä¸ªæ•°å­—
             size_t start = 0;
             size_t end = cookie.find('&');
             while (end != string::npos) {
@@ -483,7 +483,7 @@ namespace manager {
                 start = end + 1;
                 end = cookie.find('&', start);
             }
-            // ¼ì²é×îºóÒ»¸öÊı×ÖÔÚ×îºóÒ»¸ö'&'Ö®ºó
+            // æ£€æŸ¥æœ€åä¸€ä¸ªæ•°å­—åœ¨æœ€åä¸€ä¸ª'&'ä¹‹å
             string lastNumStr = cookie.substr(start);
             int lastNum;
             if (str::safeatoi(lastNumStr, lastNum) && lastNum == number) {
@@ -492,39 +492,39 @@ namespace manager {
             return false;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "¼ì²éÓÃ»§ÊÇ·ñÔÚ·¿¼äÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "æ£€æŸ¥ç”¨æˆ·æ˜¯å¦åœ¨æˆ¿é—´æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
             return false;
         }
     }
 
-    // ´òÓ¡Òì³£
+    // æ‰“å°å¼‚å¸¸
     void LogError(string path, string filename, int line) {
         Logger& logger = Logger::getInstance();
-        logger.logError("config", "¶ÁÈ¡ÓÃ»§ĞÅÏ¢" + path + "/" + filename + " ĞĞ" + to_string(line) + "Ê±·¢Éú´íÎó");
+        logger.logError("config", "è¯»å–ç”¨æˆ·ä¿¡æ¯" + path + "/" + filename + " è¡Œ" + to_string(line) + "æ—¶å‘ç”Ÿé”™è¯¯");
     }
 
-    // ¶ÁÈ¡Õû¸öÎÄ¼ş
+    // è¯»å–æ•´ä¸ªæ–‡ä»¶
     void ReadUserData(string path, string filename) {
         try {
-            // ²»ÔÙĞèÒª£¬ÒòÎªÊı¾İ´æ´¢ÔÚSQLite3ÖĞ
-            throw std::runtime_error("ÒÑÆúÓÃ");
+            // ä¸å†éœ€è¦ï¼Œå› ä¸ºæ•°æ®å­˜å‚¨åœ¨SQLite3ä¸­
+            throw std::runtime_error("å·²å¼ƒç”¨");
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("config", "¶ÁÈ¡ÓÃ»§Êı¾İÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("config", "è¯»å–ç”¨æˆ·æ•°æ®æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
-    // ±£´æµ±Ç°ÓÃ»§ÁĞ±í
+    // ä¿å­˜å½“å‰ç”¨æˆ·åˆ—è¡¨
     void WriteUserData(string path, string filename) {
         try {
-            throw std::runtime_error("ÒÑÆúÓÃ");
+            throw std::runtime_error("å·²å¼ƒç”¨");
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("config", "Ğ´ÈëÓÃ»§Êı¾İÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("config", "å†™å…¥ç”¨æˆ·æ•°æ®æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 
-    // º¯Êı·µ»Ø°üº¬ÓÃ»§Ãû¡¢ÃÜÂëºÍUIDµÄÔª×éÏòÁ¿
+    // å‡½æ•°è¿”å›åŒ…å«ç”¨æˆ·åã€å¯†ç å’ŒUIDçš„å…ƒç»„å‘é‡
     std::vector<std::tuple<std::string, std::string, int>> GetUserDetails() {
         try {
             const char* selectQuery = R"(
@@ -545,16 +545,16 @@ namespace manager {
             return userDetails;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "»ñÈ¡ÓÃ»§ÏêÏ¸ĞÅÏ¢Ê±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "è·å–ç”¨æˆ·è¯¦ç»†ä¿¡æ¯æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
             return {};
         }
     }
 
-    // ¹Ø±ÕSQLite3Êı¾İ¿â£¬ÔöÇ¿½¡×³ĞÔ²¢¼ÇÂ¼ÈÕÖ¾
+    // å…³é—­SQLite3æ•°æ®åº“ï¼Œå¢å¼ºå¥å£®æ€§å¹¶è®°å½•æ—¥å¿—
     void CloseDatabase() {
         try {
             StopCacheCleaner();
-            // ÇåÀíËùÓĞ»º´æµÄÓÃ»§
+            // æ¸…ç†æ‰€æœ‰ç¼“å­˜çš„ç”¨æˆ·
             {
                 lock_guard<mutex> lock(mtx);
                 for (auto& entry : userCacheById) {
@@ -565,19 +565,19 @@ namespace manager {
             }
             if (db) {
                 if (sqlite3_close(db) == SQLITE_OK) {
-                    Logger::getInstance().logInfo("database", "Êı¾İ¿âÒÑ³É¹¦¹Ø±Õ¡£");
+                    Logger::getInstance().logInfo("database", "æ•°æ®åº“å·²æˆåŠŸå…³é—­ã€‚");
                 }
                 else {
-                    Logger::getInstance().logError("database", "¹Ø±ÕÊı¾İ¿âÊ±·¢Éú´íÎó: " + std::string(sqlite3_errmsg(db)));
+                    Logger::getInstance().logError("database", "å…³é—­æ•°æ®åº“æ—¶å‘ç”Ÿé”™è¯¯: " + std::string(sqlite3_errmsg(db)));
                 }
                 db = nullptr;
             }
             else {
-                Logger::getInstance().logInfo("database", "Êı¾İ¿âÒÑ¹Ø±Õ»òÎ´³õÊ¼»¯¡£");
+                Logger::getInstance().logInfo("database", "æ•°æ®åº“å·²å…³é—­æˆ–æœªåˆå§‹åŒ–ã€‚");
             }
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "¹Ø±ÕÊı¾İ¿âÊ±·¢Éú´íÎó: " + string(e.what()));
+            Logger::getInstance().logError("database", "å…³é—­æ•°æ®åº“æ—¶å‘ç”Ÿé”™è¯¯: " + string(e.what()));
         }
     }
 }
