@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聊天室管理</title>
+  <link rel="icon" href="/images/logo16.ico" type="image/x-icon">
+  <style>
+    /* 基本样式 - 降低饱和度 */
+    :root {
+      --primary-color: #4a89dc;  /* 原#007BFF */
+      --danger-color: #e74c3c;   /* 原#dc3545 */
+      --background-color: #f5f5f5;
+      --card-background: #fff;
+      --text-color: #333;
+      --border-color: #e0e0e0;   /* 原#eee */
+      --hover-background: #f0f0f0; /* 原#f8f9fa */
+    }
+
+    /* 深色模式变量 - 降低饱和度 */
+    [data-theme="dark"] {
+      --primary-color: #5d9cec;   /* 原#0d6efd */
+      --danger-color: #e74c3c;
+      --background-color: #2a2a2a; /* 原#1a1a1a */
+      --card-background: #3a3a3a;  /* 原#2d2d2d */
+      --text-color: #f0f0f0;
+      --border-color: #4a4a4a;    /* 原#3d3d3d */
+      --hover-background: #4a4a4a; /* 原#3d3d3d */
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+      line-height: 1.5;
+    }
+
+    /* 顶部导航栏 */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .header .left-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header .right-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header img {
+      height: 2.5rem;
+      width: auto;
+    }
+
+    .header .title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .header .username {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* 管理面板布局 */
+    .control-panel {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1200px) {
+      .control-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 面板卡片样式 */
+    .section {
+      background: var(--card-background);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      margin: 0 0 1.5rem 0;
+      color: var(--primary-color);
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    /* 列表容器 */
+    .list-container {
+      max-height: 70vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-color) var(--border-color);
+      padding-right: 0.5rem;
+    }
+
+    .list-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .list-container::-webkit-scrollbar-track {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    .list-container::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 3px;
+    }
+
+    /* 列表项样式 */
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      margin: 0.5rem 0;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .list-item:hover {
+      background-color: var(--hover-background);
+      transform: translateX(5px);
+    }
+
+    .room-controls, .user-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+
+    /* 按钮样式 - 降低饱和度 */
+    .action-button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: var(--primary-color);
+      color: white;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      min-width: 80px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .action-button:hover:not(:disabled) {
+      filter: brightness(110%);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .action-button.delete {
+      background-color: var(--danger-color);
+    }
+
+    /* 输入组样式 */
+    .input-group {
+      margin: 1.25rem 0;
+      padding: 1rem;
+      background-color: var(--hover-background);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .input-group input {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      width: calc(100% - 1.5rem);
+      font-size: 0.875rem;
+      background-color: var(--card-background);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(74, 137, 220, 0.25); /* 匹配新的主色 */
+    }
+
+    /* 分页控件 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1.5rem;
+      gap: 1rem;
+      padding: 0.75rem;
+    }
+
+    .page-info {
+      font-size: 0.875rem;
+      color: var(--text-color);
+      min-width: 100px;
+      text-align: center;
+    }
+
+    /* 工具提示 */
+    .tooltip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* 状态和信息标签 */
+    .room-info, .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .info-label {
+      font-weight: 500;
+      color: var(--primary-color);
+      background-color: var(--hover-background);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    /* 空状态提示 */
+    .empty-message {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-color);
+      background: var(--hover-background);
+      border-radius: 8px;
+      margin: 1rem 0;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="left-section">
+    <img src="/images/logo16.ico" alt="Logo">
+    <div class="title">聊天室管理面板</div>
+  </div>
+  <div class="right-section">
+    <div class="username">管理员</div>
+    <button class="action-button" id="themeToggle">切换主题</button>
+  </div>
+</div>
+
+<div class="control-panel">
+  <div class="section">
+    <h2>服务器控制</h2>
+    <div class="input-group">
+      <h3>IP访问控制</h3>
+      <input type="text" id="ipInput" placeholder="输入IP地址">
+      <div>
+        <button class="action-button" id="banIP">封禁IP</button>
+        <button class="action-button" id="unbanIP">解封IP</button>
+      </div>
+    </div>
+    <button class="action-button" id="loadData">加载数据</button>
+    <button class="action-button delete" id="stopServer">停止服务器</button>
+  </div>
+
+  <div class="section">
+    <h2>聊天室管理</h2>
+    <div style="margin-bottom: 1rem;">
+      <button class="action-button" id="createRoom">创建聊天室</button>
+      <button class="action-button" id="refreshRooms">刷新列表</button>
+    </div>
+    <div class="list-container" id="roomList">
+    </div>
+    <div class="pagination" id="roomPagination"></div>
+  </div>
+
+  <div class="section">
+    <h2>用户管理</h2>
+    <button class="action-button" id="refreshUsers">刷新用户列表</button>
+    <div class="list-container" id="userList">
+    </div>
+    <div class="pagination" id="userPagination"></div>
+  </div>
+</div>
+
+<script>
+  // 常量定义
+  const ITEMS_PER_PAGE = 10;
+  const ROOM_HIDDEN = 1;
+  const ROOM_NO_JOIN = 2;
+
+  // 状态管理类
+  class PaginatedState {
+    constructor(itemsPerPage = 10) {
+      this.itemsPerPage = itemsPerPage;
+      this.page = 1;
+      this.data = [];
+      this._filteredData = null;
+    }
+
+    setData(data) {
+      this.data = data || [];
+      this._filteredData = null;
+      this.validatePage();
+    }
+
+    validatePage() {
+      const maxPage = this.totalPages;
+      if (this.page > maxPage) {
+        this.page = Math.max(1, maxPage);
+      }
+      if (this.page < 1) {
+        this.page = 1;
+      }
+    }
+
+    get totalPages() {
+      return Math.max(1, Math.ceil(this.data.length / this.itemsPerPage));
+    }
+
+    get currentPageData() {
+      const start = (this.page - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.data.slice(start, end);
+    }
+
+    nextPage() {
+      if (this.page < this.totalPages) {
+        this.page++;
+        return true;
+      }
+      return false;
+    }
+
+    prevPage() {
+      if (this.page > 1) {
+        this.page--;
+        return true;
+      }
+      return false;
+    }
+
+    setPage(page) {
+      const newPage = Math.min(Math.max(1, page), this.totalPages);
+      if (this.page !== newPage) {
+        this.page = newPage;
+        return true;
+      }
+      return false;
+    }
+  }
+
+  // 应用状态
+  const state = {
+    rooms: new PaginatedState(ITEMS_PER_PAGE),
+    users: new PaginatedState(ITEMS_PER_PAGE),
+    theme: localStorage.getItem('theme') || 'light'
+  };
+
+  // 主题管理
+  function updateTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    state.theme = theme;
+  }
+
+  // 命令处理
+  async function sendCommand(command) {
+    try {
+      const response = await fetch('/control/command', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ command })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.status === 'error') {
+        throw new Error(result.message);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Command execution failed:', error);
+      throw error;
+    }
+  }
+
+  // UI 组件渲染
+  function renderPagination(elementId, paginatedState, renderFunction) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const { page, totalPages } = paginatedState;
+    element.innerHTML = '';
+
+    const prevButton = document.createElement('button');
+    prevButton.className = 'action-button';
+    prevButton.textContent = '上一页';
+    prevButton.disabled = page <= 1;
+    prevButton.addEventListener('click', () => {
+      if (paginatedState.prevPage()) {
+        renderFunction();
+      }
+    });
+
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'page-info';
+    pageInfo.textContent = `第 ${page} 页 / 共 ${totalPages} 页`;
+
+    const nextButton = document.createElement('button');
+    nextButton.className = 'action-button';
+    nextButton.textContent = '下一页';
+    nextButton.disabled = page >= totalPages;
+    nextButton.addEventListener('click', () => {
+      if (paginatedState.nextPage()) {
+        renderFunction();
+      }
+    });
+
+    element.appendChild(prevButton);
+    element.appendChild(pageInfo);
+    element.appendChild(nextButton);
+  }
+
+  function renderRoomList() {
+    const container = document.getElementById('roomList');
+    const rooms = state.rooms.currentPageData;
+
+    if (rooms.length === 0) {
+      container.innerHTML = '<div class="empty-message">暂无聊天室</div>';
+      renderPagination('roomPagination', state.rooms, renderRoomList);
+      return;
+    }
+
+    container.innerHTML = rooms.map(room => `
+            <div class="list-item">
+                <div class="room-info">
+                    <span class="info-label">ID: ${room.id}</span>
+                    <span>${room.name}</span>
+                    <div class="tooltip">
+                        ${room.password ? '🔒' : '🔓'}
+                        <span class="tooltip-text">${room.password ? '已设置密码' : '无密码'}</span>
+                    </div>
+                </div>
+                <div class="room-controls">
+                    <button class="action-button" onclick="renameRoom(${room.id})">重命名</button>
+                    <button class="action-button" onclick="setPassword(${room.id})">密码</button>
+                    <button class="action-button" onclick="setRoomType(${room.id})">类型</button>
+                    <button class="action-button" onclick="sendSystemMessage(${room.id})">消息</button>
+                    <button class="action-button" onclick="clearRoomMessages(${room.id})">清空</button>
+                    <button class="action-button delete" onclick="deleteRoom(${room.id})">删除</button>
+                </div>
+            </div>
+        `).join('');
+
+    renderPagination('roomPagination', state.rooms, renderRoomList);
+  }
+
+  function renderUserList() {
+    const container = document.getElementById('userList');
+    const users = state.users.currentPageData;
+
+    if (users.length === 0) {
+      container.innerHTML = '<div class="empty-message">暂无用户</div>';
+      renderPagination('userPagination', state.users, renderUserList);
+      return;
+    }
+
+    container.innerHTML = users.map(user => `
+            <div class="list-item">
+                <div class="user-info">
+                    <span class="info-label">UID: ${user.uid}</span>
+                    <span>${user.name}</span>
+                </div>
+                <div class="user-controls">
+                    <button class="action-button delete" onclick="deleteUser(${user.uid})">删除用户</button>
+                </div>
+            </div>
+        `).join('');
+
+    renderPagination('userPagination', state.users, renderUserList);
+  }
+
+  // 事件处理程序
+  async function refreshRoomList() {
+    try {
+      const result = await sendCommand('listroom');
+      state.rooms.setData(result.data.rooms);
+      renderRoomList();
+    } catch (error) {
+      alert('刷新聊天室列表失败: ' + error.message);
+    }
+  }
+
+  async function refreshUserList() {
+    try {
+      const result = await sendCommand('listuser');
+      state.users.setData(result.data.users);
+      renderUserList();
+    } catch (error) {
+      alert('刷新用户列表失败: ' + error.message);
+    }
+  }
+
+  // 聊天室操作
+  async function renameRoom(roomId) {
+    const newName = prompt('请输入新的聊天室名称：');
+    if (newName) {
+      try {
+        await sendCommand(`rename ${roomId} ${newName}`);
+        await refreshRoomList();
+      } catch (error) {
+        alert('重命名失败: ' + error.message);
+      }
+    }
+  }
+
+  async function setPassword(roomId) {
+    const password = prompt('请输入新密码（输入"clear"清除密码）：');
+    if (password !== null) {
+      try {
+        await sendCommand(`setpassword ${roomId} ${password}`);
+        await refreshRoomList();
+      } catch (error) {
+        alert('设置密码失败: ' + error.message);
+      }
+    }
+  }
+
+  async function setRoomType(roomId) {
+    const typeStr = prompt(
+            '请输入房间类型（可组合）：\n' +
+            '0: 普通房间\n' +
+            '1: 隐藏房间\n' +
+            '2: 禁止加入\n' +
+            '3: 隐藏且禁止加入'
+    );
+
+    if (typeStr !== null) {
+      const type = parseInt(typeStr);
+      if (isNaN(type) || type < 0 || type > 3) {
+        alert('无效的房间类型');
+        return;
+      }
+
+      try {
+        await sendCommand(`settype ${roomId} ${type}`);
+        await refreshRoomList();
+      } catch (error) {
+        alert('设置房间类型失败: ' + error.message);
+      }
+    }
+  }
+
+  async function sendSystemMessage(roomId) {
+    const message = prompt('请输入要发送的系统消息：');
+    if (message) {
+      try {
+        await sendCommand(`say ${roomId} ${message}`);
+      } catch (error) {
+        alert('发送系统消息失败: ' + error.message);
+      }
+    }
+  }
+
+  async function clearRoomMessages(roomId) {
+    if (confirm(`确定要清空聊天室 ${roomId} 的所有消息吗？`)) {
+      try {
+        await sendCommand(`clear ${roomId}`);
+      } catch (error) {
+        alert('清空消息失败: ' + error.message);
+      }
+    }
+  }
+
+  async function deleteRoom(roomId) {
+    if (confirm(`确定要删除聊天室 ${roomId} 吗？此操作不可恢复！`)) {
+      try {
+        await sendCommand(`delete ${roomId}`);
+        await refreshRoomList();
+      } catch (error) {
+        alert('删除聊天室失败: ' + error.message);
+      }
+    }
+  }
+
+  async function deleteUser(uid) {
+    if (confirm(`确定要删除用户 UID: ${uid} 吗？此操作不可恢复！`)) {
+      try {
+        await sendCommand(`rmuser ${uid}`);
+        await refreshUserList();
+      } catch (error) {
+        alert('删除用户失败: ' + error.message);
+      }
+    }
+  }
+
+  // 初始化
+  document.addEventListener('DOMContentLoaded', () => {
+    // 初始化主题
+    updateTheme(state.theme);
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      updateTheme(state.theme === 'light' ? 'dark' : 'light');
+    });
+
+    // 初始化服务器控制
+    document.getElementById('loadData').addEventListener('click', async () => {
+      try {
+        await sendCommand('load');
+        await Promise.all([refreshRoomList(), refreshUserList()]);
+      } catch (error) {
+        alert('加载数据失败: ' + error.message);
+      }
+    });
+
+    document.getElementById('stopServer').addEventListener('click', async () => {
+      if (confirm('确定要停止服务器吗？这将中断所有用户的连接。')) {
+        try {
+          await sendCommand('stop');
+        } catch (error) {
+          alert('停止服务器失败: ' + error.message);
+        }
+      }
+    });
+
+    document.getElementById('banIP').addEventListener('click', async () => {
+      const ip = document.getElementById('ipInput').value.trim();
+      if (!ip) {
+        alert('请输入IP地址');
+        return;
+      }
+      try {
+        await sendCommand(`ban ${ip}`);
+        document.getElementById('ipInput').value = '';
+      } catch (error) {
+        alert('封禁IP失败: ' + error.message);
+      }
+    });
+
+    document.getElementById('unbanIP').addEventListener('click', async () => {
+      const ip = document.getElementById('ipInput').value.trim();
+      if (!ip) {
+        alert('请输入IP地址');
+        return;
+      }
+      try {
+        await sendCommand(`deban ${ip}`);
+        document.getElementById('ipInput').value = '';
+      } catch (error) {
+        alert('解封IP失败: ' + error.message);
+      }
+    });
+
+    // 初始化聊天室管理
+    document.getElementById('createRoom').addEventListener('click', async () => {
+      try {
+        await sendCommand('create');
+        await refreshRoomList();
+      } catch (error) {
+        alert('创建聊天室失败: ' + error.message);
+      }
+    });
+
+    document.getElementById('refreshRooms').addEventListener('click', refreshRoomList);
+    document.getElementById('refreshUsers').addEventListener('click', refreshUserList);
+
+    // 加载初始数据
+    refreshRoomList();
+    refreshUserList();
+  });
+</script>
+</body>
+</html>

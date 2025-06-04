@@ -30,50 +30,50 @@ private:
     string passwordHash;
 
     unsigned int flags = 0;
-    int type;// 3ÎªÒş²Ø 2Îª½ûÖ¹¼ÓÈë ÒÑÆúÓÃ
+    int type;// 3ä¸ºéšè— 2ä¸ºç¦æ­¢åŠ å…¥ å·²å¼ƒç”¨
     // Removed unused type variable
 
-    // ³õÊ¼»¯ÁÄÌìÊÒ
+    // åˆå§‹åŒ–èŠå¤©å®¤
     void initializeChatRoom();
 
-    // ½« Json ÏûÏ¢×ªÎª×Ö·û´®
+    // å°† Json æ¶ˆæ¯è½¬ä¸ºå­—ç¬¦ä¸²
     string transJsonMessage(Json::Value m);
 
-    //¼ì²éÇëÇóÊÇ·ñÔÚĞí¿ÉÃûµ¥ÄÚ
+    //æ£€æŸ¥è¯·æ±‚æ˜¯å¦åœ¨è®¸å¯åå•å†…
     bool checkAllowId(const int ID);
     bool checkAllowId(const string name);
 
-    // ½âÎö Cookie
+    // è§£æ Cookie
     void transCookie(std::string& cid, std::string& uid, std::string cookie);
 
-    // ¼ì²éCooie
+    // æ£€æŸ¥Cooie
     bool checkCookies(const httplib::Request& req);
 
-    // »ñÈ¡ÁÄÌìÏûÏ¢
+    // è·å–èŠå¤©æ¶ˆæ¯
     void getChatMessages(const httplib::Request& req, httplib::Response& res);
 
-    // »ñÈ¡È«²¿ÁÄÌìÏûÏ¢
+    // è·å–å…¨éƒ¨èŠå¤©æ¶ˆæ¯
     void getAllChatMessages(const httplib::Request& req, httplib::Response& res);
 
-    // ´¦Àí POST ÇëÇó·¢ËÍÏûÏ¢
+    // å¤„ç† POST è¯·æ±‚å‘é€æ¶ˆæ¯
     void postChatMessage(const httplib::Request& req, httplib::Response& res, const Json::Value& root);
 
-    // »ñÈ¡ÓÃ»§Ãû
+    // è·å–ç”¨æˆ·å
     void getUsername(const httplib::Request& req, httplib::Response& res);
 
-    // ÉèÖÃ¾²Ì¬ÎÄ¼şÂ·ÓÉ
+    // è®¾ç½®é™æ€æ–‡ä»¶è·¯ç”±
     void setupStaticRoutes();
 
-    // ÅĞ¶ÏÊÇ·ñÊÇÓĞĞ§Í¼Æ¬ÀàĞÍ
+    // åˆ¤æ–­æ˜¯å¦æ˜¯æœ‰æ•ˆå›¾ç‰‡ç±»å‹
     bool isValidImage(const std::string& filename);
 
-    // ÉÏ´«Í¼Æ¬
+    // ä¸Šä¼ å›¾ç‰‡
     void uploadImage(const httplib::Request& req, httplib::Response& res);
 
-    // ÉèÖÃÁÄÌìÏà¹ØÂ·ÓÉ
+    // è®¾ç½®èŠå¤©ç›¸å…³è·¯ç”±
     void setupChatRoutes();
 
-    // ÓÃÓÚÍ¬²½µÄËø
+    // ç”¨äºåŒæ­¥çš„é”
     std::mutex mtx;
 
     const std::vector<std::string> allowedImageTypes = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" ,"webp" };
@@ -83,17 +83,17 @@ private:
 public:
     
 
-    // ¹¹Ôìº¯ÊıºÍÎö¹¹º¯Êı
+    // æ„é€ å‡½æ•°å’Œææ„å‡½æ•°
     //chatroom(int id) : roomid(id) {}
     //~chatroom() {}
 
-    // ÏµÍ³ÏûÏ¢
+    // ç³»ç»Ÿæ¶ˆæ¯
     void systemMessage(string message);
 
-    //Çå¿ÕÏûÏ¢ÄÚÈİ
+    //æ¸…ç©ºæ¶ˆæ¯å†…å®¹
     void clearMessage();
 
-    // Æô¶¯ÁÄÌìÊÒ
+    // å¯åŠ¨èŠå¤©å®¤
     bool start();
 
     void setflag(int x);
@@ -114,18 +114,18 @@ public:
 
     string GetPassword();
 
-    enum RoomFlags { //±êÖ¾
+    enum RoomFlags { //æ ‡å¿—
         ROOM_HIDDEN = 1 << 0,       // 0001
         ROOM_NO_JOIN = 1 << 1       // 0010
 
     };
-    // ÉèÖÃ±êÖ¾
+    // è®¾ç½®æ ‡å¿—
     void setFlag(RoomFlags flag);
 
-    // Çå³ı±êÖ¾
+    // æ¸…é™¤æ ‡å¿—
     void clearFlag(RoomFlags flag);
 
-    // ¼ì²é±êÖ¾
+    // æ£€æŸ¥æ ‡å¿—
     bool hasFlag(RoomFlags flag) const;
 };
 
