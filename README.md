@@ -5,8 +5,9 @@ C++高性能网络聊天室
 VS2022编写的sln版截至到v0.1.2，请使用cmake构建。
 
 ## how to build?
+
 windows用户可以直接下载Release
-下面是为 **NeoChatroom** 项目撰写的跨平台构建说明文档，分别适用于 **Linux** 和 **Windows** 环境。
+
 ---
 
 #### 📦 项目依赖
