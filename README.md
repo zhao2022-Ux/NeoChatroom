@@ -81,19 +81,17 @@ git clone https://github.com/microsoft/vcpkg.git
 
 > 记下 `vcpkg` 路径，稍后 CMake 配置时需要用到。
 
-##### 3️⃣ 使用 CMake 配置项目
+##### 3️⃣ 使用 CLion 配置项目
 
-在 PowerShell 或 CMD 中切换到NeoChatroomCmake：
+在Clion中打开NeoChatroomCmake文件夹
 
-```powershell
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=[vcpkg路径]\scripts\buildsystems\vcpkg.cmake -G "Visual Studio 17 2022"
-cmake --build . --config Release
-```
+加载Cmake List.txt
+
+（注意添加-DCMAKE_TOOLCHAIN_FILE=[vcpkg路径]/scripts/buildsystems/vcpkg.cmake)作为cmake构建选项
 
 > 请替换 `[vcpkg路径]` 为你的实际路径，比如：`C:/dev/vcpkg`。
 
+然后进行构建
 ##### 4️⃣ 运行程序
 
 
