@@ -1,0 +1,161 @@
+[2025-06-07 14:48:06] [WARNING] [Config] 配置文件不存在，生成默认配置: ./config.json
+[2025-06-07 14:48:06] [INFO] [Config] 已生成默认配置文件: ./config.json
+[2025-06-07 14:48:06] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:48:08] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:48:08] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:48:08] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:48:08] [WARNING] [Server] 缺少 SSL 证书或密钥，使用非 SSL 模式启动服务器。
+[2025-06-07 14:48:10] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:48:10] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:48:10] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:48:10] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:48:10] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:48:28] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:48:32] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:48:32] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:48:32] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:48:32] [WARNING] [Server] 缺少 SSL 证书或密钥，使用非 SSL 模式启动服务器。
+[2025-06-07 14:48:33] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:48:33] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:48:33] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:48:33] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:48:33] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:49:01] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:49:02] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:49:02] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:49:02] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:49:03] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:49:03] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:49:03] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:49:03] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:49:03] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:49:33] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:49:43] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:49:43] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:49:43] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:49:44] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:49:44] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:49:44] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:49:44] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:49:44] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:50:15] [ERROR_] [Control] 不合法的指令: s
+[2025-06-07 14:50:24] [INFO] [Control] 聊天室已创建并启动，ID: 1
+[2025-06-07 14:50:32] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 在试图登录时 客户端错误:USER_NOT_FOUND
+[2025-06-07 14:50:36] [INFO] [database] 用户 123 已成功添加。
+[2025-06-07 14:50:36] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功注册
+[2025-06-07 14:50:39] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
+[2025-06-07 14:50:41] [INFO] [RoomManager] 用户 1 joined room 1
+[2025-06-07 14:50:44] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:50:45] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:51:01] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:51:03] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:52:05] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:52:08] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:52:08] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:52:08] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:52:09] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:52:09] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:52:09] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:52:09] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:52:09] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:52:16] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:55:07] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:55:09] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:55:09] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:55:09] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:55:10] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:55:10] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:55:10] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:55:10] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:55:10] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:55:59] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:56:02] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:56:25] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:58:57] [INFO] [Control] 已加载配置文件
+[2025-06-07 14:59:04] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 14:59:04] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 14:59:04] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 14:59:05] [INFO] [Control] 尝试加载数据...
+[2025-06-07 14:59:05] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 14:59:05] [INFO] [Control] 数据库已初始化
+[2025-06-07 14:59:05] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 14:59:05] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 14:59:11] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 14:59:20] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:00:09] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:00:12] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:00:12] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:00:12] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:00:12] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:00:12] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:00:12] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:00:12] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:00:12] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:00:16] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:00:27] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:01:33] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:01:35] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:01:35] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:01:35] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:01:35] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:01:35] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:01:35] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:01:35] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:01:35] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:01:38] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:01:40] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:02:32] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:02:34] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:02:34] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:02:34] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:02:34] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:02:34] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:02:34] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:02:34] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:02:34] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:02:37] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:02:39] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:04:12] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:04:15] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:04:15] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:04:15] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:04:16] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:04:16] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:04:16] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:04:16] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:04:16] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:04:18] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:06:44] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:06:48] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:11:12] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:11:14] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:11:14] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:11:14] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:11:15] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:11:15] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:11:15] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:11:15] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:11:15] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:11:21] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:11:22] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:11:23] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:33:43] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:33:45] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:33:45] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:33:45] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:33:46] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:33:46] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:33:46] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:33:46] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:33:46] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:33:53] [INFO] [chatroom::message] [roomID:1][123][]
+[2025-06-07 15:34:23] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:34:26] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:34:26] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:34:26] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:34:27] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:34:27] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:34:27] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:34:27] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:34:27] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:34:31] [INFO] [chatroom::message] [roomID:1][123][123]

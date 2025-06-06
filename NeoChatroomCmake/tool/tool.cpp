@@ -190,12 +190,23 @@ namespace SHA256_ {
         return oss.str();
     }
 }
-
+#include <array>
 namespace Base64 {
     const std::string alphabet_map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    const uint8_t reverse_map[128] = {
-        // shortened for brevity
-    };
+
+    constexpr std::array<uint8_t, 128> generate_reverse_map() {
+        std::array<uint8_t, 128> map{};
+        for (size_t i = 0; i < map.size(); ++i)
+            map[i] = 255;  // invalid
+
+        for (size_t i = 0; i < alphabet_map.size(); ++i) {
+            map[static_cast<uint8_t>(alphabet_map[i])] = static_cast<uint8_t>(i);
+        }
+
+        return map;
+    }
+
+    const std::array<uint8_t, 128> reverse_map = generate_reverse_map();
 
     std::string base64_encode(const std::string& input) {
         std::string output;
@@ -227,7 +238,7 @@ namespace Base64 {
         int val = 0, valb = -8;
         for (unsigned char c : input) {
             if (isspace(c) || c == '=') continue;
-            if (c >= 128 || reverse_map[c] == 255) break;
+            if (c >= 128 || reverse_map[c] == 255) continue;
             val = (val << 6) + reverse_map[c];
             valb += 6;
             if (valb >= 0) {

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天室列表</title>
+    <link rel="icon" href="/images/logo16.ico" type="image/x-icon">
+    <style>
+        /* 通用样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #007BFF;
+            color: #fff;
+            padding: 5px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+            .header .left-section {
+                display: flex;
+                align-items: center;
+            }
+
+            .header .right-section {
+                display: flex;
+                align-items: center;
+                gap: 10px; /* 添加间距 */
+            }
+
+
+            .header .theme-toggle {
+                margin-right: 20px; /* 调整按钮之间的间距 */
+            }
+
+            .header img {
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            .header .chatroom-title {
+                font-size: 22px;
+                font-weight: bold;
+            }
+
+            .header .username {
+                max-width: 150px; /* 限制用户名的最大宽度 */
+                white-space: nowrap; /* 防止换行 */
+                overflow: hidden; /* 超出部分隐藏 */
+                text-overflow: ellipsis; /* 显示省略号 */
+                color: #fff; /* 确保用户名颜色与导航栏一致 */
+                font-size: 16px; /* 调整字体大小 */
+            }
+
+            .header button {
+                padding: 8px 12px;
+                border-radius: 5px;
+                cursor: pointer;
+                color: #007BFF;
+                border: none;
+                font-size: 16px;
+                margin-right: 20px;
+                background-color: #dcdcdc;
+                transition: background-color 0.2s, transform 0.1s ease;
+            }
+
+                .header button:hover {
+                    background-color: #c0c0c0;
+                    transform: scale(1.1);
+                }
+
+        /* 容器 */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+            position: relative;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .room-list {
+            margin-top: 10px;
+        }
+
+        .room-card {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            padding-right: 40px; /* Add space for quit button */
+        }
+
+            .room-card:hover {
+                background-color: #e6f7ff;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .room-card .room-id {
+                font-weight: bold;
+                color: #555;
+                width: 80px;
+            }
+
+            .room-card .room-name {
+                font-size: 1.1em;
+                color: #333;
+                text-align: right;
+                flex: 1;
+                padding-right: 10px;
+            }
+
+            .room-card .login-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(5px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+                .room-card .login-overlay button {
+                    padding: 10px 20px;
+                    background-color: #007BFF;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transform: scale(0.9);
+                    transition: transform 0.3s ease;
+                }
+
+                    .room-card .login-overlay button:hover {
+                        transform: scale(1);
+                    }
+
+            .room-card:hover .login-overlay {
+                opacity: 1;
+            }
+        /* "加入"按钮 */
+        .join-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .join-btn:hover {
+                background-color: #0056b3;
+                transform: scale(1.05);
+            }
+        /* 指定加入面板 */
+        .join-panel {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+            .join-panel input {
+                width: 200px;
+                padding: 8px;
+                font-size: 14px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                transition: border 0.3s;
+            }
+
+                .join-panel input:focus {
+                    border-color: #007BFF;
+                    outline: none;
+                }
+
+            .join-panel button {
+                padding: 8px 16px;
+                font-size: 14px;
+                margin-left: 10px;
+                background-color: #007BFF;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+                .join-panel button:hover {
+                    background-color: #0056b3;
+                }
+        /* 深色模式 */
+        body.dark-mode {
+            background-color: #333;
+            color: #ccc;
+        }
+
+            body.dark-mode .header {
+                background-color: #222;
+            }
+
+            body.dark-mode .container {
+                background: #1e1e1e;
+                box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+            }
+
+            body.dark-mode .room-card {
+                background-color: #2a2a2a;
+                border: 1px solid #444;
+            }
+
+                body.dark-mode .room-card:hover {
+                    background-color: #333;
+                }
+
+                body.dark-mode .room-card .room-id {
+                    color: #aaa;
+                }
+
+                body.dark-mode .room-card .room-name {
+                    color: #eee;
+                }
+
+                body.dark-mode .room-card .login-overlay {
+                    background: rgba(30, 30, 30, 0.8);
+                }
+
+            body.dark-mode .join-btn {
+                background-color: #0056b3;
+            }
+
+            body.dark-mode .join-panel {
+                background-color: #1e1e1e;
+                border-color: #555;
+            }
+
+                body.dark-mode .join-panel input {
+                    background: #2a2a2a;
+                    color: #ccc;
+                    border: 1px solid #555;
+                }
+
+                body.dark-mode .join-panel button {
+                    background-color: #007BFF;
+                }
+
+        /* 主题切换按钮 */
+        .theme-toggle {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #dcdcdc;
+            color: #007BFF;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s ease;
+        }
+
+            .theme-toggle:hover {
+                background-color: #c0c0c0;
+                transform: scale(1.1);
+            }
+
+        /* 空状态提示 */
+        .empty-message {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .quit-btn {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease, right 0.3s ease, background-color 0.2s;
+            z-index: 2;
+        }
+
+            .quit-btn:hover {
+                background-color: #c82333;
+            }
+
+        .room-card:hover .quit-btn {
+            opacity: 1;
+            right: 10px;
+        }
+
+        /* Add to dark mode section */
+        body.dark-mode .quit-btn {
+            background-color: #dc3545;
+        }
+
+            body.dark-mode .quit-btn:hover {
+                background-color: #bd2130;
+            }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航栏 -->
+    <div class="header">
+        <div class="left-section">
+            <img src="/images/logo16.ico" alt="Logo">
+            <div class="chatroom-title">seve's chatroom</div>
+        </div>
+        <div class="right-section">
+            <div class="username" id="usernameDisplay"></div>
+            <button class="login-button" id="loginButton" onclick="window.location.href='/login'">登录</button>
+            <button class="theme-toggle" id="themeToggle">D/B</button>
+        </div>
+    </div>
+
+
+    <!-- 已加入的聊天室 -->
+    <div class="container">
+        <h2>已加入的聊天室</h2>
+        <div id="joined-chatrooms" class="room-list">
+            <!-- 加入的聊天室卡片 -->
+        </div>
+    </div>
+
+    <!-- 所有聊天室 -->
+    <div class="container">
+        <h2>所有聊天室</h2>
+        <div id="all-chatrooms" class="room-list">
+            <!-- 所有聊天室卡片 -->
+        </div>
+    </div>
+
+    <!-- 指定加入面板 -->
+    <div class="join-panel">
+        <h2>指定加入</h2>
+        <input type="text" id="join-room-input" placeholder="请输入聊天室ID (≥3)">
+        <button id="join-room-btn">加入聊天室</button>
+    </div>
+    <script src="/chatlist/js" charset="utf-8"></script>
+</body>
+</html>

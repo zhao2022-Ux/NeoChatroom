@@ -585,4 +585,3 @@ using namespace std;
         return flags & flag;
     }
 //---------chatroom
-
