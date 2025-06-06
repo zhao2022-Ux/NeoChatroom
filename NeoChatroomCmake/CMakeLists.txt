@@ -23,7 +23,7 @@ file(GLOB_RECURSE SOURCES
         http\ server/*.cpp
         http\ server/server/*.cpp
         tool/*.cpp
-        log/*.cpp
+        tool\ log/*.cpp
 )
 
 # 可执行文件
@@ -31,7 +31,9 @@ add_executable(NeoChatroom ${SOURCES}
         "http server/server/serverconfig.h"
         "http server/server/serverconfig.cpp"
         "http server/ControlServer.cpp"
-        "http server/ControlServer.h")
+        "http server/ControlServer.h"
+        "http server/server/chatDBmanager.cpp"
+        "http server/server/chatDBmanager.h")
 
 # 找依赖
 find_package(OpenSSL REQUIRED)

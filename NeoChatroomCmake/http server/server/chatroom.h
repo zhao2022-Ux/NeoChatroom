@@ -81,7 +81,7 @@ private:
     std::string password; // Store the password for the chatroom.
 
 public:
-    
+
 
     // 构造函数和析构函数
     //chatroom(int id) : roomid(id) {}

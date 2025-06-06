@@ -34,7 +34,7 @@ using namespace std;
         initialMessage["user"] = "system";
         initialMessage["labei"] = "GM";
         initialMessage["timestamp"] = time(0);
-        
+
         // Convert UTF-8 message to GBK for frontend display
         string gbkMessage = (message.c_str());
         initialMessage["message"] = Base64::base64_encode(gbkMessage);
@@ -258,12 +258,12 @@ using namespace std;
         Json::Value newMessage;
         newMessage["user"] = nowuser.getname();
         newMessage["labei"] = nowuser.getlabei();
-        
+
         // Decode base64 message and process it
         string gbkMsg = decodedMsg.c_str();
         string msgSafe = Keyword::process_string(gbkMsg);
         string codedmsg = Base64::base64_encode(msgSafe);
-        
+
         if (codedmsg.length() > 50000) {
             res.status = 401;
             res.set_content("Message too long", "text/plain");
@@ -278,9 +278,9 @@ using namespace std;
         if (chatMessages.size() >= MAXSIZE) chatMessages.pop_front();
 
         // Log message in UTF-8 for proper display
-        logger.logInfo("chatroom::message", 
-            ("[roomID:" + to_string(roomid) + "][" + 
-             nowuser.getname() + "][" + 
+        logger.logInfo("chatroom::message",
+            ("[roomID:" + to_string(roomid) + "][" +
+             nowuser.getname() + "][" +
              (msgSafe.c_str()) + "]"));
 
         res.status = 200;
@@ -308,7 +308,7 @@ using namespace std;
             return;
         }
         manager::user goaluser = *manager::FindUser(uid_);
-        
+
         std::string username = goaluser.getname();
 
         if (username.empty()) {
@@ -496,7 +496,7 @@ using namespace std;
 
         // 处理 POST 请求，接收并保存新的聊天消息
         server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res , const Json::Value& root) {
-                postChatMessage(req, res, root);  
+                postChatMessage(req, res, root);
         });
         //server.getInstance().handlePostRequest("/chat/messages", postChatMessage);
 
@@ -512,12 +512,12 @@ using namespace std;
             uploadImage(req, res);
         });
         //server.getInstance().handlePostRequest("/chat/upload", uploadImage);
-        
+
 
         // 设置静态文件路由
         setupStaticRoutes();
-    
-        
+
+
     }
 
     bool chatroom::start() {
