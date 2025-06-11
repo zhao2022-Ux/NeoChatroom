@@ -159,3 +159,303 @@
 [2025-06-07 15:34:27] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
 [2025-06-07 15:34:27] [INFO] [Control] WEB控制服务器已启动
 [2025-06-07 15:34:31] [INFO] [chatroom::message] [roomID:1][123][123]
+[2025-06-07 15:51:41] [INFO] [Control] 已加载配置文件
+[2025-06-07 15:51:45] [ERROR_] [Control] 不合法的指令: START
+[2025-06-07 15:51:46] [ERROR_] [Control] 不合法的指令: LOAD
+[2025-06-07 15:51:48] [INFO] [Control] 尝试开启服务器...
+[2025-06-07 15:51:48] [INFO] [Server] 服务器在0.0.0.0上监听，端口为443
+[2025-06-07 15:51:48] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-07 15:51:49] [INFO] [Control] 尝试加载数据...
+[2025-06-07 15:51:49] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-07 15:51:49] [INFO] [Control] 数据库已初始化
+[2025-06-07 15:51:49] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-07 15:51:49] [INFO] [Control] WEB控制服务器已启动
+[2025-06-07 15:51:55] [INFO] [chatroom::message] [roomID:1][123][123]
+[2025-06-07 15:51:56] [INFO] [chatroom::message] [roomID:1][123][124]
+[2025-06-07 15:51:58] [INFO] [chatroom::message] [roomID:1][123][aaa]
+[2025-06-07 15:52:04] [INFO] [chatroom::message] [roomID:1][123][aaaaa2##￥其]
+[2025-06-10 08:39:22] [INFO] [Server] 服务器实例创建 - 主机: 0.0.0.0, 端口: 443
+[2025-06-10 08:39:22] [INFO] [Server] 主机地址已设置为: 0.0.0.0
+[2025-06-10 08:39:22] [INFO] [Server] 端口已设置为: 443
+[2025-06-10 08:39:22] [INFO] [Control] 已加载配置文件
+[2025-06-10 08:39:27] [INFO] [Control] 尝试开启服务器...
+[2025-06-10 08:39:27] [INFO] [Server] HTTP服务器实例已创建
+[2025-06-10 08:39:27] [INFO] [Server] 服务器配置完成 - 线程池: 8, Keep-Alive: 5s, 最大请求: 10485760字节
+[2025-06-10 08:39:27] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-10 08:39:27] [INFO] [Server] 预路由处理器已设置
+[2025-06-10 08:39:27] [INFO] [Server] 默认路由已设置
+[2025-06-10 08:39:27] [INFO] [Server] 开始监听连接...
+[2025-06-10 08:39:27] [INFO] [Server] 服务器启动成功 - 地址: 0.0.0.0:443 (HTTP)
+[2025-06-10 08:39:29] [INFO] [Control] 尝试加载数据...
+[2025-06-10 08:39:29] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-10 08:39:29] [INFO] [Control] 数据库已初始化
+[2025-06-10 08:39:29] [INFO] [Server] 文件路由已注册: /login -> html/login.html
+[2025-06-10 08:39:29] [INFO] [Server] POST JSON路由已注册: /register
+[2025-06-10 08:39:29] [INFO] [Server] POST JSON路由已注册: /login
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /list
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /allchatlist
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /joinquitroom
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /chatroomname
+[2025-06-10 08:39:29] [INFO] [Server] 文件路由已注册: /control/login -> html/files/controllogin.html
+[2025-06-10 08:39:29] [INFO] [Server] POST JSON路由已注册: /control/auth
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /control
+[2025-06-10 08:39:29] [INFO] [Server] POST JSON路由已注册: /control/command
+[2025-06-10 08:39:29] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-10 08:39:29] [INFO] [Control] WEB控制服务器已启动
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /chat/1/messages
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /chat/1/all-messages
+[2025-06-10 08:39:29] [INFO] [Server] POST JSON路由已注册: /chat/1/messages
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /user/username
+[2025-06-10 08:39:29] [INFO] [Server] POST文件路由已注册: /chat/1/upload
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /logo.png
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /chat/js
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /chatlist/js
+[2025-06-10 08:39:29] [INFO] [Server] 文件路由已注册: /chatlist -> html/chatlist.html
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /images/([^/]+)
+[2025-06-10 08:39:29] [INFO] [Server] GET路由��注册: /files/([^/]+)
+[2025-06-10 08:39:29] [INFO] [Server] 文件路由已注册: /chat1 -> html/index.html
+[2025-06-10 09:10:00] [INFO] [Server] 服务器实例创建 - 主机: 0.0.0.0, 端口: 443
+[2025-06-10 09:10:00] [INFO] [Server] 主机地址已设置为: 0.0.0.0
+[2025-06-10 09:10:00] [INFO] [Server] 端口已设置为: 443
+[2025-06-10 09:10:00] [INFO] [Control] 已加载配置文件
+[2025-06-10 09:10:03] [INFO] [Control] 尝试开启服务器...
+[2025-06-10 09:10:03] [INFO] [Server] HTTP服务器实例已创建
+[2025-06-10 09:10:03] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-10 09:10:03] [INFO] [Server] 服务器配置完成 - 线程池: 8, Keep-Alive: 5s, 最大请求: 10485760字节
+[2025-06-10 09:10:03] [INFO] [Server] 预路由处理器已设置
+[2025-06-10 09:10:03] [INFO] [Server] 默认路由已设置
+[2025-06-10 09:10:03] [INFO] [Server] 开始监听连接...
+[2025-06-10 09:10:03] [INFO] [Server] 服务器启动成功 - 地址: 0.0.0.0:443 (HTTP)
+[2025-06-10 09:10:05] [INFO] [Control] 尝试加载数据...
+[2025-06-10 09:10:05] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-10 09:10:05] [INFO] [Control] 数据库已初始化
+[2025-06-10 09:10:05] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-10 09:10:05] [INFO] [Control] WEB控制服务器已启动
+[2025-06-10 18:50:23] [INFO] [Server] 服务器实例创建 - 主机: 0.0.0.0, 端口: 443
+[2025-06-10 18:50:23] [INFO] [Server] 主机地址已设置为: 0.0.0.0
+[2025-06-10 18:50:23] [INFO] [Server] 端口已设置为: 443
+[2025-06-10 18:50:23] [INFO] [Control] 已加载配置文件
+[2025-06-10 18:50:27] [INFO] [Control] 尝试开启服务器...
+[2025-06-10 18:50:27] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-10 18:50:27] [INFO] [Server] HTTP服务器实例已创建
+[2025-06-10 18:50:27] [INFO] [Server] 服务器配置完成 - 线程池: 8, Keep-Alive: 5s, 最大请求: 10485760字节
+[2025-06-10 18:50:27] [INFO] [Server] 预路由处理器已设置
+[2025-06-10 18:50:27] [INFO] [Server] 默认路由已设置
+[2025-06-10 18:50:27] [INFO] [Server] 开始监听连接...
+[2025-06-10 18:50:27] [INFO] [Server] 服务器启动成功 - 地址: 0.0.0.0:443 (HTTP)
+[2025-06-10 18:50:28] [INFO] [Control] 尝试加载数据...
+[2025-06-10 18:50:28] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-10 18:50:28] [INFO] [Control] 数据库已初始化
+[2025-06-10 18:50:28] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-10 18:50:28] [INFO] [Control] WEB控制服务器已启动
+[2025-06-10 18:50:31] [INFO] [Control] 聊天室已创建并启动，ID: 2
+[2025-06-10 18:50:58] [INFO] [Server] 请求: GET / 来自: 127.0.0.1
+[2025-06-10 18:50:58] [INFO] [Server] 请求: GET /chatlist 来自: 127.0.0.1
+[2025-06-10 18:50:59] [INFO] [Server] 请求: GET /images/logo16.ico 来自: 127.0.0.1
+[2025-06-10 18:50:59] [INFO] [Server] 请求: GET /chatlist/js 来自: 127.0.0.1
+[2025-06-10 18:50:59] [INFO] [Server] 请求: GET /user/username 来自: 127.0.0.1
+[2025-06-10 18:50:59] [INFO] [Server] 请求: GET /login 来自: 127.0.0.1
+[2025-06-10 18:50:59] [INFO] [Server] 请求: GET /favicon.ico 来自: 127.0.0.1
+[2025-06-10 18:51:01] [INFO] [Server] 请求: POST /login 来自: 127.0.0.1
+[2025-06-10 18:51:01] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /chatlist 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /chatlist/js 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /images/logo16.ico 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /user/username 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /user/username 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /user/username 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /list 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /user/username 来自: 127.0.0.1
+[2025-06-10 18:51:03] [INFO] [Server] 请求: GET /allchatlist 来自: 127.0.0.1
+[2025-06-10 18:51:04] [INFO] [Server] 请求: GET /chat1 来自: 127.0.0.1
+[2025-06-10 18:51:04] [INFO] [Server] 请求: GET /logo.png 来自: 127.0.0.1
+[2025-06-10 18:51:04] [INFO] [Server] 请求: GET /files/marked.min.js 来自: 127.0.0.1
+[2025-06-10 18:51:04] [INFO] [Server] 请求: GET /files/tex-svg.js 来自: 127.0.0.1
+[2025-06-10 18:51:04] [INFO] [Server] 请求: GET /chat/js 来自: 127.0.0.1
+[2025-06-10 18:51:04] [INFO] [Server] 请求: GET /list 来自: 127.0.0.1
+[2025-06-10 18:51:05] [INFO] [Server] 请求: GET /chatroomname 来自: 127.0.0.1
+[2025-06-10 18:51:05] [INFO] [Server] 请求: GET /user/username 来自: 127.0.0.1
+[2025-06-10 18:51:05] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:05] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:06] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:06] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:07] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:07] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:08] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:08] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:09] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:09] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:10] [INFO] [Server] 请求: GET /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:10] [INFO] [Server] 请求: POST /chat/1/messages 来自: 127.0.0.1
+[2025-06-10 18:51:10] [INFO] [ChatSys] 127.0.0.1的cookie无效 
+[2025-06-10 18:51:10] [INFO] [Server] 请求: GET /login 来自: 127.0.0.1
+[2025-06-10 19:03:01] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-10 19:03:01] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-10 19:03:01] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-10 19:03:01] [INFO] [Control] 已加载配置文件
+[2025-06-10 19:03:06] [INFO] [Control] 尝试开启服务器...
+[2025-06-10 19:03:06] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-10 19:03:06] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-10 19:03:06] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-10 19:03:06] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-10 19:03:06] [INFO] [Server] 服务器配置完成
+[2025-06-10 19:03:06] [INFO] [Server] 默认路由注册完成
+[2025-06-10 19:03:06] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-10 19:03:07] [INFO] [Control] 尝试加载数据...
+[2025-06-10 19:03:07] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-10 19:03:07] [INFO] [Control] 数据库已初始化
+[2025-06-10 19:03:07] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-10 19:03:07] [INFO] [Server] POST JSON端点注册成功: /register
+[2025-06-10 19:03:07] [INFO] [Server] POST JSON端点注册成功: /login
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /list
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /allchatlist
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /joinquitroom
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chatroomname
+[2025-06-10 19:03:07] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-10 19:03:07] [INFO] [Server] POST JSON端点注册成功: /control/auth
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /control
+[2025-06-10 19:03:07] [INFO] [Server] POST JSON端点注册成功: /control/command
+[2025-06-10 19:03:07] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-10 19:03:07] [INFO] [Control] WEB控制服务器已启动
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chat/1/messages
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chat/1/all-messages
+[2025-06-10 19:03:07] [INFO] [Server] POST JSON端点注册成功: /chat/1/messages
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-10 19:03:07] [INFO] [Server] POST文件端点注册成功: /chat/1/upload
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-10 19:03:07] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-10 19:03:07] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chat/2/messages
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chat/2/all-messages
+[2025-06-10 19:03:07] [INFO] [Server] POST JSON端点注册成功: /chat/2/messages
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-10 19:03:07] [INFO] [Server] POST文件端点注册成功: /chat/2/upload
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-10 19:03:07] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-10 19:03:07] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-10 19:03:07] [INFO] [Server] 文件端点注册成功: /chat2 -> html/index.html
+[2025-06-10 19:03:15] [INFO] [ChatSys] 127.0.0.1的cookie无效 
+[2025-06-10 19:03:16] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
+[2025-06-10 19:03:19] [INFO] [chatroom::message] [roomID:1][123][1]
+[2025-06-10 19:03:20] [INFO] [chatroom::message] [roomID:1][123][2]
+[2025-06-10 19:03:24] [INFO] [RoomManager] 用户 1 joined room 2
+[2025-06-10 19:03:59] [INFO] [chatroom::message] [roomID:1][123][__BR__]
+[2025-06-10 19:04:03] [WARNING] [RoomManager] Room 3 not found
+[2025-06-10 19:05:09] [INFO] [LoginSys] 127.0.0.1 在试图以 123注册时出现了用户名重名
+[2025-06-10 19:05:14] [INFO] [database] 用户 1234 已成功添加。
+[2025-06-10 19:05:14] [INFO] [LoginSys] 127.0.0.1 1234-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功注册
+[2025-06-10 19:05:18] [INFO] [LoginSys] 127.0.0.1 123-12a0ed7f1c86f1b2a1843e337ea4a1df408afda457ea51e26d374221f53b0faf 在试图登录时 客户端错误:WRONG_PIASSWORD
+[2025-06-10 19:05:21] [INFO] [LoginSys] 127.0.0.1 123-12a0ed7f1c86f1b2a1843e337ea4a1df408afda457ea51e26d374221f53b0faf 在试图登录时 客户端错误:WRONG_PIASSWORD
+[2025-06-10 19:05:23] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
+[2025-06-10 19:07:29] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-10 19:07:29] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-10 19:07:29] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-10 19:07:29] [INFO] [Control] 已加载配置文件
+[2025-06-10 19:07:33] [INFO] [Control] 尝试开启服务器...
+[2025-06-10 19:07:33] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-10 19:07:33] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-10 19:07:33] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-10 19:07:33] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-10 19:07:33] [INFO] [Server] 服务器配置完成
+[2025-06-10 19:07:33] [INFO] [Server] 默认路由注册完成
+[2025-06-10 19:07:33] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-10 19:07:34] [INFO] [Control] 尝试加载数据...
+[2025-06-10 19:07:34] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-10 19:07:34] [INFO] [Control] 数据库已初始化
+[2025-06-10 19:07:34] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-10 19:07:34] [INFO] [Server] POST JSON端点注册成功: /register
+[2025-06-10 19:07:34] [INFO] [Server] POST JSON端点注册成功: /login
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /list
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /allchatlist
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /joinquitroom
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chatroomname
+[2025-06-10 19:07:34] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-10 19:07:34] [INFO] [Server] POST JSON端点注册成功: /control/auth
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /control
+[2025-06-10 19:07:34] [INFO] [Server] POST JSON端点注册成功: /control/command
+[2025-06-10 19:07:34] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-10 19:07:34] [INFO] [Control] WEB控制服务器已启动
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chat/1/messages
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chat/1/all-messages
+[2025-06-10 19:07:34] [INFO] [Server] POST JSON端点注册成功: /chat/1/messages
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-10 19:07:34] [INFO] [Server] POST文件端点注册成功: /chat/1/upload
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-10 19:07:34] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-10 19:07:34] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chat/2/messages
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chat/2/all-messages
+[2025-06-10 19:07:34] [INFO] [Server] POST JSON端点注册成功: /chat/2/messages
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-10 19:07:34] [INFO] [Server] POST文件端点注册成功: /chat/2/upload
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-10 19:07:34] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-10 19:07:34] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-10 19:07:34] [INFO] [Server] 文件端点注册成功: /chat2 -> html/index.html
+[2025-06-10 19:07:46] [WARNING] [RoomManager] Room 4 not found
+[2025-06-10 19:08:01] [INFO] [ControlServer] 用户登录成功，分配 session_id=99029614683899827031749553681
+[2025-06-10 19:08:01] [INFO] [ControlServer] 收到命令: listroom
+[2025-06-10 19:08:01] [INFO] [Control] 聊天室列表已获取
+[2025-06-10 19:08:01] [INFO] [ControlServer] 收到命令: listuser
+[2025-06-10 19:08:01] [INFO] [Control] 用户列表已获取
+[2025-06-11 10:26:41] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-11 10:26:41] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-11 10:26:41] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-11 10:26:41] [INFO] [Control] 已加载配置文件
+[2025-06-11 10:26:47] [INFO] [Control] 尝试开启服务器...
+[2025-06-11 10:26:47] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-11 10:26:47] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-11 10:26:47] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-11 10:26:47] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-11 10:26:47] [INFO] [Server] 服务器配置完成
+[2025-06-11 10:26:47] [INFO] [Server] 默认路由注册完成
+[2025-06-11 10:26:47] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-11 10:26:48] [INFO] [Control] 尝试加载数据...
+[2025-06-11 10:26:48] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-11 10:26:48] [INFO] [Control] 数据库已初始化
+[2025-06-11 10:26:48] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-11 10:26:48] [INFO] [Server] POST JSON端点注册成功: /register
+[2025-06-11 10:26:48] [INFO] [Server] POST JSON端点注册成功: /login
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /list
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /allchatlist
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /joinquitroom
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chatroomname
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-11 10:26:48] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-11 10:26:48] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-11 10:26:48] [INFO] [Server] POST JSON端点注册成功: /control/auth
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /control
+[2025-06-11 10:26:48] [INFO] [Server] POST JSON端点注册成功: /control/command
+[2025-06-11 10:26:48] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-11 10:26:48] [INFO] [Control] WEB控制服务器已启动
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chat/1/messages
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chat/1/all-messages
+[2025-06-11 10:26:48] [INFO] [Server] POST JSON端点注册成功: /chat/1/messages
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-11 10:26:48] [INFO] [Server] POST文件端点注册成功: /chat/1/upload
+[2025-06-11 10:26:48] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chat/2/messages
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /chat/2/all-messages
+[2025-06-11 10:26:48] [INFO] [Server] POST JSON端点注册成功: /chat/2/messages
+[2025-06-11 10:26:48] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-11 10:26:48] [INFO] [Server] POST文件端点注册成功: /chat/2/upload
+[2025-06-11 10:26:48] [INFO] [Server] 文件端点注册成功: /chat2 -> html/index.html
+[2025-06-11 10:26:54] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:

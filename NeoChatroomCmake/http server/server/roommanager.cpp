@@ -430,4 +430,93 @@ void start_manager() {
     server.handleRequest("/allchatlist", getAllList);
     server.handleRequest("/joinquitroom", editRoomToUserRoute); // Updated route
     server.handleRequest("/chatroomname", getChatroomName); // New route
+
+
+        // 提供图片文件 /logo.png
+        server.getInstance().handleRequest("/logo.png", [](const httplib::Request& req, httplib::Response& res) {
+            std::ifstream logoFile("html/logo.png", std::ios::binary);
+            if (logoFile) {
+                std::stringstream buffer;
+                buffer << logoFile.rdbuf();
+                res.set_content(buffer.str(), "image/png");
+            }
+            else {
+                res.status = 404;
+                res.set_content("Logo not found", "text/plain");
+            }
+            });
+
+        // 提供 JS 文件 /chat/js
+        server.getInstance().handleRequest("/chat/js", [](const httplib::Request& req, httplib::Response& res) {
+            std::ifstream jsFile("html/chatroom.js", std::ios::binary);
+            if (jsFile) {
+                std::stringstream buffer;
+                buffer << jsFile.rdbuf();
+                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // 修改编码
+            }
+            else {
+                res.status = 404;
+                res.set_content("chatroom.js not found", "text/plain");
+            }
+            });
+
+        // 提供 JS 文件 /chatlist/js
+        server.getInstance().handleRequest("/chatlist/js", [](const httplib::Request& req, httplib::Response& res) {
+            std::ifstream jsFile("html/chatlist.js", std::ios::binary);
+            if (jsFile) {
+                std::stringstream buffer;
+                buffer << jsFile.rdbuf();
+                res.set_content(buffer.str(), "application/javascript; charset=gbk"); // 修改编码
+            }
+            else {
+                res.status = 404;
+                res.set_content("chatlist.js not found", "text/plain");
+            }
+            });
+
+
+        // 添加 chatlist.html 的路由
+        server.getInstance().serveFile("/chatlist", "html/chatlist.html"); // 确保路径正确
+
+        // 提供图片文件 /images/*，动态路由
+        server.getInstance().handleRequest(R"(/images/([^/]+))", [](const httplib::Request& req, httplib::Response& res) {
+            std::string imagePath = "html/images/" + req.matches[1].str();  // 获取图片文件名
+            std::ifstream imageFile(imagePath, std::ios::binary);
+
+            if (imageFile) {
+                std::stringstream buffer;
+                buffer << imageFile.rdbuf();
+
+                // 自动推测图片的 MIME 类型
+                std::string extension = imagePath.substr(imagePath.find_last_of('.') + 1);
+                std::string mimeType = "images/" + extension;
+
+                res.set_content(buffer.str(), mimeType);
+            }
+            else {
+                res.status = 404;
+                res.set_content("Image not found", "text/plain");
+            }
+            });
+
+        // 提供文件 /files/*，动态路由
+        // 提供文件 /files/*，动态路由
+        server.getInstance().handleRequest(R"(/files/([^/]+))", [](const httplib::Request& req, httplib::Response& res) {
+            std::string filePath = "html/files/" + req.matches[1].str();  // 获取文件名
+            std::ifstream file(filePath, std::ios::binary);
+
+            if (file) {
+                std::stringstream buffer;
+                buffer << file.rdbuf();
+
+                // 自动推测文件的 MIME 类型
+                std::string mimeType = Server::detectMimeType(filePath);
+
+                res.set_content(buffer.str(), mimeType);
+            }
+            else {
+                res.status = 404;
+                res.set_content("File not found", "text/plain");
+            }
+            });
 }
