@@ -129,7 +129,7 @@ Json::Value command_runner(string command, int roomid) {
                     return result;
                 }
 
-                loadChatroomInConfig();
+                //loadChatroomInConfig();
                 result["status"] = "success";
                 result["message"] = "数据加载完成";
             }
@@ -153,7 +153,7 @@ Json::Value command_runner(string command, int roomid) {
                     try {
                         if (room[newRoomId].start()) {
                             logger.logInfo("Control", "聊天室已创建并启动，ID: " + to_string(newRoomId));
-                            saveConfig();  // 创建后保存配置
+                            //saveConfig();  // 创建后保存配置
                             result["status"] = "success";
                             result["message"] = "聊天室已创建并启动";
                             result["data"]["roomId"] = newRoomId;
@@ -201,7 +201,7 @@ Json::Value command_runner(string command, int roomid) {
                 if (roomId >= 0 && roomId < MAXROOM && used[roomId]) {
                     delroom(roomId);
                     logger.logInfo("Control", "聊天室已删除，ID: " + to_string(roomId));
-                    saveConfig();  // 删除后保存配置
+                    //saveConfig();  // 删除后保存配置
                     result["status"] = "success";
                     result["message"] = "聊天室已删除";
                     result["data"]["roomId"] = roomId;
@@ -252,7 +252,7 @@ Json::Value command_runner(string command, int roomid) {
                         try {
                             setroomtype(roomId, newType);
                             logger.logInfo("Control", "聊天室类型已更新，ID: " + to_string(roomId) + "，新类型: " + to_string(newType));
-                            saveConfig();
+                            //saveConfig();
                             result["status"] = "success";
                             result["message"] = "聊天室类型已更新";
                             result["data"]["roomId"] = roomId;
@@ -293,7 +293,7 @@ Json::Value command_runner(string command, int roomid) {
                         try {
                             editroom(roomId, newName);
                             logger.logInfo("Control", "聊天室已重命名，ID: " + to_string(roomId) + "，新名称: " + newName);
-                            saveConfig();  // 重命名后保存配置
+                            //saveConfig();  // 重命名后保存配置
                             result["status"] = "success";
                             result["message"] = "聊天室已重命名";
                             result["data"]["roomId"] = roomId;
@@ -500,7 +500,7 @@ Json::Value command_runner(string command, int roomid) {
                                 result["message"] = "聊天室密码已设置";
                             }
                             result["data"]["roomId"] = roomId;
-                            saveConfig();
+                            //saveConfig();
                         }
                         catch (const std::exception& e) {
                             logger.logError("Control", "设置聊天室密码失败, ID: " + to_string(roomId) + "，错误: " + string(e.what()));

@@ -9,16 +9,35 @@
 using namespace std;
 #include <filesystem>
 #include "chatroom.h"
-
+#include "chatDBmanager.h"
+#include "log.h"
 
 //---------chatroom
     void chatroom::initializeChatRoom() {
-        Json::Value initialMessage;
-        initialMessage["user"] = "system";
-        initialMessage["labei"] = "GM";
-        initialMessage["timestamp"] = static_cast<Json::Int64>(time(0)); // Ensure timestamp is stored as Int64
-        initialMessage["message"] = Base64::base64_encode("___");
-        if(chatMessages.empty())chatMessages.push_back(initialMessage);
+        Logger& logger = Logger::getInstance();
+        logger.logInfo("chatroom", "初始化聊天室 ID: " + std::to_string(roomid));
+        
+        // 从数据库加载消息
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        bool loadSuccess = dbManager.getMessages(roomid, chatMessages);
+        
+        logger.logInfo("chatroom", "从数据库加载了 " + std::to_string(chatMessages.size()) + " 条消息");
+        
+        // 如果没有消息，添加初始系统消息
+        if (chatMessages.empty()) {
+            Json::Value initialMessage;
+            initialMessage["user"] = "system";
+            initialMessage["labei"] = "GM";
+            initialMessage["timestamp"] = static_cast<Json::Int64>(time(0));
+            initialMessage["message"] = Base64::base64_encode("欢迎来到聊天室");
+            
+            chatMessages.push_back(initialMessage);
+            
+            // 保存到数据库
+            if (!dbManager.addMessage(roomid, initialMessage)) {
+                logger.logError("chatroom", "无法保存初始系统消息到数据库");
+            }
+        }
     }
 
     string chatroom::transJsonMessage(Json::Value m) {
@@ -35,13 +54,20 @@ using namespace std;
         initialMessage["labei"] = "GM";
         initialMessage["timestamp"] = time(0);
 
-        // Convert UTF-8 message to GBK for frontend display
         string gbkMessage = (message.c_str());
         initialMessage["message"] = Base64::base64_encode(gbkMessage);
 
+        // 添加到内存中
         chatMessages.push_back(initialMessage);
+        
+        // 同时添加到数据库
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        if (!dbManager.addMessage(roomid, initialMessage)) {
+            Logger& logger = Logger::getInstance();
+            logger.logError("chatroom", "无法保存系统消息到数据库");
+        }
 
-        // Log the message in UTF-8 for proper log display
+        // Log the message
         Logger& logger = Logger::getInstance();
         logger.logInfo("chatroom::message", transJsonMessage(initialMessage));
     }
@@ -259,7 +285,6 @@ using namespace std;
         newMessage["user"] = nowuser.getname();
         newMessage["labei"] = nowuser.getlabei();
 
-        // Decode base64 message and process it
         string gbkMsg = decodedMsg.c_str();
         string msgSafe = Keyword::process_string(gbkMsg);
         string codedmsg = Base64::base64_encode(msgSafe);
@@ -270,12 +295,26 @@ using namespace std;
             return;
         }
         newMessage["message"] = codedmsg;
-        newMessage["imageUrl"] = root["imageUrl"];
-        newMessage["timestamp"] = static_cast<Json::Int64>(time(0)); // Ensure timestamp is stored as Int64
+        if (root.isMember("imageUrl")) {
+            newMessage["imageUrl"] = root["imageUrl"];
+        }
+        newMessage["timestamp"] = static_cast<Json::Int64>(time(0));
 
         lock_guard<mutex> lock(mtx);
+        
+        // 添加到内存中的消息队列
         chatMessages.push_back(newMessage);
-        if (chatMessages.size() >= MAXSIZE) chatMessages.pop_front();
+        if (chatMessages.size() >= MAXSIZE) {
+            chatMessages.pop_front();
+        }
+        
+        // 添加到数据库
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        bool success = dbManager.addMessage(roomid, newMessage);
+        
+        if (!success) {
+            logger.logError("chatroom", "无法保存消息到数据库");
+        }
 
         // Log message in UTF-8 for proper display
         logger.logInfo("chatroom::message",
@@ -434,20 +473,37 @@ using namespace std;
     }
 
     bool chatroom::start() {
+        Logger& logger = Logger::getInstance();
+        
         if (roomid == -1) {
+            logger.logError("chatroom", "无法启动聊天室：无效的聊天室ID");
             return false;
         }
-        initializeChatRoom();
-        setupChatRoutes();
-        Server& server = server.getInstance(HOST);
-
-
-
-        server.serveFile("/chat" + to_string(roomid), "html/index.html");
-        return true;
+        
+        try {
+            initializeChatRoom();
+            setupChatRoutes();
+            Server& server = server.getInstance(HOST);
+            
+            server.serveFile("/chat" + to_string(roomid), "html/index.html");
+            logger.logInfo("chatroom", "聊天室 ID:" + std::to_string(roomid) + " 启动成功");
+            return true;
+        } catch (const std::exception& e) {
+            logger.logError("chatroom", "启动聊天室时发生异常: " + std::string(e.what()));
+            return false;
+        } catch (...) {
+            logger.logError("chatroom", "启动聊天室时发生未知异常");
+            return false;
+        }
     }
+
     void chatroom::clearMessage() {
         chatMessages.clear();
+        
+        // 清空数据库中的消息
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        dbManager.clearMessages(roomid);
+        
         return;
     }
     string chatroom::gettittle() {
@@ -462,25 +518,40 @@ using namespace std;
     }
     void chatroom::setflag(int x) {
         flags = x;
+        
+        // 更新数据库
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        dbManager.updateChatRoom(roomid, chatTitle, passwordHash, password, flags);
     }
     void chatroom::settittle(string Tittle) {
         chatTitle = Tittle;
-    }
-    void chatroom::setPasswordHash(const std::string& hash) {
-        passwordHash = hash;
+        
+        // 更新数据库
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        dbManager.updateChatRoom(roomid, chatTitle, passwordHash, password, flags);
     }
 
-    std::string chatroom::getPasswordHash() const {
-        return passwordHash;
+    void chatroom::setPasswordHash(const std::string& hash) {
+        passwordHash = hash;
+        
+        // 更新数据库
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        dbManager.updateChatRoom(roomid, chatTitle, passwordHash, password, flags);
     }
 
     void chatroom::setPassword(const std::string& Newpassword) {
         password = Newpassword;
         this->setPasswordHash(SHA256_::sha256(Newpassword));
+        
+        // 数据库更新已在setPasswordHash中完成
     }
 
     string chatroom::GetPassword() {
         return password;
+    }
+
+    std::string chatroom::getPasswordHash() const {
+        return passwordHash;
     }
 
     // 设置标志

@@ -80,7 +80,7 @@ auto Register = [](const httplib::Request& req, httplib::Response& res, const Js
         }
         else {
             res.set_content("Register successful", "text/plain");
-            
+
             logger.logInfo("LoginSys", req.remote_addr + " " + username + "-" + password + " 成功注册");
         }
     }
@@ -90,7 +90,7 @@ auto Register = [](const httplib::Request& req, httplib::Response& res, const Js
 
         logger.logInfo("LoginSys", req.remote_addr + " 在试图以 " + username + "注册时出现了用户名重名");
     }
-    
+
 };
 //#include "../html/"
 void start_loginSystem() {
@@ -102,9 +102,9 @@ void start_loginSystem() {
         server.serveFile("/login", "html/login.html");
         server.handlePostRequest("/register", Register);
         server.handlePostRequest("/login", login);
-        
+
         //server.start();
- 
+
 }
 /*
 Server& server = Server::getInstance("127.0.0.1");

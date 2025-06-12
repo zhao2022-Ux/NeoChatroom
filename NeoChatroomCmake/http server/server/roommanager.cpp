@@ -10,16 +10,64 @@ using namespace std;
 #include <filesystem>
 #include "chatroom.h"
 #include <sqlite3.h>
+#include "chatDBmanager.h"
 // Ensure room initialization logic is robust
 vector<chatroom> room(MAXROOM);
 bool used[MAXROOM] = { false };
 
+// 从数据库加载聊天室信息
+void loadChatroomsFromDB() {
+    Logger& logger = Logger::getInstance();
+    ChatDBManager& dbManager = ChatDBManager::getInstance();
+    
+    logger.logInfo("roommanager", "开始从数据库加载聊天室...");
+    
+    std::vector<int> roomIds = dbManager.getAllChatRoomIds();
+    logger.logInfo("roommanager", "找到 " + std::to_string(roomIds.size()) + " 个聊天室记录");
+    
+    for (int id : roomIds) {
+        if (id >= 1 && id < MAXROOM) {
+            std::string title, passwordHash, password;
+            unsigned int flags;
+            
+            if (dbManager.getChatRoom(id, title, passwordHash, password, flags)) {
+                if (!used[id]) {
+                    used[id] = true;
+                    room[id].init();
+                    room[id].setRoomID(id);
+                    room[id].settittle(title);
+                    room[id].setPasswordHash(passwordHash);
+                    room[id].setPassword(password);
+                    room[id].setflag(flags);
+                    
+                    // 启动聊天室
+                    if (!room[id].start()) {
+                        logger.logError("roommanager", "无法启动聊天室 ID: " + std::to_string(id));
+                    } else {
+                        logger.logInfo("roommanager", "已从数据库加载聊天室 ID: " + std::to_string(id) + ", 标题: " + title);
+                    }
+                }
+            } else {
+                logger.logWarning("roommanager", "无法从数据库获取聊天室信息，ID: " + std::to_string(id));
+            }
+        }
+    }
+    
+    logger.logInfo("roommanager", "聊天室加载完成");
+}
+
 int addroom() {
+    ChatDBManager& dbManager = ChatDBManager::getInstance();
+    
     for (int i = 1; i < MAXROOM; i++) {
         if (!used[i]) {
             used[i] = true;
             room[i].init();
             room[i].setRoomID(i);
+            
+            // 将新聊天室添加到数据库
+            dbManager.createChatRoom(i, "", "", "", 0);
+            
             return i;
         }
     }
@@ -28,11 +76,14 @@ int addroom() {
 
 void delroom(int x) {
     if (x >= 1 && x < MAXROOM && used[x]) {
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        dbManager.deleteChatRoom(x);
+        
         used[x] = false;
         room[x].init();
     }
     else {
-        Logger& logger = logger.getInstance();
+        Logger& logger = Logger::getInstance();
         logger.logWarning("chatroom::roomManager", "未能删除");
     }
 }
@@ -40,12 +91,34 @@ void delroom(int x) {
 int editroom(int x, string Roomtittle) {
     if (x >= room.size()) return 1;
     room[x].settittle(Roomtittle);
+    
+    // 更新数据库
+    ChatDBManager& dbManager = ChatDBManager::getInstance();
+    std::string title = room[x].gettittle();
+    std::string passwordHash = room[x].getPasswordHash();
+    std::string password = room[x].GetPassword();
+    unsigned int flags = 0;
+    if (room[x].hasFlag(chatroom::ROOM_HIDDEN)) flags |= chatroom::ROOM_HIDDEN;
+    if (room[x].hasFlag(chatroom::ROOM_NO_JOIN)) flags |= chatroom::ROOM_NO_JOIN;
+    
+    dbManager.updateChatRoom(x, title, passwordHash, password, flags);
+    
     return 0;
 }
 
 int setroomtype(int x, int type) {
     if (x >= room.size()) return 1;
     room[x].setflag(type);
+    
+    // 更新数据库
+    ChatDBManager& dbManager = ChatDBManager::getInstance();
+    std::string title = room[x].gettittle();
+    std::string passwordHash = room[x].getPasswordHash();
+    std::string password = room[x].GetPassword();
+    unsigned int flags = type; // 直接使用传入的flags
+    
+    dbManager.updateChatRoom(x, title, passwordHash, password, flags);
+    
     return 0;
 }
 
@@ -295,7 +368,7 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
         return;
     }
 
-    if (!verifyCookiePassword(uid_, password)) { 
+    if (!verifyCookiePassword(uid_, password)) {
         res.status = 403;
         res.set_content("Invalid cookie authentication", "text/plain");
         return;
@@ -371,19 +444,19 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res) {
 
 std::vector<std::tuple<int, std::string, std::string>> GetRoomListDetails() {
     std::vector<std::tuple<int, std::string, std::string>> roomDetails;
-    
+
     // Iterate through all rooms
     for (int i = 1; i < MAXROOM; i++) {
         if (used[i]) {
             // Get room name and password
             std::string name = room[i].gettittle();
             std::string password = room[i].GetPassword();
-            
+
             // Add tuple to vector
             roomDetails.emplace_back(i, name, password);
         }
     }
-    
+
     return roomDetails;
 }
 
@@ -425,6 +498,18 @@ void getChatroomName(const httplib::Request& req, httplib::Response& res) {
 }
 
 void start_manager() {
+    Logger& logger = Logger::getInstance();
+    
+    try {
+        // 从数据库加载聊天室
+        logger.logInfo("roommanager", "开始初始化聊天室管理器...");
+        loadChatroomsFromDB();
+    } catch (const std::exception& e) {
+        logger.logError("roommanager", "加载聊天室时发生异常: " + std::string(e.what()));
+    } catch (...) {
+        logger.logError("roommanager", "加载聊天室时发生未知异常");
+    }
+    
     Server& server = Server::getInstance(HOST);
     server.handleRequest("/list", getRoomList);
     server.handleRequest("/allchatlist", getAllList);
