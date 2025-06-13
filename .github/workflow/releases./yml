@@ -1,0 +1,96 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake libssl-dev libsqlite3-dev
+
+    - name: Configure and build
+      run: |
+        cd NeoChatroomCmake
+        mkdir build && cd build
+        cmake ..
+        make -j$(nproc)
+
+    - name: Package Linux binary
+      run: |
+        mkdir release
+        cp NeoChatroomCmake/build/NeoChatroom release/NeoChatroom-linux
+        tar -czvf linux_build.tar.gz release
+
+    - name: Upload Linux artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-bin
+        path: linux_build.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install vcpkg dependencies
+      run: |
+        git clone https://github.com/microsoft/vcpkg
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg install openssl:x64-windows-static sqlite3:x64-windows-static
+
+    - name: Configure CMake
+      run: |
+        $vcpkgPath = "$pwd\vcpkg\scripts\buildsystems\vcpkg.cmake"
+        cmake -B build -S NeoChatroomCmake `
+          -DCMAKE_TOOLCHAIN_FILE="$vcpkgPath" `
+          -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build project
+      run: cmake --build build --config Release
+
+    - name: Package Windows binary
+      run: |
+        mkdir release
+        Copy-Item build\Release\NeoChatroom.exe release\NeoChatroom-windows.exe
+        Compress-Archive -Path release -DestinationPath windows_build.zip
+
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-bin
+        path: windows_build.zip
+
+  create-release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Extract binaries
+      run: |
+        mkdir release
+        tar -xzf artifacts/linux-bin -C release
+        unzip artifacts/windows-bin -d release
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        files: |
+          release/NeoChatroom-linux
+          release/NeoChatroom-windows.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
