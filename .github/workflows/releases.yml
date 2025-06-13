@@ -83,9 +83,12 @@ jobs:
 
     - name: Extract binaries
       run: |
+        mkdir linux_unpack windows_unpack
+        tar -xzf artifacts/linux-bin/linux_build.tar.gz -C linux_unpack
+        unzip artifacts/windows-bin/windows_build.zip -d windows_unpack
         mkdir release
-        tar -xzf artifacts/linux-bin -C release
-        unzip artifacts/windows-bin -d release
+        cp linux_unpack/release/NeoChatroom-linux release/
+        cp windows_unpack/release/NeoChatroom-windows.exe release/
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
