@@ -74,7 +74,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
 
     - name: Build project
-      run: cmake --build
+      run: cmake --build build --config Release
 
     - name: Package Windows binary
       run: |
