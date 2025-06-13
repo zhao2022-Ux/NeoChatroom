@@ -42,6 +42,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Apply Windows compatibility patches
+      run: |
+        $toolFile = "NeoChatroomCmake/tool/tool.cpp"
+        (Get-Content $toolFile -Raw) -replace 
+          'localtime_r\(&time_val, &tm_val\);', 
+          '#if defined(_WIN32)`n        localtime_s(&tm_val, &time_val);`n#else`n        localtime_r(&time_val, &tm_val);`n#endif' |
+          Set-Content $toolFile
+      
+        (Get-Content $toolFile -Raw) -replace 
+          'std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\+/";', 
+          'static constexpr char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";' |
+          Set-Content $toolFile
+        
+        (Get-Content $toolFile -Raw) -replace 
+          'for \(size_t i = 0; i < base64_chars\.size\(\); i\+\+\)', 
+          'for (size_t i = 0; i < sizeof(base64_chars) - 1; i++)' |
+          Set-Content $toolFile
     - name: Install vcpkg dependencies
       run: |
         git clone https://github.com/microsoft/vcpkg
@@ -57,7 +74,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
 
     - name: Build project
-      run: cmake --build build --config Release
+      run: cmake --build
 
     - name: Package Windows binary
       run: |
