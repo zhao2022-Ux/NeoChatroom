@@ -16,6 +16,46 @@ using namespace std;
 vector<chatroom> room(MAXROOM);
 bool used[MAXROOM] = { false };
 
+// 缓存管理线程函数
+void cacheManagerThread() {
+    Logger& logger = Logger::getInstance();
+    logger.logInfo("CacheManager", "聊天室缓存管理器已启动");
+    
+    while (true) {
+        // 每分钟检查一次
+        std::this_thread::sleep_for(std::chrono::minutes(1));
+        
+        try {
+            time_t currentTime = time(0);
+            int unloadedCount = 0;
+            
+            for (int i = 1; i < MAXROOM; i++) {
+                if (used[i]) {
+                    // 如果聊天室的消息已加载且最后访问时间超过设定阈值
+                    if (room[i].isMessagesLoaded() && (currentTime - room[i].getLastAccessTime() > ROOMDATA_CACHE_SECONDS)) {
+                        // 使用内部方法卸载消息
+                        room[i].unloadMessages();
+                        unloadedCount++;
+                    }
+                }
+            }
+            
+            if (unloadedCount > 0) {
+                logger.logInfo("CacheManager", "已卸载 " + std::to_string(unloadedCount) + " 个聊天室的消息缓存");
+            }
+        } catch (const std::exception& e) {
+            logger.logError("CacheManager", "缓存管理异常: " + std::string(e.what()));
+        } catch (...) {
+            logger.logError("CacheManager", "缓存管理未知异常");
+        }
+    }
+}
+
+void startCacheManager() {
+    static std::thread cacheThread(cacheManagerThread);
+    cacheThread.detach();
+}
+
 // 从数据库加载聊天室信息
 void loadChatroomsFromDB() {
     Logger& logger = Logger::getInstance();
@@ -589,6 +629,10 @@ void start_manager() {
         // 从数据库加载聊天室
         logger.logInfo("roommanager", "开始初始化聊天室管理器...");
         loadChatroomsFromDB();
+        
+        // 启动缓存管理器
+        startCacheManager();
+        logger.logInfo("roommanager", "已启动聊天室缓存管理器");
     } catch (const std::exception& e) {
         logger.logError("roommanager", "加载聊天室时发生异常: " + std::string(e.what()));
     } catch (...) {

@@ -13,11 +13,19 @@ using namespace std;
 #include "log.h"
 
 //---------chatroom
-    void chatroom::initializeChatRoom() {
-        Logger& logger = Logger::getInstance();
-        logger.logInfo("chatroom", "初始化聊天室 ID: " + std::to_string(roomid));
+    void chatroom::loadMessagesIfNeeded() {
+        std::lock_guard<std::mutex> lock(cacheMtx);
+        
+        // 如果消息已加载，只更新访问时间
+        if (messagesLoaded) {
+            updateAccessTime();
+            return;
+        }
         
         // 从数据库加载消息
+        Logger& logger = Logger::getInstance();
+        logger.logInfo("chatroom", "懒加载聊天室 ID: " + std::to_string(roomid) + " 的消息");
+        
         ChatDBManager& dbManager = ChatDBManager::getInstance();
         bool loadSuccess = dbManager.getMessages(roomid, chatMessages);
         
@@ -25,19 +33,63 @@ using namespace std;
         
         // 如果没有消息，添加初始系统消息
         if (chatMessages.empty()) {
-            Json::Value initialMessage;
-            initialMessage["user"] = "system";
-            initialMessage["labei"] = "GM";
-            initialMessage["timestamp"] = static_cast<Json::Int64>(time(0));
-            initialMessage["message"] = Base64::base64_encode("欢迎来到聊天室");
-            
-            chatMessages.push_back(initialMessage);
-            
-            // 保存到数据库
-            if (!dbManager.addMessage(roomid, initialMessage)) {
-                logger.logError("chatroom", "无法保存初始系统消息到数据库");
+            try {
+                Json::Value initialMessage;
+                initialMessage["user"] = "system";
+                initialMessage["labei"] = "GM";
+                initialMessage["timestamp"] = static_cast<Json::Int64>(time(0));
+                initialMessage["message"] = Base64::base64_encode("欢迎来到聊天室");
+                
+                chatMessages.push_back(initialMessage);
+                
+                // 保存到数据库
+                if (!dbManager.addMessage(roomid, initialMessage)) {
+                    logger.logError("chatroom", "无法保存初始系统消息到数据库");
+                }
+            } catch (const std::exception& e) {
+                logger.logError("chatroom", "创建初始消息异常: " + std::string(e.what()));
             }
         }
+        
+        messagesLoaded = true;
+        updateAccessTime();
+    }
+
+    void chatroom::updateAccessTime() {
+        lastAccessTime = time(0);
+    }
+
+    void chatroom::unloadMessages() {
+        std::lock_guard<std::mutex> lock(cacheMtx);
+        
+        if (!messagesLoaded) return;
+        
+        Logger& logger = Logger::getInstance();
+        logger.logInfo("chatroom", "卸载聊天室 ID: " + std::to_string(roomid) + " 的消息，释放内存");
+        
+        chatMessages.clear();
+        messagesLoaded = false;
+    }
+
+    void chatroom::initializeChatRoom() {
+        Logger& logger = Logger::getInstance();
+        logger.logInfo("chatroom", "初始化聊天室 ID: " + std::to_string(roomid));
+        
+        // 不再在这里加载消息，改为懒加载
+        // 但仍然检查数据库中是否有这个聊天室的记录
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        
+        // 确保聊天室存在于数据库中
+        std::string title, passwordHash, password;
+        unsigned int flags;
+        
+        if (!dbManager.getChatRoom(roomid, title, passwordHash, password, flags)) {
+            // 如果不存在，创建聊天室记录
+            dbManager.createChatRoom(roomid, chatTitle, this->passwordHash, this->password, this->flags);
+        }
+        
+        // 不加载消息，设置为未加载状态
+        messagesLoaded = false;
     }
 
     string chatroom::transJsonMessage(Json::Value m) {
@@ -49,27 +101,33 @@ using namespace std;
     }
 
     void chatroom::systemMessage(string message) {
-        Json::Value initialMessage;
-        initialMessage["user"] = "system";
-        initialMessage["labei"] = "GM";
-        initialMessage["timestamp"] = time(0);
-
-        string gbkMessage = (message.c_str());
-        initialMessage["message"] = Base64::base64_encode(gbkMessage);
-
-        // 添加到内存中
-        chatMessages.push_back(initialMessage);
-        
-        // 同时添加到数据库
-        ChatDBManager& dbManager = ChatDBManager::getInstance();
-        if (!dbManager.addMessage(roomid, initialMessage)) {
+        try {
+            // 确保消息已加载
+            loadMessagesIfNeeded();
+            
+            Json::Value initialMessage;
+            initialMessage["user"] = "system";
+            initialMessage["labei"] = "GM";
+            initialMessage["timestamp"] = static_cast<Json::Int64>(time(0));
+            initialMessage["message"] = Base64::base64_encode(message);
+            
+            // 添加到内存中
+            chatMessages.push_back(initialMessage);
+            
+            // 同时添加到数据库
+            ChatDBManager& dbManager = ChatDBManager::getInstance();
+            if (!dbManager.addMessage(roomid, initialMessage)) {
+                Logger& logger = Logger::getInstance();
+                logger.logError("chatroom", "无法保存系统消息到数据库");
+            }
+            
+            // Log the message
             Logger& logger = Logger::getInstance();
-            logger.logError("chatroom", "无法保存系统消息到数据库");
+            logger.logInfo("chatroom::message", transJsonMessage(initialMessage));
+        } catch (const std::exception& e) {
+            Logger& logger = Logger::getInstance();
+            logger.logError("chatroom", "系统消息异常: " + std::string(e.what()));
         }
-
-        // Log the message
-        Logger& logger = Logger::getInstance();
-        logger.logInfo("chatroom::message", transJsonMessage(initialMessage));
     }
 
     bool chatroom::checkAllowId(const int ID) {
@@ -95,6 +153,9 @@ using namespace std;
             res.set_content("Invalid room access", "text/plain");
             return;
         }
+
+        // 确保消息已加载
+        loadMessagesIfNeeded();
 
         long long lastTimestamp = 0;
         if (req.has_param("lastTimestamp")) {
@@ -140,6 +201,9 @@ using namespace std;
     }
 
     void chatroom::getAllChatMessages(const httplib::Request& req, httplib::Response& res) {
+        // 确保消息已加载
+        loadMessagesIfNeeded();
+        
         Json::Value response;
         for (const auto& msg : chatMessages) {
             response.append(msg);
@@ -207,11 +271,9 @@ using namespace std;
 
     //路由发送消息请求
     void chatroom::postChatMessage(const httplib::Request& req, httplib::Response& res, const Json::Value& root) {
-
         res.set_header("Access-Control-Allow-Origin", "*"); // 允许所有来源访问
         res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // 允许的 HTTP 方法
         res.set_header("Access-Control-Allow-Headers", "Content-Type"); // 允许的头部字段
-
 
         Logger& logger = Logger::getInstance();
         std::string cookies = req.get_header_value("Cookie");
@@ -280,6 +342,9 @@ using namespace std;
             return;
         }
 
+        // 确保消息已加载
+        loadMessagesIfNeeded();
+        
         // 保存聊天消息
         Json::Value newMessage;
         newMessage["user"] = nowuser.getname();
@@ -498,14 +563,18 @@ using namespace std;
     }
 
     void chatroom::clearMessage() {
+        std::lock_guard<std::mutex> lock(cacheMtx);
         chatMessages.clear();
         
         // 清空数据库中的消息
         ChatDBManager& dbManager = ChatDBManager::getInstance();
         dbManager.clearMessages(roomid);
         
+        // 重置加载状态
+        messagesLoaded = false;
         return;
     }
+    
     string chatroom::gettittle() {
         return chatTitle;
     }

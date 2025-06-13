@@ -97,8 +97,9 @@ bool ChatDBManager::initDatabase() {
         }
     }
     
-    // 创建消息表
+    // 创建消息表或更新现有表结构
     if (!checkTableExists("messages")) {
+        // 如果消息表不存在，创建一个新表
         const char* sql = "CREATE TABLE messages ("
                          "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                          "room_id INTEGER, "
@@ -113,37 +114,58 @@ bool ChatDBManager::initDatabase() {
             logger.logError("ChatDBManager", "创建消息表失败");
             return false;
         }
+        logger.logInfo("ChatDBManager", "创建了消息表");
     } else {
-        // 检查表结构并修复
-        sqlite3_stmt* stmt;
-        int rc = sqlite3_prepare_v2(db, "PRAGMA table_info(messages);", -1, &stmt, nullptr);
-        if (rc == SQLITE_OK) {
-            bool hasLabel = false;
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                const char* colName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-                if (strcmp(colName, "label") == 0) {
-                    hasLabel = true;
-                    break;
-                }
+        // 检查消息表结构并添加缺失的列
+        logger.logInfo("ChatDBManager", "检查消息表结构...");
+        
+        // 检查 label 列
+        bool hasLabel = checkColumnExists("messages", "label");
+        if (!hasLabel) {
+            logger.logWarning("ChatDBManager", "messages表缺少label列，添加列...");
+            if (!executeQuery("ALTER TABLE messages ADD COLUMN label TEXT;")) {
+                logger.logError("ChatDBManager", "无法添加label列到messages表");
+                return false;
             }
-            sqlite3_finalize(stmt);
-            
-            // 如果没有label列，添加它
-            if (!hasLabel) {
-                logger.logWarning("ChatDBManager", "messages表缺少label列，添加列...");
-                
-                if (!executeQuery("ALTER TABLE messages ADD COLUMN label TEXT;")) {
-                    logger.logError("ChatDBManager", "无法添加label列到messages表");
-                    return false;
-                }
-                
-                logger.logInfo("ChatDBManager", "messages表修复完成");
+            logger.logInfo("ChatDBManager", "成功添加label列");
+        }
+        
+        // 检查 image_url 列
+        bool hasImageUrl = checkColumnExists("messages", "image_url");
+        if (!hasImageUrl) {
+            logger.logWarning("ChatDBManager", "messages表缺少image_url列，添加列...");
+            if (!executeQuery("ALTER TABLE messages ADD COLUMN image_url TEXT;")) {
+                logger.logError("ChatDBManager", "无法添加image_url列到messages表");
+                return false;
             }
+            logger.logInfo("ChatDBManager", "成功添加image_url列");
         }
     }
     
     logger.logInfo("ChatDBManager", "数据库初始化完成");
     return true;
+}
+
+bool ChatDBManager::checkColumnExists(const std::string& tableName, const std::string& columnName) {
+    std::string query = "PRAGMA table_info(" + tableName + ");";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        return false;
+    }
+    
+    bool exists = false;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char* colName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        if (colName && columnName == colName) {
+            exists = true;
+            break;
+        }
+    }
+    
+    sqlite3_finalize(stmt);
+    return exists;
 }
 
 bool ChatDBManager::executeQuery(const std::string& query) {
