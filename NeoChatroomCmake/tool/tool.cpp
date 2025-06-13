@@ -1,4 +1,4 @@
-// tool.cpp - Linux compatible version
+// tool.cpp - Cross-platform compatible version
 
 #include <iostream>
 #include <fstream>
@@ -18,6 +18,13 @@
 #include <openssl/err.h>
 
 #include "../include/tool.h"
+
+// 平台检测
+#if defined(_WIN32) || defined(_MSC_VER)
+#define PLATFORM_WINDOWS
+#else
+#define PLATFORM_UNIX
+#endif
 
 namespace FILE_ {
     using namespace std;
@@ -98,7 +105,8 @@ namespace FILE_ {
         string fullPath = (fs::path(path) / filename).string();
         try {
             if (fs::exists(fullPath)) return true;
-        } catch (const fs::filesystem_error& e_) {
+        } catch (const fs::filesystem_error& e) {
+            // 删除未使用的局部变量 e_ 的下划线
             info::printerror("文件创建失败: 找不到路径 " + fullPath);
             return false;
         }
@@ -121,7 +129,14 @@ namespace time_ {
         auto now = chrono::system_clock::now();
         time_t t = chrono::system_clock::to_time_t(now);
         struct tm timeinfo;
-        localtime_r(&t, &timeinfo);  // 替换 localtime_s
+        
+        // 跨平台处理 localtime 函数
+#ifdef PLATFORM_WINDOWS
+        localtime_s(&timeinfo, &t);
+#else
+        localtime_r(&t, &timeinfo);
+#endif
+
         stringstream ss;
         ss << put_time(&timeinfo, "%Y-%m-%d %X");
         return ss.str();
@@ -190,16 +205,38 @@ namespace SHA256_ {
         return oss.str();
     }
 }
+
 #include <array>
 namespace Base64 {
     const std::string alphabet_map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    // 使用常量表示字母表长度，而不是调用size()方法
+    constexpr size_t ALPHABET_SIZE = 64; // Base64 字母表固定为64个字符
 
+    // 修改 constexpr 函数以支持 MSVC
+#ifdef PLATFORM_WINDOWS
+    // MSVC版本 - 非constexpr函数
+    std::array<uint8_t, 128> generate_reverse_map() {
+        std::array<uint8_t, 128> map{};
+        for (size_t i = 0; i < map.size(); ++i)
+            map[i] = 255;  // invalid
+
+        for (size_t i = 0; i < ALPHABET_SIZE; ++i) {
+            map[static_cast<uint8_t>(alphabet_map[i])] = static_cast<uint8_t>(i);
+        }
+
+        return map;
+    }
+
+    // 将其更改为全局变量
+    const std::array<uint8_t, 128> reverse_map = generate_reverse_map();
+#else
+    // 非MSVC版本 - 保持constexpr
     constexpr std::array<uint8_t, 128> generate_reverse_map() {
         std::array<uint8_t, 128> map{};
         for (size_t i = 0; i < map.size(); ++i)
             map[i] = 255;  // invalid
 
-        for (size_t i = 0; i < alphabet_map.size(); ++i) {
+        for (size_t i = 0; i < ALPHABET_SIZE; ++i) {
             map[static_cast<uint8_t>(alphabet_map[i])] = static_cast<uint8_t>(i);
         }
 
@@ -207,6 +244,7 @@ namespace Base64 {
     }
 
     const std::array<uint8_t, 128> reverse_map = generate_reverse_map();
+#endif
 
     std::string base64_encode(const std::string& input) {
         std::string output;

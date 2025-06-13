@@ -127,7 +127,7 @@ void Server::handleRequest(const std::string& endpoint, const std::function<void
                 }
             }
         });
-        Logger::getInstance().logInfo("Server", "GET端点注册成功: " + endpoint);
+        //Logger::getInstance().logInfo("Server", "GET端点注册成功: " + endpoint);
     }
     catch (const std::exception& e) {
         Logger::getInstance().logError("Server", "注册GET端点失败 " + endpoint + ": " + e.what());
@@ -172,7 +172,7 @@ void Server::handlePostRequest(const std::string& endpoint, const std::function<
                 res.set_content("服务器内部错误", "text/plain; charset=utf-8");
             }
         });
-        Logger::getInstance().logInfo("Server", "POST JSON端点注册成功: " + endpoint);
+        //Logger::getInstance().logInfo("Server", "POST JSON端点注册成功: " + endpoint);
     }
     catch (const std::exception& e) {
         Logger::getInstance().logError("Server", "注册POST JSON端点失败 " + endpoint + ": " + e.what());
@@ -220,7 +220,7 @@ void Server::handlePostRequest(const std::string& endpoint, const std::function<
                 }
             }
         });
-        Logger::getInstance().logInfo("Server", "POST文件端点注册成功: " + endpoint);
+        //Logger::getInstance().logInfo("Server", "POST文件端点注册成功: " + endpoint);
     }
     catch (const std::exception& e) {
         Logger::getInstance().logError("Server", "注册POST文件端点失败 " + endpoint + ": " + e.what());
