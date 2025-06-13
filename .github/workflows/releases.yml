@@ -53,6 +53,7 @@ jobs:
         $vcpkgPath = "$pwd\vcpkg\scripts\buildsystems\vcpkg.cmake"
         cmake -B build -S NeoChatroomCmake `
           -DCMAKE_TOOLCHAIN_FILE="$vcpkgPath" `
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static `
           -DCMAKE_BUILD_TYPE=Release
 
     - name: Build project
@@ -86,7 +87,7 @@ jobs:
         unzip artifacts/windows-bin -d release
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref }}
         files: |
