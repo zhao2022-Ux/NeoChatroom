@@ -1,6 +1,13 @@
 #ifndef FILE_H
 #define FILE_H
 
+// å¹³å°æ£€æµ‹
+#if defined(_WIN32) || defined(_MSC_VER)
+#define PLATFORM_WINDOWS
+#else
+#define PLATFORM_UNIX
+#endif
+
 #include <string>
 #include <vector>
 namespace FILE_ {
@@ -10,45 +17,45 @@ namespace FILE_ {
         vector<string> cache;
         string nowpath;
     public:
-        // ÏòÖ¸¶¨Â·¾¶ÏÂµÄÎÄ¼şµÄ×îĞÂÒ»ĞĞĞ´ÈëÄÚÈİ
+        // å‘æŒ‡å®šè·¯å¾„ä¸‹çš„æ–‡ä»¶çš„æœ€æ–°ä¸€è¡Œå†™å…¥å†…å®¹
         bool appendToLastLine(const string& path, const string& filename, const string& text);
 
-        // ÏòÖ¸¶¨Â·¾¶ÏÂµÄÎÄ¼şµÄÖ¸¶¨ĞĞĞ´ÈëÄÚÈİ£¨Ğ§ÂÊ½ÏµÍ²»½¨ÒéÊ¹ÓÃ£©
+        // å‘æŒ‡å®šè·¯å¾„ä¸‹çš„æ–‡ä»¶çš„æŒ‡å®šè¡Œå†™å…¥å†…å®¹ï¼ˆæ•ˆç‡è¾ƒä½ä¸å»ºè®®ä½¿ç”¨ï¼‰
         bool writeToLine(const string& path, const string& filename, int lineNumber, const string& text);
 
-        //½«Ò»¸öÎÄ¼şÈ«²¿¶ÁÈ¡µ½»º´æ
+        //å°†ä¸€ä¸ªæ–‡ä»¶å…¨éƒ¨è¯»å–åˆ°ç¼“å­˜
         int readToCache(const string& path, const string& filename);
 
-        // ¶ÁÈ¡Ö¸¶¨Â·¾¶ÏÂÎÄ¼şÖ¸¶¨ĞĞµÄ×Ö·û´®
+        // è¯»å–æŒ‡å®šè·¯å¾„ä¸‹æ–‡ä»¶æŒ‡å®šè¡Œçš„å­—ç¬¦ä¸²
         string readFromLine(const string& path, const string& filename, int lineNumber);
 
-        // ÔÚÖ¸¶¨Â·¾¶ÏÂĞÂ½¨Ò»¸öÎÄ¼ş£¨Èç¹ûÎÄ¼şÒÑ¾­´æÔÚ£¬Ôò·µ»Øfalse£©
+        // åœ¨æŒ‡å®šè·¯å¾„ä¸‹æ–°å»ºä¸€ä¸ªæ–‡ä»¶ï¼ˆå¦‚æœæ–‡ä»¶å·²ç»å­˜åœ¨ï¼Œåˆ™è¿”å›falseï¼‰
         bool createNewFile(const string& path, const string& filename);
 
 
-        //Çå¿ÕÖ¸¶¨Â·¾¶µÄÎÄ¼ş
+        //æ¸…ç©ºæŒ‡å®šè·¯å¾„çš„æ–‡ä»¶
         bool ClearFile(const string& path, const string& filename);
     };
     
 }
 #include <chrono>
 #include <sstream>
-#include <iomanip>  // ĞèÒªÕâ¸öÍ·ÎÄ¼şÀ´Ê¹ÓÃ put_time
+#include <iomanip>  // éœ€è¦è¿™ä¸ªå¤´æ–‡ä»¶æ¥ä½¿ç”¨ put_time
 
 namespace time_ {
     std::string getCurrentTime();
 }
 namespace info {
     
-    void printinfo(std::string infotext);//´òÓ¡ĞÅÏ¢
-    void printwarning(std::string infotext);//´òÓ¡¾¯¸æ
-    void printerror(std::string infotext);//´òÓ¡´íÎó
+    void printinfo(std::string infotext);//æ‰“å°ä¿¡æ¯
+    void printwarning(std::string infotext);//æ‰“å°è­¦å‘Š
+    void printerror(std::string infotext);//æ‰“å°é”™è¯¯
 }
 namespace str {
     using namespace std;
-    bool safeatoi(const std::string& str, int& result);//°²È«µØ½«stirng×ªÎªint
+    bool safeatoi(const std::string& str, int& result);//å®‰å…¨åœ°å°†stirngè½¬ä¸ºint
 
-    //string DeleteSpical(string str);//É¾³ıstringÖĞµÄ¿Õ¸ñºÍ×ªÒå×Ö·û
+    //string DeleteSpical(string str);//åˆ é™¤stringä¸­çš„ç©ºæ ¼å’Œè½¬ä¹‰å­—ç¬¦
 }
 #include "config.h"
 
@@ -70,7 +77,7 @@ namespace Base64 {
 #include <unordered_set>
 namespace Keyword {
     using namespace std;
-    string process_string(const string& input); //Ìæ»»SQL×¢ÈëºÍxml×¢Èë
+    string process_string(const string& input); //æ›¿æ¢SQLæ³¨å…¥å’Œxmlæ³¨å…¥
     void replace_sql_injection_keywords(string& input);
     bool check_sql_keywords(string imput);
 }

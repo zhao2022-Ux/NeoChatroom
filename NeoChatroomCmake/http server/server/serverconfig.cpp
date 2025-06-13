@@ -27,7 +27,7 @@ static void createDefaultConfig() {
     Logger& logger = Logger::getInstance();
     try {
         Json::Value root;
-        
+
         // 默认服务器配置：HOST 和 PORT
         root["server"]["host"] = CURRENT_HOST;
         root["server"]["port"] = CURRENT_PORT;

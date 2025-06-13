@@ -33,17 +33,6 @@ private:
     int type;// 3为隐藏 2为禁止加入 已弃用
     // Removed unused type variable
 
-    // 消息懒加载相关成员变量
-    bool messagesLoaded = false;  // 标记消息是否已加载
-    time_t lastAccessTime = 0;    // 最后访问时间，用于缓存管理
-    std::mutex cacheMtx;          // 缓存操作的互斥锁
-
-    // 懒加载消息
-    void loadMessagesIfNeeded();
-    
-    // 更新最后访问时间
-    void updateAccessTime();
-    
     // 初始化聊天室
     void initializeChatRoom();
 
@@ -92,9 +81,12 @@ private:
     std::string password; // Store the password for the chatroom.
 
 public:
-    // 卸载消息以释放内存 - 移到公共部分以便外部调用
-    void unloadMessages();
-    
+
+
+    // 构造函数和析构函数
+    //chatroom(int id) : roomid(id) {}
+    //~chatroom() {}
+
     // 系统消息
     void systemMessage(string message);
 
@@ -121,15 +113,6 @@ public:
     void setPassword(const std::string& Newpassword);
 
     string GetPassword();
-
-    // 获取聊天室标志
-    unsigned int getFlags() const { return flags; }
-
-    // 查询消息是否已加载
-    bool isMessagesLoaded() const { return messagesLoaded; }
-    
-    // 获取最后访问时间
-    time_t getLastAccessTime() const { return lastAccessTime; }
 
     enum RoomFlags { //标志
         ROOM_HIDDEN = 1 << 0,       // 0001

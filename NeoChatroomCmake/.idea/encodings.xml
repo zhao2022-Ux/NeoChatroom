@@ -12,6 +12,7 @@
     <file url="file://$PROJECT_DIR$/http server/server/roommanager.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/include/Server.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/include/datamanage.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/include/tool.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tool/log.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tool/tool.cpp" charset="GBK" />
   </component>
