@@ -11,6 +11,7 @@ using namespace std;
 #include "chatroom.h"
 #include <sqlite3.h>
 #include "chatDBmanager.h"
+#include "serverconfig.h"
 // Ensure room initialization logic is robust
 vector<chatroom> room(MAXROOM);
 bool used[MAXROOM] = { false };
@@ -497,6 +498,90 @@ void getChatroomName(const httplib::Request& req, httplib::Response& res) {
     res.set_content(response.toStyledString(), "application/json");
 }
 
+// 获取组合的聊天室数据（新增API端点实现）
+void getCombinedRoomData(const httplib::Request& req, httplib::Response& res) {
+    Logger& logger = Logger::getInstance();
+    logger.logInfo("roommanager", "获取组合聊天室数据");
+    
+    // 获取用户ID
+    std::string cookies = req.get_header_value("Cookie");
+    std::string password, uid;
+    transCookie(password, uid, cookies);
+    int uid_;
+    if (!str::safeatoi(uid, uid_)) {
+        logger.logWarning("roommanager", "获取组合聊天室数据 - 无效的UID格式");
+        res.status = 401;
+        res.set_content("未授权访问", "text/plain");
+        return;
+    }
+
+    // 验证用户密码
+    if (!verifyCookiePassword(uid_, password)) {
+        logger.logWarning("roommanager", "获取组合聊天室数据 - 无效的密码验证");
+        res.status = 403;
+        res.set_content("无效的认证信息", "text/plain");
+        return;
+    }
+
+    // 构建响应数据
+    Json::Value response;
+    
+    // 获取用户已加入的聊天室
+    manager::user* user = manager::FindUser(uid_);
+    if (user != nullptr) {
+        std::string cookie = user->getcookie();
+        std::vector<int> joinedRoomIds;
+        
+        std::stringstream ss(cookie);
+        std::string token;
+        while (std::getline(ss, token, '&')) {
+            int roomId;
+            if (str::safeatoi(token, roomId)) {
+                joinedRoomIds.push_back(roomId);
+            }
+        }
+        
+        // 添加用户已加入的聊天室信息
+        Json::Value joinedRooms(Json::arrayValue);
+        for (int roomId : joinedRoomIds) {
+            if (roomId >= 1 && roomId < MAXROOM && used[roomId]) {
+                Json::Value roomData;
+                roomData["id"] = roomId;
+                roomData["name"] = room[roomId].gettittle();
+                joinedRooms.append(roomData);
+            }
+        }
+        response["joinedRooms"] = joinedRooms;
+    }
+    
+    // 获取所有可用的聊天室
+    Json::Value allRooms(Json::arrayValue);
+    for (int i = 1; i < MAXROOM; i++) {
+        if (used[i]) {
+            // 根据flags判断是否显示
+            bool isHidden = room[i].hasFlag(chatroom::RoomFlags::ROOM_HIDDEN);
+            bool isNoJoin = room[i].hasFlag(chatroom::RoomFlags::ROOM_NO_JOIN);
+            
+            if (!isHidden) {
+                Json::Value roomData;
+                roomData["id"] = i;
+                roomData["name"] = room[i].gettittle();
+                roomData["flags"] = (int)room[i].getFlags();
+                roomData["hasPassword"] = !room[i].getPasswordHash().empty();
+                allRooms.append(roomData);
+            }
+        }
+    }
+    response["allRooms"] = allRooms;
+    
+    // 设置响应头和内容
+    res.set_header("Content-Type", "application/json");
+    res.set_header("Cache-Control", "private, max-age=" + std::to_string(ROOMDATA_CACHE_SECONDS));
+    res.set_content(response.toStyledString(), "application/json");
+    
+    logger.logInfo("roommanager", "组合聊天室数据获取成功，用户ID: " + uid);
+}
+
 void start_manager() {
     Logger& logger = Logger::getInstance();
     
@@ -515,6 +600,7 @@ void start_manager() {
     server.handleRequest("/allchatlist", getAllList);
     server.handleRequest("/joinquitroom", editRoomToUserRoute); // Updated route
     server.handleRequest("/chatroomname", getChatroomName); // New route
+    server.handleRequest("/roomdata", getCombinedRoomData); // 新增的组合数据API
 
 
         // 提供图片文件 /logo.png

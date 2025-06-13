@@ -114,6 +114,9 @@ public:
 
     string GetPassword();
 
+    // 获取聊天室标志
+    unsigned int getFlags() const { return flags; }
+
     enum RoomFlags { //标志
         ROOM_HIDDEN = 1 << 0,       // 0001
         ROOM_NO_JOIN = 1 << 1       // 0010

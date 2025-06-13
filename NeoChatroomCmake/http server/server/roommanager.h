@@ -54,3 +54,6 @@ void editRoomToUserRoute(const httplib::Request& req, httplib::Response& res);
 // Add this function declaration to the header file
 std::vector<std::tuple<int, std::string, std::string>> GetRoomListDetails();
 
+// 新增的API端点 - 获取组合的聊天室数据
+void getCombinedRoomData(const httplib::Request& req, httplib::Response& res);
+bool verifyCookiePassword(int uid, string password);

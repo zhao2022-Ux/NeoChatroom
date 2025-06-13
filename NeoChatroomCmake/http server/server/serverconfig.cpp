@@ -15,6 +15,7 @@
 // 默认服务器配置
 std::string CURRENT_HOST = "0.0.0.0";
 int CURRENT_PORT = 443;
+int ROOMDATA_CACHE_SECONDS = 10; // 默认10秒
 
 // 管理密码全局变量
 std::string ControlLoginPassword = "123456";
@@ -30,6 +31,7 @@ static void createDefaultConfig() {
         // 默认服务器配置：HOST 和 PORT
         root["server"]["host"] = CURRENT_HOST;
         root["server"]["port"] = CURRENT_PORT;
+        root["server"]["roomdata_cache_seconds"] = ROOMDATA_CACHE_SECONDS;
 
         // 默认管理密码
         root["admin_password"] = ControlLoginPassword;
@@ -90,6 +92,8 @@ void loadConfig() {
                     CURRENT_HOST = root["server"]["host"].asString();
                 if (root["server"].isMember("port"))
                     CURRENT_PORT = root["server"]["port"].asInt();
+                if (root["server"].isMember("roomdata_cache_seconds"))
+                    ROOMDATA_CACHE_SECONDS = root["server"]["roomdata_cache_seconds"].asInt();
             }
             catch (const std::exception& e) {
                 logger.logError("Config", "读取服务器配置失败: " + std::string(e.what()));

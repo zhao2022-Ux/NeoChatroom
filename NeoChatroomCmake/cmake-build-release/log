@@ -2383,3 +2383,161 @@
 [2025-06-12 21:47:01] [ERROR_] [ChatDBManager] SQL错误: table messages has no column named image_url
 [2025-06-12 21:47:01] [ERROR_] [chatroom] 无法保存消息到数据库
 [2025-06-12 21:47:01] [INFO] [chatroom::message] [roomID:1][123][123]
+[2025-06-13 16:17:12] [WARNING] [Config] 配置文件不存在，生成默认配置: ./config.json
+[2025-06-13 16:17:12] [INFO] [Config] 已生成默认配置文件: ./config.json
+[2025-06-13 16:17:12] [INFO] [Control] 已加载配置文件
+[2025-06-13 16:17:14] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-13 16:17:14] [INFO] [Control] 尝试开启服务器...
+[2025-06-13 16:17:14] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-13 16:17:14] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-13 16:17:14] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-13 16:17:14] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-13 16:17:14] [INFO] [Server] 服务器配置完成
+[2025-06-13 16:17:14] [INFO] [Server] 默认路由注册完成
+[2025-06-13 16:17:14] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-13 16:17:15] [INFO] [Control] 尝试加载数据...
+[2025-06-13 16:17:15] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-13 16:17:15] [INFO] [Control] 数据库已初始化
+[2025-06-13 16:17:15] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-13 16:17:15] [INFO] [Server] POST JSON端点注册成功: /register
+[2025-06-13 16:17:15] [INFO] [Server] POST JSON端点注册成功: /login
+[2025-06-13 16:17:15] [INFO] [roommanager] 开始初始化聊天室管理器...
+[2025-06-13 16:17:15] [INFO] [ChatDBManager] 数据库初始化完成
+[2025-06-13 16:17:15] [INFO] [roommanager] 开始从数据库加载聊天室...
+[2025-06-13 16:17:15] [INFO] [roommanager] 找到 1 个聊天室记录
+[2025-06-13 16:17:15] [INFO] [chatroom] 初始化聊天室 ID: 1
+[2025-06-13 16:17:15] [INFO] [chatroom] 从数据库加载了 0 条消息
+[2025-06-13 16:17:15] [ERROR_] [ChatDBManager] SQL错误: table messages has no column named image_url
+[2025-06-13 16:17:15] [ERROR_] [chatroom] 无法保存初始系统消息到数据库
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /chat/1/messages
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /chat/1/all-messages
+[2025-06-13 16:17:15] [INFO] [Server] POST JSON端点注册成功: /chat/1/messages
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-13 16:17:15] [INFO] [Server] POST文件端点注册成功: /chat/1/upload
+[2025-06-13 16:17:15] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-13 16:17:15] [INFO] [chatroom] 聊天室 ID:1 启动成功
+[2025-06-13 16:17:15] [INFO] [roommanager] 已从数据库加载聊天室 ID: 1, 标题: 
+[2025-06-13 16:17:15] [INFO] [roommanager] 聊天室加载完成
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /list
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /allchatlist
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /joinquitroom
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /chatroomname
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-13 16:17:15] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-13 16:17:15] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-13 16:17:15] [INFO] [Server] POST JSON端点注册成功: /control/auth
+[2025-06-13 16:17:15] [INFO] [Server] GET端点注册成功: /control
+[2025-06-13 16:17:15] [INFO] [Server] POST JSON端点注册成功: /control/command
+[2025-06-13 16:17:15] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-13 16:17:15] [INFO] [Control] WEB控制服务器已启动
+[2025-06-13 16:17:19] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
+[2025-06-13 16:27:35] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-13 16:27:35] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-13 16:27:35] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-13 16:27:35] [INFO] [Control] 已加载配置文件
+[2025-06-13 16:27:39] [INFO] [Control] 尝试开启服务器...
+[2025-06-13 16:27:39] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-13 16:27:39] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-13 16:27:39] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-13 16:27:39] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-13 16:27:39] [INFO] [Server] 服务器配置完成
+[2025-06-13 16:27:39] [INFO] [Server] 默认路由注册完成
+[2025-06-13 16:27:39] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-13 16:27:40] [INFO] [Control] 尝试加载数据...
+[2025-06-13 16:27:40] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-13 16:27:40] [INFO] [Control] 数据库已初始化
+[2025-06-13 16:27:40] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-13 16:27:40] [INFO] [Server] POST JSON端点注册成功: /register
+[2025-06-13 16:27:40] [INFO] [Server] POST JSON端点注册成功: /login
+[2025-06-13 16:27:40] [INFO] [roommanager] 开始初始化聊天室管理器...
+[2025-06-13 16:27:40] [INFO] [ChatDBManager] 数据库初始化完成
+[2025-06-13 16:27:40] [INFO] [roommanager] 开始从数据库加载聊天室...
+[2025-06-13 16:27:40] [INFO] [roommanager] 找到 1 个聊天室记录
+[2025-06-13 16:27:40] [INFO] [chatroom] 初始化聊天室 ID: 1
+[2025-06-13 16:27:40] [INFO] [chatroom] 从数据库加载了 0 条消息
+[2025-06-13 16:27:40] [ERROR_] [ChatDBManager] SQL错误: table messages has no column named image_url
+[2025-06-13 16:27:40] [ERROR_] [chatroom] 无法保存初始系统消息到数据库
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /chat/1/messages
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /chat/1/all-messages
+[2025-06-13 16:27:40] [INFO] [Server] POST JSON端点注册成功: /chat/1/messages
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-13 16:27:40] [INFO] [Server] POST文件端点注册成功: /chat/1/upload
+[2025-06-13 16:27:40] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-13 16:27:40] [INFO] [chatroom] 聊天室 ID:1 启动成功
+[2025-06-13 16:27:40] [INFO] [roommanager] 已从数据库加载聊天室 ID: 1, 标题: 
+[2025-06-13 16:27:40] [INFO] [roommanager] 聊天室加载完成
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /list
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /allchatlist
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /joinquitroom
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /chatroomname
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /roomdata
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-13 16:27:40] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-13 16:27:40] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-13 16:27:40] [INFO] [Server] POST JSON端点注册成功: /control/auth
+[2025-06-13 16:27:40] [INFO] [Server] GET端点注册成功: /control
+[2025-06-13 16:27:40] [INFO] [Server] POST JSON端点注册成功: /control/command
+[2025-06-13 16:27:40] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-13 16:27:40] [INFO] [Control] WEB控制服务器已启动
+[2025-06-13 16:28:00] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-13 16:28:00] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-13 16:28:00] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-13 16:28:00] [INFO] [Control] 已加载配置文件
+[2025-06-13 16:28:02] [INFO] [Control] 尝试开启服务器...
+[2025-06-13 16:28:02] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-13 16:28:02] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-13 16:28:02] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-13 16:28:02] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-13 16:28:02] [INFO] [Server] 服务器配置完成
+[2025-06-13 16:28:02] [INFO] [Server] 默认路由注册完成
+[2025-06-13 16:28:02] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-13 16:28:04] [INFO] [Control] 尝试加载数据...
+[2025-06-13 16:28:04] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-13 16:28:04] [INFO] [Control] 数据库已初始化
+[2025-06-13 16:28:04] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-13 16:28:04] [INFO] [Server] POST JSON端点注册成功: /register
+[2025-06-13 16:28:04] [INFO] [Server] POST JSON端点注册成功: /login
+[2025-06-13 16:28:04] [INFO] [roommanager] 开始初始化聊天室管理器...
+[2025-06-13 16:28:04] [INFO] [ChatDBManager] 数据库初始化完成
+[2025-06-13 16:28:04] [INFO] [roommanager] 开始从数据库加载聊天室...
+[2025-06-13 16:28:04] [INFO] [roommanager] 找到 1 个聊天室记录
+[2025-06-13 16:28:04] [INFO] [chatroom] 初始化聊天室 ID: 1
+[2025-06-13 16:28:04] [INFO] [chatroom] 从数据库加载了 0 条消息
+[2025-06-13 16:28:04] [ERROR_] [ChatDBManager] SQL错误: table messages has no column named image_url
+[2025-06-13 16:28:04] [ERROR_] [chatroom] 无法保存初始系统消息到数据库
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /chat/1/messages
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /chat/1/all-messages
+[2025-06-13 16:28:04] [INFO] [Server] POST JSON端点注册成功: /chat/1/messages
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /user/username
+[2025-06-13 16:28:04] [INFO] [Server] POST文件端点注册成功: /chat/1/upload
+[2025-06-13 16:28:04] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-13 16:28:04] [INFO] [chatroom] 聊天室 ID:1 启动成功
+[2025-06-13 16:28:04] [INFO] [roommanager] 已从数据库加载聊天室 ID: 1, 标题: 
+[2025-06-13 16:28:04] [INFO] [roommanager] 聊天室加载完成
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /list
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /allchatlist
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /joinquitroom
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /chatroomname
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /roomdata
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /logo.png
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /chat/js
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /chatlist/js
+[2025-06-13 16:28:04] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /images/([^/]+)
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /files/([^/]+)
+[2025-06-13 16:28:04] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-13 16:28:04] [INFO] [Server] POST JSON端点注册成功: /control/auth
+[2025-06-13 16:28:04] [INFO] [Server] GET端点注册成功: /control
+[2025-06-13 16:28:04] [INFO] [Server] POST JSON端点注册成功: /control/command
+[2025-06-13 16:28:04] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-13 16:28:04] [INFO] [Control] WEB控制服务器已启动
+[2025-06-13 16:28:09] [INFO] [RoomManager] 用户 1 quit room 1
+[2025-06-13 16:28:11] [INFO] [RoomManager] 用户 1 joined room 1

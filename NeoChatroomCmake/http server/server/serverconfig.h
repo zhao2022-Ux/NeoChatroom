@@ -11,6 +11,7 @@
 extern std::string CURRENT_HOST;
 extern int CURRENT_PORT;
 extern std::string ControlLoginPassword;
+extern int ROOMDATA_CACHE_SECONDS; // 聊天室数据API缓存时间（秒）
 
 // 配置文件相关函数声明
 void loadConfig();

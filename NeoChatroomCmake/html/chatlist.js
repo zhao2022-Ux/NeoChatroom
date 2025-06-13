@@ -1,5 +1,4 @@
-
-    // SHA-256 implementation
+// SHA-256 implementation
     function sha256(s) {
         const chrsz = 8
         const hexcase = 0
@@ -330,7 +329,107 @@ function closeDialog(dialogElement, resolve, result) {
         }
     }
 
-    // 调用 /list 接口获取已加入的聊天室
+    // 本地缓存功能
+    function cacheRoomData(key, data) {
+        const cacheTime = new Date().getTime();
+        localStorage.setItem(key, JSON.stringify({data, timestamp: cacheTime}));
+    }
+
+    function getCachedRoomData(key, maxAge = 60000) { // 默认缓存1分钟
+        const cached = localStorage.getItem(key);
+        if (!cached) return null;
+        
+        try {
+            const {data, timestamp} = JSON.parse(cached);
+            if (new Date().getTime() - timestamp > maxAge) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            
+            return data;
+        } catch (error) {
+            localStorage.removeItem(key);
+            return null;
+        }
+    }
+
+    // 使用新的合并API获取聊天室数据
+    async function fetchRoomData() {
+        // 先尝试从缓存获取数据
+        const cachedData = getCachedRoomData('roomData', 10000); // 10秒缓存
+        if (cachedData) {
+            console.log('使用缓存的聊天室数据');
+            renderJoinedChatrooms(cachedData.joinedRooms);
+            renderAllChatrooms(cachedData.allRooms);
+            return true;
+        }
+        
+        try {
+            const response = await fetch('/roomdata', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login';
+                    return false;
+                }
+                throw new Error('获取聊天室数据失败');
+            }
+            
+            const data = await response.json();
+            
+            // 缓存结果
+            cacheRoomData('roomData', data);
+            
+            // 渲染数据
+            renderJoinedChatrooms(data.joinedRooms);
+            renderAllChatrooms(data.allRooms);
+            return true;
+        } catch (error) {
+            console.error('获取聊天室数据失败:', error);
+            return false;
+        }
+    }
+
+    // 显示/隐藏加载状态
+    function showLoading() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (!loadingIndicator) {
+            // 如果页面中没有加载指示器，创建一个
+            const indicator = document.createElement('div');
+            indicator.id = 'loading-indicator';
+            indicator.className = 'loading';
+            indicator.textContent = '加载中...';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 18px;
+                z-index: 9999;
+            `;
+            document.body.appendChild(indicator);
+        } else {
+            loadingIndicator.style.display = 'flex';
+        }
+    }
+
+    function hideLoading() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    // 调用 /list 接口获取已加入的聊天室（保留原函数用于备份）
     async function fetchJoinedChatrooms() {
         if (!await checkLoginStatus()) return;
 
@@ -395,7 +494,7 @@ function closeDialog(dialogElement, resolve, result) {
         });
     }
 
-    // 调用 /allchatlist 接口获取所有聊天室
+    // 调用 /allchatlist 接口获取所有聊天室（保留原函数用于备份）
     async function fetchAllChatrooms() {
         if (!await checkLoginStatus()) return;
 
@@ -417,50 +516,50 @@ function closeDialog(dialogElement, resolve, result) {
         }
     }
 
-function renderAllChatrooms(rooms) {
-    const container = document.getElementById('all-chatrooms');
-    container.innerHTML = '';
+    function renderAllChatrooms(rooms) {
+        const container = document.getElementById('all-chatrooms');
+        container.innerHTML = '';
 
-    if (!rooms || rooms.length === 0) {
-        container.innerHTML = '<p class="empty-message">当前没有可用的聊天室。</p>';
-        return;
-    }
+        if (!rooms || rooms.length === 0) {
+            container.innerHTML = '<p class="empty-message">当前没有可用的聊天室。</p>';
+            return;
+        }
 
-    rooms.forEach(room => {
-        if (parseInt(room.id) < 1) return;  // 过滤 ID<1
+        rooms.forEach(room => {
+            if (parseInt(room.id) < 1) return;  // 过滤 ID<1
 
-        // 根据 flags 判断是否隐藏或禁止
-        const isHidden = (room.flags & 0x01) !== 0;
-        const isForbidden = (room.flags & 0x02) !== 0;
+            // 根据 flags 判断是否隐藏或禁止
+            const isHidden = (room.flags & 0x01) !== 0;
+            const isForbidden = (room.flags & 0x02) !== 0;
 
-        if (isHidden || isForbidden) return; // 跳过隐藏或禁止的聊天室
+            if (isHidden || isForbidden) return; // 跳过隐藏或禁止的聊天室
 
-        const card = document.createElement('div');
-        card.className = 'room-card';
-        const roomName = room.name.trim() ? room.name : '无名称的聊天室';
+            const card = document.createElement('div');
+            card.className = 'room-card';
+            const roomName = room.name.trim() ? room.name : '无名称的聊天室';
 
-        card.innerHTML = `
-            <span class="room-id">ID: ${room.id}</span>
-            <span class="room-name">${roomName}</span>
-            <div class="login-overlay">
-                <button class="join-btn">加入</button>
-            </div>
-        `;
+            card.innerHTML = `
+                <span class="room-id">ID: ${room.id}</span>
+                <span class="room-name">${roomName}</span>
+                <div class="login-overlay">
+                    <button class="join-btn">加入</button>
+                </div>
+            `;
 
-        // 添加加入按钮功能
-        const joinBtn = card.querySelector('.join-btn');
-        joinBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            if (currentUsername) {
-                await joinRoom(room.id, room.name);
-            } else {
-                window.location.href = '/login';
-            }
+            // 添加加入按钮功能
+            const joinBtn = card.querySelector('.join-btn');
+            joinBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (currentUsername) {
+                    await joinRoom(room.id, room.name);
+                } else {
+                    window.location.href = '/login';
+                }
+            });
+
+            container.appendChild(card);
         });
-
-        container.appendChild(card);
-    });
-}
+    }
 
 
     async function showPasswordPrompt() {
@@ -487,7 +586,7 @@ function renderAllChatrooms(rooms) {
                 if (response.status === 403) {
                     const errorText = await response.text();
                     if (errorText.trim() === "Password mismatch") {
-                        const password = await showPasswordPrompt();
+                        const password = await typeinPassword();
                         if (password === null) {
                             return;
                         }
@@ -503,7 +602,9 @@ function renderAllChatrooms(rooms) {
                 }
 
                 alert(`成功加入聊天室 ${roomName.trim() ? roomName : '无名称的聊天室'}`);
-                await fetchJoinedChatrooms();
+                // 成功加入后，清除缓存并重新获取数据
+                localStorage.removeItem('roomData');
+                await fetchRoomData();
                 return;
             } while (needRetry);
 
@@ -529,7 +630,9 @@ function renderAllChatrooms(rooms) {
             }
 
             alert(`已退出聊天室 ${roomName.trim() ? roomName : '无名称的聊天室'}`);
-            await fetchJoinedChatrooms();
+            // 成功退出后，清除缓存并重新获取数据
+            localStorage.removeItem('roomData');
+            await fetchRoomData();
         } catch (error) {
             console.error('退出聊天室时出现错误:', error);
             alert('退出聊天室时出现错误: ' + error.message);
@@ -555,12 +658,40 @@ function renderAllChatrooms(rooms) {
         });
     }
 
-    // 页面加载完毕后拉取数据、设置加入面板并更新登录状态
+    // 页面加载完毕后并行获取数据，优化加载速度
     document.addEventListener('DOMContentLoaded', async () => {
-        if (!await checkLoginStatus()) return;
-
-        await updateLoginStatus();
-        await fetchJoinedChatrooms();
-        await fetchAllChatrooms();
-        setupJoinPanel();
+        showLoading();
+        try {
+            // 先检查登录状态
+            if (!await checkLoginStatus()) {
+                hideLoading();
+                return;
+            }
+            
+            // 并行执行其他请求
+            const loginStatusPromise = updateLoginStatus();
+            const roomDataPromise = fetchRoomData();
+            
+            // 等待所有请求完成
+            const [loginSuccess, roomDataSuccess] = await Promise.all([
+                loginStatusPromise,
+                roomDataPromise
+            ]);
+            
+            // 如果获取聊天室数据失败，尝试使用单独的API
+            if (!roomDataSuccess) {
+                console.warn('合并API获取数据失败，尝试使用独立API');
+                await Promise.all([
+                    fetchJoinedChatrooms(),
+                    fetchAllChatrooms()
+                ]);
+            }
+            
+            // 设置加入面板
+            setupJoinPanel();
+        } catch (error) {
+            console.error('页面加载失败:', error);
+        } finally {
+            hideLoading();
+        }
     });
