@@ -195,7 +195,7 @@ async function fetchChatMessages() {
             await new Promise(resolve => setTimeout(resolve, 50)); // Ensure DOM update
             await MathJax.typesetPromise();
         }
-        
+
 
         if (!isScrolledToBottom) {
             chatBox.scrollTop = previousScrollTop;
@@ -218,7 +218,7 @@ function createMessageElement(msg) {
 
     // 修改处：获取解码后的消息，并对系统消息（msg.labei === 'GM'）转换为GBK
     let decodedMessage = decodeBase64(msg.message);
-    
+
     const renderMarkdown = /[#*_`$]/.test(decodedMessage);
     const processedMessage = renderMarkdown ? marked.parse(decodedMessage) : decodedMessage;
 
@@ -658,3 +658,15 @@ window.addEventListener('unload', cleanup);
 
 // Incremental message fetching
 let lastTimestamp = 0;
+
+// 为Logo添加点击事件
+document.addEventListener('DOMContentLoaded', () => {
+    const logoImg = document.querySelector('.header-left img');
+    if (logoImg) {
+        logoImg.addEventListener('click', () => {
+            logoImg.classList.add('logo-clicked');
+            setTimeout(() => logoImg.classList.remove('logo-clicked'), 500);
+            window.location.href = '/';
+        });
+    }
+});

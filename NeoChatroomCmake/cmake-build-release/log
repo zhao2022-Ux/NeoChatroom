@@ -7242,3 +7242,583 @@
 [2025-06-13 21:18:02] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
 [2025-06-13 21:18:02] [INFO] [Control] WEB控制服务器已启动
 [2025-06-13 21:18:07] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
+[2025-06-13 21:20:55] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-13 21:20:55] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-13 21:20:55] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-13 21:20:55] [INFO] [Control] 已加载配置文件
+[2025-06-13 21:20:56] [INFO] [Control] 尝试开启服务器...
+[2025-06-13 21:20:56] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-13 21:20:56] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-13 21:20:56] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-13 21:20:56] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-13 21:20:56] [INFO] [Server] 服务器配置完成
+[2025-06-13 21:20:56] [INFO] [Server] 默认路由注册完成
+[2025-06-13 21:20:56] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-13 21:20:57] [INFO] [Control] 尝试加载数据...
+[2025-06-13 21:20:57] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-13 21:20:57] [INFO] [Control] 数据库已初始化
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-13 21:20:57] [INFO] [roommanager] 开始初始化聊天室管理器...
+[2025-06-13 21:20:57] [INFO] [ChatDBManager] 检查消息表结构...
+[2025-06-13 21:20:57] [INFO] [ChatDBManager] 数据库初始化完成
+[2025-06-13 21:20:57] [INFO] [roommanager] 开始从数据库加载聊天室...
+[2025-06-13 21:20:57] [INFO] [roommanager] 找到 33 个聊天室记录
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 1
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 29 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:1 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 1, 标题: aaa
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 2
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 5 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat2 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:2 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 2, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 3
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat3 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:3 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 3, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 4
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat4 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:4 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 4, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 5
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat5 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:5 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 5, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 6
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat6 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:6 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 6, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 7
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat7 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:7 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 7, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 8
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat8 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:8 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 8, 标题: sss
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 9
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat9 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:9 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 9, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 10
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat10 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:10 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 10, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 11
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat11 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:11 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 11, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 12
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat12 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:12 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 12, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 13
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat13 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:13 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 13, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 14
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat14 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:14 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 14, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 15
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat15 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:15 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 15, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 16
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat16 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:16 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 16, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 17
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat17 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:17 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 17, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 18
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat18 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:18 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 18, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 19
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat19 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:19 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 19, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 20
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat20 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:20 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 20, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 21
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat21 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:21 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 21, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 22
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat22 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:22 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 22, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 23
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat23 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:23 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 23, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 24
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat24 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:24 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 24, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 25
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat25 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:25 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 25, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 26
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat26 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:26 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 26, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 27
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat27 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:27 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 27, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 28
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat28 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:28 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 28, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 29
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat29 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:29 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 29, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 30
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat30 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:30 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 30, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 31
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat31 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:31 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 31, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 32
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat32 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:32 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 32, 标题: 
+[2025-06-13 21:20:57] [INFO] [chatroom] 初始化聊天室 ID: 33
+[2025-06-13 21:20:57] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chat33 -> html/index.html
+[2025-06-13 21:20:57] [INFO] [chatroom] 聊天室 ID:33 启动成功
+[2025-06-13 21:20:57] [INFO] [roommanager] 已从数据库加载聊天室 ID: 33, 标题: 
+[2025-06-13 21:20:57] [INFO] [roommanager] 聊天室加载完成
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-13 21:20:57] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-13 21:20:57] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-13 21:20:57] [INFO] [Control] WEB控制服务器已启动
+[2025-06-13 21:45:52] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-13 21:45:52] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-13 21:45:52] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-13 21:45:52] [INFO] [Control] 已加载配置文件
+[2025-06-13 21:45:54] [INFO] [Control] 尝试开启服务器...
+[2025-06-13 21:45:54] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-13 21:45:54] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-13 21:45:54] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-13 21:45:54] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-13 21:45:54] [INFO] [Server] 服务器配置完成
+[2025-06-13 21:45:54] [INFO] [Server] 默认路由注册完成
+[2025-06-13 21:45:54] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-13 21:45:54] [INFO] [Control] 尝试加载数据...
+[2025-06-13 21:45:54] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-13 21:45:54] [INFO] [Control] 数据库已初始化
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-13 21:45:54] [INFO] [roommanager] 开始初始化聊天室管理器...
+[2025-06-13 21:45:54] [INFO] [ChatDBManager] 检查消息表结构...
+[2025-06-13 21:45:54] [INFO] [ChatDBManager] 数据库初始化完成
+[2025-06-13 21:45:54] [INFO] [roommanager] 开始从数据库加载聊天室...
+[2025-06-13 21:45:54] [INFO] [roommanager] 找到 33 个聊天室记录
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 1
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 29 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:1 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 1, 标题: aaa
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 2
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 5 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat2 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:2 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 2, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 3
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat3 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:3 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 3, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 4
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat4 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:4 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 4, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 5
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat5 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:5 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 5, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 6
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat6 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:6 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 6, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 7
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat7 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:7 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 7, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 8
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat8 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:8 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 8, 标题: sss
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 9
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat9 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:9 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 9, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 10
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat10 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:10 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 10, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 11
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat11 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:11 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 11, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 12
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat12 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:12 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 12, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 13
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat13 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:13 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 13, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 14
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat14 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:14 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 14, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 15
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat15 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:15 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 15, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 16
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat16 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:16 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 16, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 17
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat17 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:17 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 17, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 18
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat18 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:18 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 18, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 19
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat19 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:19 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 19, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 20
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat20 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:20 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 20, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 21
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat21 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:21 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 21, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 22
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat22 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:22 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 22, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 23
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat23 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:23 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 23, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 24
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat24 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:24 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 24, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 25
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat25 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:25 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 25, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 26
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat26 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:26 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 26, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 27
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat27 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:27 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 27, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 28
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat28 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:28 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 28, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 29
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat29 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:29 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 29, 标题: 
+[2025-06-13 21:45:54] [INFO] [chatroom] 初始化聊天室 ID: 30
+[2025-06-13 21:45:54] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:54] [INFO] [Server] 文件端点注册成功: /chat30 -> html/index.html
+[2025-06-13 21:45:54] [INFO] [chatroom] 聊天室 ID:30 启动成功
+[2025-06-13 21:45:54] [INFO] [roommanager] 已从数据库加载聊天室 ID: 30, 标题: 
+[2025-06-13 21:45:55] [INFO] [chatroom] 初始化聊天室 ID: 31
+[2025-06-13 21:45:55] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:55] [INFO] [Server] 文件端点注册成功: /chat31 -> html/index.html
+[2025-06-13 21:45:55] [INFO] [chatroom] 聊天室 ID:31 启动成功
+[2025-06-13 21:45:55] [INFO] [roommanager] 已从数据库加载聊天室 ID: 31, 标题: 
+[2025-06-13 21:45:55] [INFO] [chatroom] 初始化聊天室 ID: 32
+[2025-06-13 21:45:55] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:55] [INFO] [Server] 文件端点注册成功: /chat32 -> html/index.html
+[2025-06-13 21:45:55] [INFO] [chatroom] 聊天室 ID:32 启动成功
+[2025-06-13 21:45:55] [INFO] [roommanager] 已从数据库加载聊天室 ID: 32, 标题: 
+[2025-06-13 21:45:55] [INFO] [chatroom] 初始化聊天室 ID: 33
+[2025-06-13 21:45:55] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-13 21:45:55] [INFO] [Server] 文件端点注册成功: /chat33 -> html/index.html
+[2025-06-13 21:45:55] [INFO] [chatroom] 聊天室 ID:33 启动成功
+[2025-06-13 21:45:55] [INFO] [roommanager] 已从数据库加载聊天室 ID: 33, 标题: 
+[2025-06-13 21:45:55] [INFO] [roommanager] 聊天室加载完成
+[2025-06-13 21:45:55] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-13 21:45:55] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-13 21:45:55] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-13 21:45:55] [INFO] [Control] WEB控制服务器已启动
+[2025-06-13 21:46:18] [INFO] [chatroom::message] [roomID:1][123][123]
+[2025-06-13 21:46:22] [INFO] [chatroom::message] [roomID:1][123][123]
+[2025-06-13 21:46:39] [INFO] [RoomManager] 用户 1 joined room 32
+[2025-06-13 21:46:42] [INFO] [RoomManager] 用户 1 joined room 31
+[2025-06-13 21:46:45] [INFO] [RoomManager] 用户 1 joined room 29
+[2025-06-13 21:47:15] [INFO] [Control] 控制线程已结束
+[2025-06-14 19:28:23] [INFO] [Server] 服务器实例已创建，主机: 0.0.0.0，端口: 443
+[2025-06-14 19:28:23] [INFO] [Server] 全局主机地址已设置为: 0.0.0.0
+[2025-06-14 19:28:23] [INFO] [Server] 全局端口已设置为: 443
+[2025-06-14 19:28:23] [INFO] [Control] 已加载配置文件
+[2025-06-14 19:28:27] [INFO] [Control] 尝试开启服务器...
+[2025-06-14 19:28:27] [INFO] [RedirectServer] Starting HTTP redirection server on 0.0.0.0:80
+[2025-06-14 19:28:27] [INFO] [Server] SSL证书配置成功: server.crt, server.key
+[2025-06-14 19:28:27] [INFO] [Server] 准备启动服务器，主机: 0.0.0.0，端口: 443
+[2025-06-14 19:28:27] [INFO] [Server] SSL服务器实例创建成功
+[2025-06-14 19:28:27] [INFO] [Server] 服务器配置完成
+[2025-06-14 19:28:27] [INFO] [Server] 默认路由注册完成
+[2025-06-14 19:28:27] [INFO] [Server] 服务器启动成功，监听地址: 0.0.0.0:443
+[2025-06-14 19:28:28] [INFO] [Control] 尝试加载数据...
+[2025-06-14 19:28:28] [INFO] [cache] 缓存清理线程已启动。
+[2025-06-14 19:28:28] [INFO] [Control] 数据库已初始化
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /login -> html/login.html
+[2025-06-14 19:28:28] [INFO] [roommanager] 开始初始化聊天室管理器...
+[2025-06-14 19:28:28] [INFO] [ChatDBManager] 检查消息表结构...
+[2025-06-14 19:28:28] [INFO] [ChatDBManager] 数据库初始化完成
+[2025-06-14 19:28:28] [INFO] [roommanager] 开始从数据库加载聊天室...
+[2025-06-14 19:28:28] [INFO] [roommanager] 找到 33 个聊天室记录
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 1
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 31 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat1 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:1 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 1, 标题: aaa
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 2
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 5 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat2 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:2 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 2, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 3
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat3 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:3 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 3, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 4
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat4 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:4 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 4, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 5
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat5 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:5 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 5, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 6
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat6 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:6 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 6, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 7
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat7 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:7 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 7, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 8
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat8 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:8 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 8, 标题: sss
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 9
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat9 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:9 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 9, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 10
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat10 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:10 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 10, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 11
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat11 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:11 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 11, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 12
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat12 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:12 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 12, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 13
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat13 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:13 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 13, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 14
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat14 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:14 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 14, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 15
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat15 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:15 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 15, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 16
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat16 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:16 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 16, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 17
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat17 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:17 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 17, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 18
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat18 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:18 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 18, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 19
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat19 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:19 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 19, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 20
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat20 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:20 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 20, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 21
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat21 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:21 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 21, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 22
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat22 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:22 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 22, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 23
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat23 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:23 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 23, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 24
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat24 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:24 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 24, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 25
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat25 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:25 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 25, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 26
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat26 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:26 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 26, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 27
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat27 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:27 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 27, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 28
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat28 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:28 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 28, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 29
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat29 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:29 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 29, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 30
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat30 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:30 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 30, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 31
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat31 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:31 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 31, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 32
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat32 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:32 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 32, 标题: 
+[2025-06-14 19:28:28] [INFO] [chatroom] 初始化聊天室 ID: 33
+[2025-06-14 19:28:28] [INFO] [chatroom] 从数据库加载了 1 条消息
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chat33 -> html/index.html
+[2025-06-14 19:28:28] [INFO] [chatroom] 聊天室 ID:33 启动成功
+[2025-06-14 19:28:28] [INFO] [roommanager] 已从数据库加载聊天室 ID: 33, 标题: 
+[2025-06-14 19:28:28] [INFO] [roommanager] 聊天室加载完成
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /chatlist -> html/chatlist.html
+[2025-06-14 19:28:28] [INFO] [Server] 文件端点注册成功: /control/login -> html/files/controllogin.html
+[2025-06-14 19:28:28] [INFO] [ControlServer] 控制路由已注册完成，受密码保护
+[2025-06-14 19:28:28] [INFO] [Control] WEB控制服务器已启动
+[2025-06-14 19:28:34] [INFO] [LoginSys] 127.0.0.1 123-a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3 成功登录:
