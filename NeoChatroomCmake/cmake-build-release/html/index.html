@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/images/logo16.ico" type="image/x-icon" />
+    <link rel="preload" href="logo.png" as="image" />
     <title>seve's chatroom</title>
     <style>
         body {
@@ -32,9 +33,9 @@
             border: 2px solid #e0e0e0;
         }
 
-            ::-webkit-scrollbar-thumb:hover {
-                background-color: #777;
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #777;
+        }
 
         * {
             scrollbar-width: thin;
@@ -60,10 +61,31 @@
             align-items: center;
         }
 
-            .header-left img {
-                height: 40px;
-                margin-right: 10px;
-            }
+        .header-left img {
+            height: 40px;
+            margin-right: 10px;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            will-change: transform, filter;
+        }
+
+        .header-left img:hover {
+            transform: scale(1.1) rotate(5deg);
+            cursor: pointer;
+        }
+
+        body.dark-mode .header-left img {
+            filter: brightness(0.85) contrast(1.2);
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .logo-clicked {
+            animation: logoPulse 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
         .chatroom-title {
             font-size: 16px;
@@ -99,13 +121,13 @@
             min-width: 80px;
         }
 
-            .notification-toggle:hover,
-            .theme-toggle:hover,
-            .return-button:hover,
-            .login-button:hover {
-                background-color: #c0c0c0;
-                transform: scale(1.05);
-            }
+        .notification-toggle:hover,
+        .theme-toggle:hover,
+        .return-button:hover,
+        .login-button:hover {
+            background-color: #c0c0c0;
+            transform: scale(1.05);
+        }
 
         .username {
             margin-right: 10px;
@@ -159,28 +181,28 @@
             flex-direction: column;
         }
 
-            .message.user {
-                background-color: #d0f0c0;
-                margin-left: auto;
-            }
+        .message.user {
+            background-color: #d0f0c0;
+            margin-left: auto;
+        }
 
-            .message .header {
-                display: flex;
-                justify-content: space-between;
-                font-size: 0.5em;
-                margin-bottom: 0.5px;
-                background-color: transparent;
-                color: rgba(255, 255, 255, 0.7);
-                box-shadow: none;
-            }
+        .message .header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5em;
+            margin-bottom: 0.5px;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            box-shadow: none;
+        }
 
-            .message .timestamp {
-                margin-right: 10px;
-            }
+        .message .timestamp {
+            margin-right: 10px;
+        }
 
-            .message .username {
-                font-weight: bold;
-            }
+        .message .username {
+            font-weight: bold;
+        }
 
         .input-box {
             display: flex;
@@ -189,129 +211,129 @@
             border-top: 1px solid #ddd;
         }
 
-            .input-box textarea {
-                flex: 1;
-                padding: 6px 10px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                resize: none;
-                font-family: inherit;
-                font-size: 14px;
-                line-height: 1.5;
-                height: auto;
-                min-height: 24px;
-                max-height: 120px;
-                overflow-y: auto;
-            }
+        .input-box textarea {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            height: auto;
+            min-height: 24px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
 
-                .input-box textarea:focus {
-                    border-color: #007BFF;
-                    outline: none;
-                }
+        .input-box textarea:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
 
-            .input-box button {
-                padding: 10px;
-                margin-left: 10px;
-                background-color: #007BFF;
-                border: none;
-                color: white;
-                cursor: pointer;
-                border-radius: 5px;
-                transition: background-color 0.2s, transform 0.1s ease;
-            }
+        .input-box button {
+            padding: 10px;
+            margin-left: 10px;
+            background-color: #007BFF;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.1s ease;
+        }
 
-                .input-box button:hover {
-                    background-color: #0056b3;
-                    transform: scale(1.1);
-                }
+        .input-box button:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
 
         body.dark-mode {
             background-color: #333;
             color: #fff;
         }
 
-            body.dark-mode .header {
-                background-color: #222;
-            }
+        body.dark-mode .header {
+            background-color: #222;
+        }
 
-            body.dark-mode .chat-box {
-                background-color: #555;
-            }
+        body.dark-mode .chat-box {
+            background-color: #555;
+        }
 
-            body.dark-mode .message {
-                background-color: #666;
-                color: #fff;
-            }
+        body.dark-mode .message {
+            background-color: #666;
+            color: #fff;
+        }
 
-                body.dark-mode .message.user {
-                    background-color: #44d544;
-                }
+        body.dark-mode .message.user {
+            background-color: #44d544;
+        }
 
-            body.dark-mode .input-box {
-                background-color: #444;
-            }
+        body.dark-mode .input-box {
+            background-color: #444;
+        }
 
-                body.dark-mode .input-box textarea {
-                    background-color: #666;
-                    color: #fff;
-                    border: 1px solid #555;
-                }
+        body.dark-mode .input-box textarea {
+            background-color: #666;
+            color: #fff;
+            border: 1px solid #555;
+        }
 
-                body.dark-mode .input-box button {
-                    background-color: #0056b3;
-                }
+        body.dark-mode .input-box button {
+            background-color: #0056b3;
+        }
 
-            body.dark-mode .header button {
-                background-color: #444;
-                color: #fff;
-            }
+        body.dark-mode .header button {
+            background-color: #444;
+            color: #fff;
+        }
 
-                body.dark-mode .header button:hover {
-                    background-color: #555;
-                }
+        body.dark-mode .header button:hover {
+            background-color: #555;
+        }
 
-            body.dark-mode .theme-toggle {
-                background-color: #444;
-                color: #fff;
-            }
+        body.dark-mode .theme-toggle {
+            background-color: #444;
+            color: #fff;
+        }
 
-                body.dark-mode .theme-toggle:hover {
-                    background-color: #555;
-                }
+        body.dark-mode .theme-toggle:hover {
+            background-color: #555;
+        }
 
-            body.dark-mode .footer {
-                background-color: #444;
-                color: #fff;
-            }
+        body.dark-mode .footer {
+            background-color: #444;
+            color: #fff;
+        }
 
-                body.dark-mode .footer a {
-                    color: #66aaff;
-                }
+        body.dark-mode .footer a {
+            color: #66aaff;
+        }
 
-            body.dark-mode ::-webkit-scrollbar-track {
-                background-color: #444;
-            }
+        body.dark-mode ::-webkit-scrollbar-track {
+            background-color: #444;
+        }
 
-            body.dark-mode ::-webkit-scrollbar-thumb {
-                background-color: #888;
-                border: 2px solid #444;
-            }
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border: 2px solid #444;
+        }
 
-                body.dark-mode ::-webkit-scrollbar-thumb:hover {
-                    background-color: #aaa;
-                }
+        body.dark-mode ::-webkit-scrollbar-thumb:hover {
+            background-color: #aaa;
+        }
 
-            body.dark-mode * {
-                scrollbar-color: #aaa #444;
-            }
+        body.dark-mode * {
+            scrollbar-color: #aaa #444;
+        }
 
         #sendButton {
             transition: transform 0.1s ease;
         }
 
-            #sendButton:active {
-                transform: scale(0.95);
-            }
+        #sendButton:active {
+            transform: scale(0.95);
+        }
 
         @keyframes fadeIn {
             from {
@@ -336,14 +358,14 @@
             border-top: 1px solid #ddd;
         }
 
-            .footer a {
-                color: #007BFF;
-                text-decoration: none;
-            }
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
 
-                .footer a:hover {
-                    text-decoration: underline;
-                }
+        .footer a:hover {
+            text-decoration: underline;
+        }
 
         .message-body {
             padding: 2px 4px;
@@ -365,10 +387,10 @@
             min-width: 120px;
         }
 
-            #notificationSelect:hover {
-                background-color: #c0c0c0;
-                transform: scale(1.05);
-            }
+        #notificationSelect:hover {
+            background-color: #c0c0c0;
+            transform: scale(1.05);
+        }
 
         body.dark-mode #notificationSelect {
             background-color: #444;
@@ -376,56 +398,61 @@
             border: 1px solid #555;
         }
 
-            body.dark-mode #notificationSelect:hover {
-                background-color: #555;
-            }
+        body.dark-mode #notificationSelect:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <img src="logo.png" alt="Logo" />
-            <span class="chatroom-title">seve's chatroom</span>
-            <span class="badge">NEO</span>
-            <select id="notificationSelect" class="notification-toggle">
-                <option value="none">不弹出通知</option>
-                <option value="mention">仅包含用户名时</option>
-                <option value="always">始终弹出通知</option>
-            </select>
-        </div>
-        <div id="chatroomName">聊天室名称展示区域</div>
-        <div class="header-right">
-            <span class="username" id="usernameDisplay"></span>
-            <button class="login-button" id="loginButton" style="display: none;" onclick="window.location.href='/login'">登录</button>
-            <button class="theme-toggle" id="themeToggle">D/B</button>
-            <button class="return-button" onclick="window.location.href='/chatlist'">返回列表</button>
-        </div>
+<div class="header">
+    <div class="header-left">
+        <picture>
+            <source srcset="logo.png" type="image/png">
+            <img src="logo.png" alt="Logo" width="40" height="40" loading="lazy"
+                 srcset="logo.png 1x, logo@2x.png 2x"
+                 onerror="this.onerror=null; this.src='logo.png';" />
+        </picture>
+        <span class="chatroom-title">seve's chatroom</span>
+        <span class="badge">NEO</span>
+        <select id="notificationSelect" class="notification-toggle">
+            <option value="none">不弹出通知</option>
+            <option value="mention">仅包含用户名时</option>
+            <option value="always">始终弹出通知</option>
+        </select>
     </div>
+    <div id="chatroomName">聊天室名称展示区域</div>
+    <div class="header-right">
+        <span class="username" id="usernameDisplay"></span>
+        <button class="login-button" id="loginButton" style="display: none;" onclick="window.location.href='/login'">登录</button>
+        <button class="theme-toggle" id="themeToggle">D/B</button>
+        <button class="return-button" onclick="window.location.href='/chatlist'">返回列表</button>
+    </div>
+</div>
 
-    <div class="chat-container">
-        <div class="chat-box" id="chatBox">
-            <!-- 聊天内容 -->
-        </div>
-        <div class="input-box">
-            <textarea id="messageInput" rows="1" placeholder="输入消息... shift+enter换行"></textarea>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-            <button onclick="sendMessage()">发送</button>
-            <button onclick="selectImage()">上传图片</button>
-            <div id="imagePreview" style="display: inline-block; margin-left: 10px;"></div>
-        </div>
+<div class="chat-container">
+    <div class="chat-box" id="chatBox">
+        <!-- 聊天内容 -->
     </div>
+    <div class="input-box">
+        <textarea id="messageInput" rows="1" placeholder="输入消息... shift+enter换行"></textarea>
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+        <button onclick="sendMessage()">发送</button>
+        <button onclick="selectImage()">上传图片</button>
+        <div id="imagePreview" style="display: inline-block; margin-left: 10px;"></div>
+    </div>
+</div>
 
-    <div class="footer">
-        <p>© 2025 seve's chatroom v0.1.2| <a href="/files/terms.html">使用条款</a> | <a href="/files/updates.html">更新日志</a></p>
-    </div>
-    <script src="/files/marked.min.js"></script>
-    <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-            svg: { fontCache: 'global' }
-        };
-    </script>
-    <script src="/files/tex-svg.js"></script>
-    <script src="/chat/js"></script>
+<div class="footer">
+    <p>© 2025 seve's chatroom v0.1.2| <a href="/files/terms.html">使用条款</a> | <a href="/files/updates.html">更新日志</a></p>
+</div>
+<script src="/files/marked.min.js"></script>
+<script>
+    window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+    };
+</script>
+<script src="/files/tex-svg.js"></script>
+<script src="/chat/js"></script>
 </body>
 </html>

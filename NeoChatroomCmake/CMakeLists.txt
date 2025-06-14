@@ -10,30 +10,29 @@ message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}
 # 包含目录
 include_directories(
         include
-        json
+        src/lib
+        src/lib/json
         tool/config
         http\ server/server
+        src/server/http/server/src
+        src/server/http/server/src/server
+        src/server/http/server/tool
 )
 
 # 源文件
 file(GLOB_RECURSE SOURCES
-        main.cpp
+        src/server/http/server/src/*.cpp
+        src/server/http/server/src/server/*.cpp
+        src/server/http/server/src/server/guide/*.cpp
+        src/server/http/server/src/config/*.cpp
+        src/server/http/server/src/chat/*.cpp
+        src/server/http/server/src/data/*.cpp
+        src/server/http/server/tool/*.cpp
         jsoncpp.cpp
-        data/*.cpp
-        http\ server/*.cpp
-        http\ server/server/*.cpp
-        tool/*.cpp
-        tool\ log/*.cpp
 )
 
 # 可执行文件
-add_executable(NeoChatroom ${SOURCES}
-        "http server/server/serverconfig.h"
-        "http server/server/serverconfig.cpp"
-        "http server/ControlServer.cpp"
-        "http server/ControlServer.h"
-        "http server/server/chatDBmanager.cpp"
-        "http server/server/chatDBmanager.h")
+add_executable(NeoChatroom ${SOURCES})
 
 # 找依赖
 find_package(OpenSSL REQUIRED)
