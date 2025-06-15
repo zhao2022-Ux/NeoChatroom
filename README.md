@@ -153,6 +153,19 @@ git clone https://github.com/microsoft/vcpkg.git
 - **后端**：`C++` + `sqlite` + `cpp-httplib`，多线程设计，支持高并发。
 - **前端**：纯原生 JavaScript + HTML + CSS，无依赖、极简部署。
 
+### 🙏 鸣谢
+
+非常感谢为 [Seve'chatroom](https://github.com/Dreamersseve/NeoChatroom) 项目的开发和测试提供帮助的所有贡献者、测试者和反馈者。
+
+其中包括（按字母序）：
+- [@Dreamersseve](https://github.com/Dreamersseve) — 项目作者
+- [@zhao2022-Ux](https://github.com/zhao2022-Ux) 
+- 本项目所依赖的 [OpenSSL](https://www.openssl.org/)、[SQLite](https://www.sqlite.org/) 等优秀开源库
+- 为此提供建议、帮助测试、报告问题的每一位伙伴
+
+若你也为项目付出、贡献或者提供帮助，但是未列出你的名字，请联系我，我会尽快添加。  
+
+
 ## Star History | Contributors
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Dreamersseve/NeoChatroom&type=Date)](https://star-history.com/#Dreamersseve/NeoChatroom&Date)
