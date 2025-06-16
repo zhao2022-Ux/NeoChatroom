@@ -14,6 +14,7 @@
 #include <sstream>
 #include <filesystem>
 #include "../../../../../lib/httplib.h"
+#include <atomic>
 
 using namespace std;
 const int MAXROOM = 1000;
@@ -36,7 +37,7 @@ private:
     // 初始化聊天室
     void initializeChatRoom();
 
-    // 将 Json 消息转为字符串
+    // 将 Json 消消息转为字符串
     string transJsonMessage(Json::Value m);
 
     //检查请求是否在许可名单内
@@ -49,26 +50,11 @@ private:
     // 检查Cooie
     bool checkCookies(const httplib::Request& req);
 
-    // 获取聊天消息
-    void getChatMessages(const httplib::Request& req, httplib::Response& res);
-
-    // 获取全部聊天消息
-    void getAllChatMessages(const httplib::Request& req, httplib::Response& res);
-
-    // 处理 POST 请求发送消息
-    void postChatMessage(const httplib::Request& req, httplib::Response& res, const Json::Value& root);
-
-    // 获取用户名
-    void getUsername(const httplib::Request& req, httplib::Response& res);
-
     // 设置静态文件路由
     void setupStaticRoutes();
 
     // 判断是否是有效图片类型
     bool isValidImage(const std::string& filename);
-
-    // 上传图片
-    void uploadImage(const httplib::Request& req, httplib::Response& res);
 
     // 设置聊天相关路由
     void setupChatRoutes();
@@ -79,9 +65,23 @@ private:
     const std::vector<std::string> allowedImageTypes = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" ,"webp" };
 
     std::string password; // Store the password for the chatroom.
+    
+    // 懒加载相关成员变量
+    std::atomic<time_t> lastAccessTime;  // 最后访问时间
+    std::atomic<bool> isActive;          // 聊天室是否已激活
 
 public:
+    // 获取聊天消息
+    void getChatMessages(const httplib::Request& req, httplib::Response& res);
 
+    // 获取全部聊天消息
+    void getAllChatMessages(const httplib::Request& req, httplib::Response& res);
+
+    // 处理 POST 请求发送消息
+    void postChatMessage(const httplib::Request& req, httplib::Response& res, const Json::Value& root);
+
+    // 上传图片
+    void uploadImage(const httplib::Request& req, httplib::Response& res);
 
     // 构造函数和析构函数
     //chatroom(int id) : roomid(id) {}
@@ -127,6 +127,19 @@ public:
 
     // 检查标志
     bool hasFlag(RoomFlags flag) const;
+    
+    // 懒加载相关方法
+    // 更新最后访问时间
+    void updateAccessTime();
+    
+    // 获取最后访问时间
+    time_t getLastAccessTime() const;
+    
+    // 检查聊天室是否已激活
+    bool isActivated() const;
+    
+    // 停用聊天室（卸载）
+    bool deactivate();
 };
 
 void delroom(int x);

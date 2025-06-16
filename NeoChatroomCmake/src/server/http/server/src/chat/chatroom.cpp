@@ -326,42 +326,6 @@ using namespace std;
         res.set_content("Message received", "text/plain");
     }
 
-    // 获取用户名接口
-    void chatroom::getUsername(const httplib::Request& req, httplib::Response& res) {
-
-        res.set_header("Access-Control-Allow-Origin", "*"); // 允许所有来源访问
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // 允许的 HTTP 方法
-        res.set_header("Access-Control-Allow-Headers", "Content-Type"); // 允许的头部字段
-
-
-        std::string cookies = req.get_header_value("Cookie");
-        std::string uid;
-        transCookie(uid, uid, cookies);
-
-        // 获取用户名
-        int uid_;
-        str::safeatoi(uid, uid_);
-        if (manager::FindUser(uid_) == nullptr) {
-            res.status = 400;
-            res.set_content("Invalid uid or user not found", "text/plain");
-            return;
-        }
-        manager::user goaluser = *manager::FindUser(uid_);
-
-        std::string username = goaluser.getname();
-
-        if (username.empty()) {
-            res.status = 400;
-            res.set_content("Invalid uid or user not found", "text/plain");
-        }
-        else {
-            Json::Value response;
-            response["username"] = username;
-            res.set_header("Access-Control-Allow-Origin", "*");
-            res.set_header("Content-Type", "application/json");
-            res.set_content(response.toStyledString(), "application/json");
-        }
-    }
 
     void chatroom::setupStaticRoutes() {
         Server& server = server.getInstance(HOST);
@@ -450,14 +414,9 @@ using namespace std;
         server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/messages", [this](const httplib::Request& req, httplib::Response& res , const Json::Value& root) {
                 postChatMessage(req, res, root);
         });
-        //server.getInstance().handlePostRequest("/chat/messages", postChatMessage);
 
-
-        // 获取用户名的 GET 请求
-        server.getInstance().handleRequest("/user/username", [this](const httplib::Request& req, httplib::Response& res) {
-            getUsername(req, res);
-            });
-        //server.getInstance().handleRequest("/user/username", getUsername);
+        // 获取用户名的 GET 请求已移至全局路由 (在 Server.cpp 中处理)
+        // 不再在这里注册
 
         // 图片上传路由
         server.getInstance().handlePostRequest("/chat/" + to_string(roomid) + "/upload", [this](const httplib::Request& req, httplib::Response& res) {
@@ -480,6 +439,12 @@ using namespace std;
             return false;
         }
 
+        // 如果已经激活，仅更新访问时间
+        if (isActive) {
+            updateAccessTime();
+            return true;
+        }
+
         try {
             initializeChatRoom();
             setupChatRoutes();
@@ -487,6 +452,9 @@ using namespace std;
 
             server.serveFile("/chat" + to_string(roomid), "html/index.html");
             logger.logInfo("chatroom", "聊天室 ID:" + std::to_string(roomid) + " 启动成功");
+            
+            isActive = true;
+            updateAccessTime();
             return true;
         } catch (const std::exception& e) {
             logger.logError("chatroom", "启动聊天室时发生异常: " + std::string(e.what()));
@@ -506,15 +474,21 @@ using namespace std;
 
         return;
     }
+    
     string chatroom::gettittle() {
+        // 即使聊天室未加载也能安全返回标题
         return chatTitle;
     }
+    
     void chatroom::setRoomID(int id) {
         roomid = id;
     }
+    
     void chatroom::init() {
         clearMessage();
         allowID.clear();
+        isActive = false;
+        lastAccessTime = 0;
     }
     void chatroom::setflag(int x) {
         flags = x;
@@ -547,10 +521,12 @@ using namespace std;
     }
 
     string chatroom::GetPassword() {
+        // 即使聊天室未加载也能安全返回密码
         return password;
     }
 
     std::string chatroom::getPasswordHash() const {
+        // 即使聊天室未加载也能安全返回密码哈希
         return passwordHash;
     }
 
@@ -566,6 +542,34 @@ using namespace std;
 
     // 检查标志
     bool chatroom::hasFlag(RoomFlags flag) const {
+        // 即使聊天室未加载也能安全检查标志
         return flags & flag;
     }
+
+    // 懒加载相关方法实现
+    void chatroom::updateAccessTime() {
+        lastAccessTime = time(nullptr);
+    }
+
+    time_t chatroom::getLastAccessTime() const {
+        return lastAccessTime;
+    }
+
+    bool chatroom::isActivated() const {
+        return isActive;
+    }
+
+    bool chatroom::deactivate() {
+        if (!isActive) return true;  // 已经是非活跃状态
+        
+        // 记录日志
+        Logger& logger = Logger::getInstance();
+        logger.logInfo("chatroom", "卸载聊天室 ID: " + std::to_string(roomid));
+        
+        // 这里不清除消息，只是卸载聊天室状态
+        isActive = false;
+        
+        return true;
+    }
+    
 //---------chatroom
