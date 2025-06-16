@@ -106,6 +106,7 @@ bool ChatDBManager::initDatabase() {
                          "image_url TEXT, "
                          "timestamp INTEGER, "
                          "metadata TEXT, "
+                         "is_read INTEGER DEFAULT 0, "
                          "FOREIGN KEY(room_id) REFERENCES chatrooms(roomid));";
         
         if (!executeQuery(sql)) {
@@ -134,6 +135,14 @@ bool ChatDBManager::initDatabase() {
         bool hasMetadata = checkColumnExists("messages", "metadata");
         if (!hasMetadata) {
             if (!executeQuery("ALTER TABLE messages ADD COLUMN metadata TEXT;")) {
+                return false;
+            }
+        }
+        
+        // 检查 is_read 列
+        bool hasIsRead = checkColumnExists("messages", "is_read");
+        if (!hasIsRead) {
+            if (!executeQuery("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0;")) {
                 return false;
             }
         }
@@ -286,6 +295,7 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
     std::string msgContent = message["message"].asString();
     std::string imageUrl = message.isMember("imageUrl") ? message["imageUrl"].asString() : "";
     long long timestamp = message["timestamp"].asInt64();
+    int isRead = message.isMember("is_read") ? message["is_read"].asInt() : 0;
     
     // 创建metadata字段的JSON字符串，用于保存私聊信息
     std::string metadataStr = "";
@@ -318,14 +328,15 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
     metadataStr = escapeQuotes(metadataStr);
     
     // 插入消息
-    std::string query = "INSERT INTO messages (room_id, user, label, message, image_url, timestamp, metadata) VALUES (" +
+    std::string query = "INSERT INTO messages (room_id, user, label, message, image_url, timestamp, metadata, is_read) VALUES (" +
             std::to_string(roomId) + ", '" +
             user + "', '" +
             label + "', '" +
             msgContent + "', '" +
             imageUrl + "', " +
             std::to_string(timestamp) + ", '" +
-            metadataStr + "');";
+            metadataStr + "', " +
+            std::to_string(isRead) + ");";
     
     bool success = executeQuery(query);
     
@@ -345,7 +356,7 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
 }
 
 bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, long long lastTimestamp) {
-    std::string query = "SELECT user, label, message, image_url, timestamp, metadata FROM messages WHERE room_id = " + 
+    std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " + 
                        std::to_string(roomId);
     
     if (lastTimestamp > 0) {
@@ -381,6 +392,7 @@ bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, l
         }
         
         msg["timestamp"] = static_cast<Json::Int64>(sqlite3_column_int64(stmt, 4));
+        msg["is_read"] = sqlite3_column_int(stmt, 6);
         
         // 处理metadata
         if (metadataText && strlen(metadataText) > 0) {
@@ -463,4 +475,299 @@ bool ChatDBManager::clearMessages(int roomId) {
         executeQuery("ROLLBACK;");
         return false;
     }
+}
+
+// 新增：检查两个用户之间是否有未读消息
+bool ChatDBManager::hasUnreadMessages(int roomId, const std::string& fromUser, const std::string& toUser, long long lastTimestamp) {
+    std::string query = "SELECT COUNT(*) FROM messages WHERE room_id = " + std::to_string(roomId) +
+                        " AND is_read = 0";
+    
+    if (lastTimestamp > 0) {
+        query += " AND timestamp > " + std::to_string(lastTimestamp);
+    }
+    
+    query += " AND (";
+    
+    // 构建复杂的JSON匹配条件
+    query += "(user = '" + fromUser + "' AND json_extract(metadata, '$.to') = '" + toUser + "')";
+    query += " OR ";
+    query += "(user = '" + toUser + "' AND json_extract(metadata, '$.to') = '" + fromUser + "')";
+    
+    query += ")";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        return false;
+    }
+    
+    int count = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmt, 0);
+    }
+    
+    sqlite3_finalize(stmt);
+    return count > 0;
+}
+
+// 新增：检查用户是否有未读消息
+bool ChatDBManager::userHasUnreadMessages(int roomId, const std::string& toUser, long long lastTimestamp) {
+    std::string query = "SELECT COUNT(*) FROM messages WHERE room_id = " + std::to_string(roomId) +
+                        " AND is_read = 0 AND json_extract(metadata, '$.to') = '" + toUser + "'";
+    
+    if (lastTimestamp > 0) {
+        query += " AND timestamp > " + std::to_string(lastTimestamp);
+    }
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        return false;
+    }
+    
+    int count = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmt, 0);
+    }
+    
+    sqlite3_finalize(stmt);
+    return count > 0;
+}
+
+// 新增：将消息标记为已读
+bool ChatDBManager::markMessagesAsRead(int roomId, const std::string& fromUser, const std::string& toUser) {
+    if (!executeQuery("BEGIN TRANSACTION;")) {
+        return false;
+    }
+    
+    std::string query = "UPDATE messages SET is_read = 1 WHERE room_id = " + std::to_string(roomId) +
+                        " AND (";
+    
+    // 匹配这两个用户之间的所有消息
+    query += "(user = '" + fromUser + "' AND json_extract(metadata, '$.to') = '" + toUser + "')";
+    query += " OR ";
+    query += "(user = '" + toUser + "' AND json_extract(metadata, '$.to') = '" + fromUser + "')";
+    
+    query += ")";
+    
+    bool success = executeQuery(query);
+    
+    if (success) {
+        return executeQuery("COMMIT;");
+    } else {
+        executeQuery("ROLLBACK;");
+        return false;
+    }
+}
+
+// 获取与指定用户相关的所有消息（发送或接收）
+bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& username, std::deque<Json::Value>& messages, long long lastTimestamp) {
+    // 构建高效的SQL查询，获取与该用户相关的所有消息
+    std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " + 
+                       std::to_string(roomId) + " AND (";
+    
+    // 用户是发送者
+    query += "user = '" + username + "' OR ";
+    
+    // 用户是接收者（通过metadata.to字段匹配）
+    query += "json_extract(metadata, '$.to') = '" + username + "'";
+    
+    query += ")";
+    
+    // 添加时间戳条件
+    if (lastTimestamp > 0) {
+        query += " AND timestamp > " + std::to_string(lastTimestamp);
+    }
+    
+    // 按时间升序排序
+    query += " ORDER BY timestamp ASC;";
+
+
+    Logger& logger = Logger::getInstance();
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        logger.logError("ChatDBManager", "准备查询失败: " + std::string(sqlite3_errmsg(db)));
+        return false;
+    }
+    
+    int messageCount = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        Json::Value msg;
+        const char* userText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* messageText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        const char* imageUrlText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        const char* metadataText = nullptr;
+        
+        if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
+            metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+        }
+        
+        msg["user"] = userText ? userText : "";
+        msg["label"] = labelText ? labelText : "";
+        msg["message"] = messageText ? messageText : "";
+        
+        if (imageUrlText && strlen(imageUrlText) > 0) {
+            msg["imageUrl"] = imageUrlText;
+        }
+        
+        msg["timestamp"] = static_cast<Json::Int64>(sqlite3_column_int64(stmt, 4));
+        msg["is_read"] = sqlite3_column_int(stmt, 6);
+        
+        // 处理metadata字段
+        if (metadataText && strlen(metadataText) > 0) {
+            Json::Value metadata;
+            Json::Reader reader;
+            bool parseSuccess = reader.parse(metadataText, metadata);
+            
+            if (parseSuccess) {
+                msg["metadata"] = metadata;
+            } else {
+                // 尝试修复常见的JSON格式问题
+                std::string fixedMetadata = std::string(metadataText);
+                
+                // 修复双引号问题
+                std::string::size_type pos = 0;
+                while ((pos = fixedMetadata.find("'", pos)) != std::string::npos) {
+                    fixedMetadata.replace(pos, 1, "\"");
+                    pos += 1;
+                }
+                
+                // 确保是有效的JSON对象
+                if (fixedMetadata.front() != '{') fixedMetadata = '{' + fixedMetadata;
+                if (fixedMetadata.back() != '}') fixedMetadata += '}';
+                
+                if (reader.parse(fixedMetadata, metadata)) {
+                    msg["metadata"] = metadata;
+                } else {
+                    // 手动创建metadata
+                    Json::Value manualMetadata;
+                    manualMetadata["to"] = username; // 假设当前用户是接收者
+                    msg["metadata"] = manualMetadata;
+                }
+            }
+        } else {
+            // 如果没有metadata，添加一个空的
+            Json::Value emptyMetadata;
+            emptyMetadata["to"] = ""; // 空的接收者
+            msg["metadata"] = emptyMetadata;
+        }
+        
+        messages.push_back(msg);
+        messageCount++;
+    }
+    sqlite3_finalize(stmt);
+    return true;
+}
+
+// 转义SQL字符串中的单引号 (辅助函数)
+static std::string escapeSqlString(const std::string& s) {
+    std::string escaped_s = "";
+    for (char c : s) {
+        if (c == '\'') {
+            escaped_s += "''";
+        } else {
+            escaped_s += c;
+        }
+    }
+    return escaped_s;
+}
+
+// 获取两个特定用户之间的私聊消息
+bool ChatDBManager::getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB, 
+                                                std::deque<Json::Value>& messages, long long lastTimestamp) {
+    std::string safeUserA = escapeSqlString(userA);
+    std::string safeUserB = escapeSqlString(userB);
+
+    std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " +
+                       std::to_string(roomId) + " AND (";
+    query += "(user = '" + safeUserA + "' AND json_extract(metadata, '$.to') = '" + safeUserB + "') OR ";
+    query += "(user = '" + safeUserB + "' AND json_extract(metadata, '$.to') = '" + safeUserA + "')";
+    query += ")";
+
+    if (lastTimestamp > 0) {
+        query += " AND timestamp > " + std::to_string(lastTimestamp);
+    }
+    query += " ORDER BY timestamp ASC;";
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        return false;
+    }
+
+    int messageCount = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        Json::Value msg;
+        const char* userText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* messageText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        const char* imageUrlText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        long long msgTimestamp = sqlite3_column_int64(stmt, 4);
+        const char* metadataText = nullptr;
+        
+        if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
+            metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+        }
+        
+        int isRead = sqlite3_column_int(stmt, 6);
+
+        msg["user"] = userText ? userText : "";
+        msg["label"] = labelText ? labelText : "";
+        msg["message"] = messageText ? messageText : "";
+        
+        if (imageUrlText && strlen(imageUrlText) > 0) {
+            msg["imageUrl"] = imageUrlText;
+        }
+        
+        msg["timestamp"] = static_cast<Json::Int64>(msgTimestamp);
+        msg["is_read"] = isRead;
+
+        // 处理metadata字段
+        if (metadataText && strlen(metadataText) > 0) {
+            Json::Value metadata;
+            Json::Reader reader;
+            bool parseSuccess = reader.parse(metadataText, metadata);
+            
+            if (parseSuccess) {
+                msg["metadata"] = metadata;
+            } else {
+                // 尝试修复常见的JSON格式问题
+                std::string fixedMetadata = std::string(metadataText);
+                
+                // 修复双引号问题
+                std::string::size_type pos = 0;
+                while ((pos = fixedMetadata.find("'", pos)) != std::string::npos) {
+                    fixedMetadata.replace(pos, 1, "\"");
+                    pos += 1;
+                }
+                
+                // 确保是有效的JSON对象
+                if (fixedMetadata.front() != '{') fixedMetadata = '{' + fixedMetadata;
+                if (fixedMetadata.back() != '}') fixedMetadata += '}';
+                
+                if (reader.parse(fixedMetadata, metadata)) {
+                    msg["metadata"] = metadata;
+                } else {
+                    // 如果解析失败，创建基本元数据
+                    Json::Value fallbackMetadata;
+                    fallbackMetadata["to"] = (std::string(userText) == userA) ? userB : userA;
+                    msg["metadata"] = fallbackMetadata;
+                }
+            }
+        } else {
+            // 如果没有metadata，添加一个基本的
+            Json::Value emptyMetadata;
+            emptyMetadata["to"] = (std::string(userText) == userA) ? userB : userA;
+            msg["metadata"] = emptyMetadata;
+        }
+        
+        messages.push_back(msg);
+        messageCount++;
+    }
+
+    sqlite3_finalize(stmt);
+    return true;
 }

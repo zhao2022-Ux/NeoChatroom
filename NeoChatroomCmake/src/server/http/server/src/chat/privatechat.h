@@ -40,6 +40,15 @@ public:
     // 添加私聊消息
     bool addPrivateMessage(const std::string& fromUser, const std::string& toUser, 
                           const std::string& message, const std::string& imageUrl = "");
+                          
+    // 检查两个用户之间是否存在未读消息
+    bool hasUnreadMessages(const std::string& fromUser, const std::string& toUser, long long lastTimestamp = 0);
+    
+    // 检查用户是否有未读消息
+    bool userHasUnreadMessages(const std::string& toUser, long long lastTimestamp = 0);
+    
+    // 将两个用户之间的消息标记为已读
+    bool markMessagesAsRead(const std::string& fromUser, const std::string& toUser);
 
     // 设置私聊API路由
     void setupRoutes();

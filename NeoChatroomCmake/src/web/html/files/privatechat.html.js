@@ -1,9 +1,11 @@
 // 全局变量
-let currentUsername = ""; // 当前登录用户名
-let selectedUser = null; // 当前选中的用户
-let lastMessageTimestamp = 0; // 上次获取的消息时间戳
-let messagePollingInterval = null; // 消息轮询定时器
-let userList = []; // 用户列表缓存
+let currentUsername = ""; 
+let selectedUser = null; 
+let lastMessageTimestamp = 0; 
+let messagePollingInterval = null; 
+let userList = []; 
+let checkUnreadInterval = null; 
+let allMessages = {}; // 存储所有聊天消息，按用户分组
 
 // 工具函数
 // Base64 编解码函数
@@ -61,7 +63,7 @@ function getAvatarInitial(username) {
 }
 
 // 用户认证相关
-// 更新登录状态
+// ��新登录状态
 async function updateLoginStatus() {
     const uid = getCookie("uid");
     const serverUrl = window.location.origin;
@@ -174,6 +176,43 @@ async function fetchUserList() {
     }
 }
 
+// 选择用户开始聊天
+function selectUser(user) {
+    selectedUser = user;
+    
+    // 更新UI以反映选择的用户
+    document.querySelectorAll('.user-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.username === user.username) {
+            item.classList.add('active');
+            // 隐藏未读消息标记
+            const badge = item.querySelector('.user-badge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        }
+    });
+    
+    // 显示聊天区域，隐藏欢迎屏幕
+    document.getElementById('welcomeScreen').style.display = 'none';
+    document.getElementById('chatArea').style.display = 'flex';
+    
+    // 更新聊天区域的用户信息
+    document.getElementById('chatUserAvatar').textContent = getAvatarInitial(user.username);
+    document.getElementById('chatUserName').textContent = user.username;
+    
+    console.log(`选择用户: ${user.username}`);
+    
+    // 直接加载与该用户的对话
+    loadDirectMessages(user.username);
+    
+    // 聚焦输入框
+    document.getElementById('messageInput').focus();
+    
+    // 标记与该用户的消息为已读
+    markMessagesAsRead(currentUsername, user.username);
+}
+
 // 渲染用户列表
 function renderUserList(users) {
     const userListElement = document.getElementById('userList');
@@ -205,13 +244,20 @@ function renderUserList(users) {
         
         const userStatus = document.createElement('div');
         userStatus.className = 'user-status';
-        userStatus.textContent = user.labei === 'GM' ? '管理员' : '在线';
+        userStatus.textContent = user.labei === 'GM' ? '管理员' : '';  // 移除在线提示
         
         userInfo.appendChild(userName);
         userInfo.appendChild(userStatus);
         
         userItem.appendChild(avatar);
         userItem.appendChild(userInfo);
+        
+        // 添加未读消息指示器
+        const unreadBadge = document.createElement('div');
+        unreadBadge.className = 'user-badge';
+        unreadBadge.style.display = 'none';
+        unreadBadge.textContent = '!';
+        userItem.appendChild(unreadBadge);
         
         // 添加点击事件处理
         userItem.addEventListener('click', () => {
@@ -222,72 +268,86 @@ function renderUserList(users) {
     });
     
     userListElement.appendChild(fragment);
+    
+    // 开始检查未读消息
+    startCheckingUnread();
 }
 
-// 搜索用户
-function searchUsers(term) {
-    if (!term) {
-        renderUserList(userList);
-        return;
+// 添加检查未读消息的函数
+function startCheckingUnread() {
+    // 清除现有的定时器
+    if (checkUnreadInterval) {
+        clearInterval(checkUnreadInterval);
     }
     
-    const searchTerm = term.toLowerCase();
-    const filteredUsers = userList.filter(user => 
-        user.username.toLowerCase().includes(searchTerm) || 
-        user.uid.toString().includes(searchTerm)
-    );
+    // 立即检查一次
+    checkUnreadMessages();
     
-    renderUserList(filteredUsers);
+    // 设置定时器，每10秒检查一次
+    checkUnreadInterval = setInterval(checkUnreadMessages, 10000);
+}
+
+// 检查所有用户的未读消息
+function checkUnreadMessages() {
+    if (!currentUsername) return;
+    
+    // 首先检查当前用户是否有未读消息
+    fetch(`/private/user-unread?user=${encodeURIComponent(currentUsername)}`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        if (data.has_unread) {
+            // 如果有未读消息，逐个检查每个用户
+            userList.forEach(user => {
+                if (user.username !== currentUsername) {
+                    checkUnreadWithUser(user.username);
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error checking unread messages:', error);
+    });
+}
+
+// 检查与特定用户的未读消息
+function checkUnreadWithUser(username) {
+    fetch(`/private/check-unread?from=${encodeURIComponent(currentUsername)}&to=${encodeURIComponent(username)}`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        // 更新UI显示未读消息标记
+        const userItem = document.querySelector(`.user-item[data-username="${username}"]`);
+        if (userItem) {
+            const badge = userItem.querySelector('.user-badge');
+            if (badge) {
+                badge.style.display = data.has_unread ? 'flex' : 'none';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking unread with user:', error);
+    });
 }
 
 // 聊天功能相关
-// 选择用户开始聊天
-function selectUser(user) {
-    selectedUser = user;
-    
-    // 更新UI以反映选择的用户
-    document.querySelectorAll('.user-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.username === user.username) {
-            item.classList.add('active');
-        }
-    });
-    
-    // 显示聊天区域，隐藏欢迎屏幕
-    document.getElementById('welcomeScreen').style.display = 'none';
-    document.getElementById('chatArea').style.display = 'flex';
-    
-    // 更新聊天区域的用户信息
-    document.getElementById('chatUserAvatar').textContent = getAvatarInitial(user.username);
-    document.getElementById('chatUserName').textContent = user.username;
-    
-    // 清空消息区域
-    document.getElementById('chatMessages').innerHTML = '<div class="empty-message">加载消息中...</div>';
-    
-    // 重置消息时间戳
-    lastMessageTimestamp = 0;
-    
-    // 加载与该用户的聊天记录
-    loadChatHistory();
-    
-    // 清除之前的轮询
-    if (messagePollingInterval) {
-        clearInterval(messagePollingInterval);
-    }
-    
-    // 开始轮询新消息
-    messagePollingInterval = setInterval(loadNewMessages, 3000);
-    
-    // 聚焦输入框
-    document.getElementById('messageInput').focus();
-}
-
-// 加载与当前选中用户的聊天历史
-async function loadChatHistory() {
-    if (!selectedUser || !currentUsername) return;
+// 加载当前用户的所有私聊消息
+async function loadAllUserMessages() {
+    if (!currentUsername) return;
     
     try {
-        const response = await fetch(`/private/messages?from=${encodeURIComponent(currentUsername)}&to=${encodeURIComponent(selectedUser.username)}`, {
+        // 获取与当前用户相关的所有消息，不指定特定对话者
+        const response = await fetch(`/private/messages?lastTimestamp=${lastMessageTimestamp}`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -299,118 +359,212 @@ async function loadChatHistory() {
         const messages = await response.json();
         
         if (Array.isArray(messages) && messages.length > 0) {
-            renderMessages(messages);
+            // 处理新消息
+            processNewMessages(messages);
             
             // 更新最后消息时间戳
             const lastMessage = messages[messages.length - 1];
             if (lastMessage && lastMessage.timestamp) {
                 lastMessageTimestamp = lastMessage.timestamp;
             }
-        } else {
-            document.getElementById('chatMessages').innerHTML = '<div class="empty-message">暂无消息</div>';
+            
+            // 如果有选中的用户，更新聊天界面
+            if (selectedUser) {
+                updateChatView(selectedUser.username);
+            }
+            
+            // 更新所有未读消息指示器
+            updateUnreadIndicators();
         }
     } catch (error) {
-        console.error('加载聊天历史失败:', error);
-        document.getElementById('chatMessages').innerHTML = '<div class="empty-message">加载消息失败</div>';
+        console.error('加载消息失败:', error);
     }
 }
 
-// 加载新消息
-async function loadNewMessages() {
-    if (!selectedUser || !currentUsername) return;
+// 处理新接收到的消息
+function processNewMessages(messages) {
+    // 按照消息的发送者和接收者进行分组
+    messages.forEach(message => {
+        const sender = message.user;
+        let receiver = "";
+        
+        // 从metadata中提取接收者
+        if (message.metadata) {
+            if (typeof message.metadata === 'string') {
+                try {
+                    const metadata = JSON.parse(message.metadata);
+                    receiver = metadata.to || "";
+                } catch (e) {
+                    console.error('解析metadata失败:', e);
+                }
+            } else if (typeof message.metadata === 'object') {
+                receiver = message.metadata.to || "";
+            }
+        }
+        
+        // 确定这条消息属于哪个对话
+        let chatPartner = "";
+        if (sender === currentUsername) {
+            chatPartner = receiver;
+        } else if (receiver === currentUsername) {
+            chatPartner = sender;
+        }
+        
+        // 如果能确定对话伙伴，将消息添加到相应的对话中
+        if (chatPartner) {
+            if (!allMessages[chatPartner]) {
+                allMessages[chatPartner] = [];
+            }
+            
+            // 检查是否已存���相同的消息（避免重复）
+            const isDuplicate = allMessages[chatPartner].some(
+                m => m.timestamp === message.timestamp && 
+                     m.user === message.user && 
+                     m.message === message.message
+            );
+            
+            if (!isDuplicate) {
+                allMessages[chatPartner].push(message);
+                
+                // 按时间戳排序
+                allMessages[chatPartner].sort((a, b) => a.timestamp - b.timestamp);
+            }
+        }
+    });
+}
+
+// 直接加载两个用户之间消息的函数
+async function loadDirectMessages(otherUsername) {
+    if (!currentUsername || !otherUsername) return;
     
     try {
-        const response = await fetch(`/private/messages?from=${encodeURIComponent(currentUsername)}&to=${encodeURIComponent(selectedUser.username)}&lastTimestamp=${lastMessageTimestamp}`, {
+        // 获取与特定用户的对话
+        const response = await fetch(`/private/messages?from=${encodeURIComponent(currentUsername)}&to=${encodeURIComponent(otherUsername)}&lastTimestamp=0`, {
             method: 'GET',
             credentials: 'include'
         });
         
         if (!response.ok) {
-            throw new Error(`获取新消息失败: ${response.status}`);
+            throw new Error(`获取消息失败: ${response.status}`);
         }
         
         const messages = await response.json();
         
         if (Array.isArray(messages) && messages.length > 0) {
-            // 如果是初次加载，清空"暂无消息"提示
-            if (document.getElementById('chatMessages').innerHTML.includes('暂无消息')) {
-                document.getElementById('chatMessages').innerHTML = '';
-            }
-            
-            renderNewMessages(messages);
+            // 直接更新这个对话的消息
+            allMessages[otherUsername] = messages;
             
             // 更新最后消息时间戳
             const lastMessage = messages[messages.length - 1];
             if (lastMessage && lastMessage.timestamp) {
                 lastMessageTimestamp = lastMessage.timestamp;
             }
+            
+            // 如果当前选中的用户是我们加载消息的用户，更新聊天界面
+            if (selectedUser && selectedUser.username === otherUsername) {
+                updateChatView(otherUsername);
+            }
+        } else {
+            // 处理没有消息的情况
+            allMessages[otherUsername] = [];
+            if (selectedUser && selectedUser.username === otherUsername) {
+                document.getElementById('chatMessages').innerHTML = '<div class="empty-message">暂无消息</div>';
+            }
         }
     } catch (error) {
-        console.error('加载新消息失败:', error);
+        console.error('加载消息失败:', error);
     }
 }
 
-// 渲染消息列表
-function renderMessages(messages) {
+// 更新聊天视图函数，确保正确显示消息
+function updateChatView(username) {
     const chatMessages = document.getElementById('chatMessages');
     chatMessages.innerHTML = '';
     
-    messages.forEach(renderSingleMessage);
-    
-    // 滚动到底部
-    scrollToBottom();
-}
-
-// 渲染新消息
-function renderNewMessages(messages) {
-    messages.forEach(renderSingleMessage);
-    
-    // 滚动到底部
-    scrollToBottom();
-}
-
-// 渲染单条消息
-function renderSingleMessage(message) {
-    const chatMessages = document.getElementById('chatMessages');
-    
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message';
-    
-    // 判断消息类型
-    const isCurrentUserMessage = message.user === currentUsername;
-    messageElement.classList.add(isCurrentUserMessage ? 'sent' : 'received');
-    
-    // 解码消息内容
-    let messageContent;
-    try {
-        messageContent = Base64.decode(message.message);
-    } catch (e) {
-        messageContent = message.message;
-        console.error('消息解码失败:', e);
+    if (!allMessages[username] || allMessages[username].length === 0) {
+        chatMessages.innerHTML = '<div class="empty-message">暂无消息</div>';
+        return;
     }
     
-    // 创建消息文本
-    const messageText = document.createElement('div');
-    messageText.className = 'message-text';
-    messageText.textContent = messageContent;
+    console.log(`渲染 ${allMessages[username].length} 条消息`);
     
-    // 创建时间标签
-    const messageTime = document.createElement('span');
-    messageTime.className = 'message-time';
-    messageTime.textContent = formatTimestamp(message.timestamp);
+    // 渲染该用户的所有消息
+    allMessages[username].forEach(message => {
+        renderSingleMessage(message);
+    });
     
-    // 组装消息元素
-    messageElement.appendChild(messageText);
-    messageElement.appendChild(messageTime);
+    // 滚动到底部
+    scrollToBottom();
     
-    // 添加到消息列表
+    // 标记为已读
+    if (selectedUser) {
+        markMessagesAsRead(currentUsername, selectedUser.username);
+    }
+}
+
+// 渲染单条消息到聊天界面
+function renderSingleMessage(message) {
+    if (!message || !message.user || !message.message) return;
+    
+    const chatMessages = document.getElementById('chatMessages');
+    
+    // 创建消息容器
+    const messageElement = document.createElement('div');
+    
+    // 确定消息类型（发送/接收）
+    const isSentByMe = message.user === currentUsername;
+    messageElement.className = `message ${isSentByMe ? 'sent' : 'received'}`;
+    
+    // 提取元数据中的接收者信息
+    let receiver = "";
+    if (message.metadata) {
+        if (typeof message.metadata === 'string') {
+            try {
+                const metadata = JSON.parse(message.metadata);
+                receiver = metadata.to || "";
+            } catch (e) {
+                console.error('解析metadata失败:', e);
+            }
+        } else if (typeof message.metadata === 'object') {
+            receiver = message.metadata.to || "";
+        }
+    }
+    
+    // 解码消息内容
+    let messageText = "";
+    try {
+        messageText = Base64.decode(message.message);
+    } catch (e) {
+        console.error('解码消息内容失败:', e);
+        messageText = message.message; // 如果解码失败，显示原始内容
+    }
+    
+    // 设置消息内容
+    messageElement.textContent = messageText;
+    
+    // 添加时间戳
+    const timeElement = document.createElement('span');
+    timeElement.className = 'message-time';
+    timeElement.textContent = formatTimestamp(message.timestamp);
+    messageElement.appendChild(timeElement);
+    
+    // 添加到聊天区域
     chatMessages.appendChild(messageElement);
 }
 
-// 滚动到聊天区域底部
+// 滚动到聊天窗口底部
 function scrollToBottom() {
     const chatMessages = document.getElementById('chatMessages');
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// 更新未读指示器
+function updateUnreadIndicators() {
+    userList.forEach(user => {
+        if (user.username !== currentUsername) {
+            checkUnreadWithUser(user.username);
+        }
+    });
 }
 
 // 发送消息
@@ -424,6 +578,8 @@ async function sendMessage() {
     
     // 清空输入框
     messageInput.value = '';
+    
+    console.log(`准备发送消息给: ${selectedUser.username}, 内容: ${message}`);
     
     try {
         // 发送消息到服务器
@@ -443,8 +599,10 @@ async function sendMessage() {
             throw new Error(`发送消息失败: ${response.status}`);
         }
         
-        // 立即刷新消息列表，以显示新发送的消息
-        loadNewMessages();
+        console.log('消息发送成功，立即加载新消息');
+        
+        // 直接加载此对话的消息，而不是所有消息
+        await loadDirectMessages(selectedUser.username);
     } catch (error) {
         console.error('发送消息失败:', error);
         alert('发送消息失败，请重试');
@@ -468,7 +626,7 @@ function setupThemeToggle() {
     }
 }
 
-// 初始化事件监听
+// 初始化事��监听
 function setupEventListeners() {
     // 搜索框事件
     const searchInput = document.getElementById('userSearchInput');
@@ -515,6 +673,14 @@ async function initPage() {
     
     // 获取用户列表
     await fetchUserList();
+    
+    // 初始加载所有消息
+    await loadAllUserMessages();
+    
+    console.log('页面初始化完成');
+    
+    // 设置定期轮询
+    messagePollingInterval = setInterval(loadAllUserMessages, 5000);
 }
 
 // 页面加载完成后初始化
@@ -525,4 +691,39 @@ window.addEventListener('beforeunload', () => {
     if (messagePollingInterval) {
         clearInterval(messagePollingInterval);
     }
+    if (checkUnreadInterval) {
+        clearInterval(checkUnreadInterval);
+    }
 });
+
+// 搜索用户
+function searchUsers(query) {
+    if (!query) {
+        renderUserList(userList);
+        return;
+    }
+    
+    query = query.toLowerCase();
+    const filteredUsers = userList.filter(user => 
+        user.username.toLowerCase().includes(query)
+    );
+    
+    renderUserList(filteredUsers);
+}
+
+// 修复markMessagesAsRead函数
+function markMessagesAsRead(fromUser, toUser) {
+    fetch('/private/mark-read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from: fromUser,
+            to: toUser
+        }),
+        credentials: 'include'
+    }).catch(error => {
+        console.error('标记消息为已读���败:', error);
+    });
+}
