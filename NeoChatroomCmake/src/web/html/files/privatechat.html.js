@@ -438,6 +438,8 @@ async function loadDirectMessages(otherUsername) {
     if (!currentUsername || !otherUsername) return;
     
     try {
+        console.log(`加载与${otherUsername}的对话...`);
+        
         // 获取与特定用户的对话
         const response = await fetch(`/private/messages?from=${encodeURIComponent(currentUsername)}&to=${encodeURIComponent(otherUsername)}&lastTimestamp=0`, {
             method: 'GET',
@@ -448,9 +450,15 @@ async function loadDirectMessages(otherUsername) {
             throw new Error(`获取消息失败: ${response.status}`);
         }
         
-        const messages = await response.json();
+        const data = await response.json();
         
-        if (Array.isArray(messages) && messages.length > 0) {
+        // 检查响应格式
+        const messages = Array.isArray(data) ? data : 
+                        (data.messages ? data.messages : []);
+        
+        console.log(`收到 ${messages.length} 条消息`, messages);
+        
+        if (messages.length > 0) {
             // 直接更新这个对话的消息
             allMessages[otherUsername] = messages;
             
@@ -473,6 +481,9 @@ async function loadDirectMessages(otherUsername) {
         }
     } catch (error) {
         console.error('加载消息失败:', error);
+        if (selectedUser && selectedUser.username === otherUsername) {
+            document.getElementById('chatMessages').innerHTML = '<div class="empty-message">加载消息失败，请重试</div>';
+        }
     }
 }
 
@@ -502,9 +513,83 @@ function updateChatView(username) {
     }
 }
 
+// 发送消息
+async function sendMessage() {
+    if (!selectedUser || !currentUsername) return;
+    
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    // 清空输入框
+    messageInput.value = '';
+    
+    console.log(`准备发送消息给: ${selectedUser.username}, 内容: ${message}`);
+    
+    try {
+        // 立即在UI中显示消息（乐观更新）
+        const optimisticMessage = {
+            user: currentUsername,
+            message: Base64.encode(message),
+            timestamp: Math.floor(Date.now() / 1000), // 当前时间戳，秒为单位
+            is_read: 0,
+            metadata: {
+                to: selectedUser.username
+            }
+        };
+        
+        // 添加到当前会话的消息中
+        if (!allMessages[selectedUser.username]) {
+            allMessages[selectedUser.username] = [];
+        }
+        allMessages[selectedUser.username].push(optimisticMessage);
+        
+        // 更新UI
+        updateChatView(selectedUser.username);
+        
+        // 发送消息到服务器
+        const response = await fetch('/private/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                to: selectedUser.username,
+                message: Base64.encode(message)
+            }),
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`发送消息失败: ${response.status}`);
+        }
+        
+        console.log('消息发送成功，立即加载新消息');
+        
+        // 延迟一小段时间后重新加载消息，确保服务器有时间处理
+        setTimeout(() => {
+            loadDirectMessages(selectedUser.username);
+        }, 500);
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        alert('发送消息失败，请重试');
+    }
+}
+
 // 渲染单条消息到聊天界面
 function renderSingleMessage(message) {
-    if (!message || !message.user || !message.message) return;
+    if (!message) {
+        console.error('渲染空消息');
+        return;
+    }
+    
+    console.log('渲染消息:', message);
+    
+    if (!message.user || !message.message) {
+        console.error('消息缺少必要字段:', message);
+        return;
+    }
     
     const chatMessages = document.getElementById('chatMessages');
     
@@ -523,7 +608,7 @@ function renderSingleMessage(message) {
                 const metadata = JSON.parse(message.metadata);
                 receiver = metadata.to || "";
             } catch (e) {
-                console.error('解析metadata失败:', e);
+                console.error('解析metadata��败:', e, message.metadata);
             }
         } else if (typeof message.metadata === 'object') {
             receiver = message.metadata.to || "";
@@ -535,7 +620,7 @@ function renderSingleMessage(message) {
     try {
         messageText = Base64.decode(message.message);
     } catch (e) {
-        console.error('解码消息内容失败:', e);
+        console.error('解码消息内容失败:', e, message.message);
         messageText = message.message; // 如果解码失败，显示原始内容
     }
     
@@ -567,46 +652,21 @@ function updateUnreadIndicators() {
     });
 }
 
-// 发送消息
-async function sendMessage() {
-    if (!selectedUser || !currentUsername) return;
-    
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
-    
-    if (!message) return;
-    
-    // 清空输入框
-    messageInput.value = '';
-    
-    console.log(`准备发送消息给: ${selectedUser.username}, 内容: ${message}`);
-    
-    try {
-        // 发送消息到服务器
-        const response = await fetch('/private/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                to: selectedUser.username,
-                message: Base64.encode(message)
-            }),
-            credentials: 'include'
-        });
-        
-        if (!response.ok) {
-            throw new Error(`发送消息失败: ${response.status}`);
-        }
-        
-        console.log('消息发送成功，立即加载新消息');
-        
-        // 直接加载此对话的消息，而不是所有消息
-        await loadDirectMessages(selectedUser.username);
-    } catch (error) {
-        console.error('发送消息失败:', error);
-        alert('发送消息失败，请重试');
-    }
+// 修复markMessagesAsRead函数
+function markMessagesAsRead(fromUser, toUser) {
+    fetch('/private/mark-read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from: fromUser,
+            to: toUser
+        }),
+        credentials: 'include'
+    }).catch(error => {
+        console.error('标记消息为已读���败:', error);
+    });
 }
 
 // 界面功能相关
@@ -683,7 +743,7 @@ async function initPage() {
     messagePollingInterval = setInterval(loadAllUserMessages, 5000);
 }
 
-// 页面加载完成后初始化
+// 页��加载完成后初始化
 document.addEventListener('DOMContentLoaded', initPage);
 
 // 页面卸载前清理
@@ -709,21 +769,4 @@ function searchUsers(query) {
     );
     
     renderUserList(filteredUsers);
-}
-
-// 修复markMessagesAsRead函数
-function markMessagesAsRead(fromUser, toUser) {
-    fetch('/private/mark-read', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            from: fromUser,
-            to: toUser
-        }),
-        credentials: 'include'
-    }).catch(error => {
-        console.error('标记消息为已读���败:', error);
-    });
 }
