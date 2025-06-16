@@ -4,6 +4,7 @@
 #include "../tool/log.h"
 #include <map>
 #include <mutex>
+#include <json/json.h>
 #include <vector>
 #include <tuple>
 #include <sqlite3.h>
@@ -615,6 +616,77 @@ namespace manager {
         }
         catch (const std::exception& e) {
             Logger::getInstance().logError("database", "关闭数据库时发生错误: " + string(e.what()));
+        }
+    }
+
+    // 从 chatroom 类移动过来的 Cookie 解析功能
+    void transCookie(std::string& cid, std::string& uid, std::string cookie) {
+        std::string::size_type pos1 = cookie.find("clientid=");
+        if (pos1 != std::string::npos) {
+            pos1 += 9; // Skip over "clientid="
+            std::string::size_type pos2 = cookie.find(";", pos1);
+            if (pos2 == std::string::npos) pos2 = cookie.length();
+            cid = cookie.substr(pos1, pos2 - pos1);
+        }
+
+        std::string::size_type pos3 = cookie.find("uid=");
+        if (pos3 != std::string::npos) {
+            pos3 += 4; // Skip over "uid="
+            std::string::size_type pos4 = cookie.find(";", pos3);
+            if (pos4 == std::string::npos) pos4 = cookie.length();
+            uid = cookie.substr(pos3, pos4 - pos3);
+        }
+    }
+
+    // 从 chatroom 类移动过来的获取用户名API
+    void getUsername(const httplib::Request& req, httplib::Response& res) {
+        try {
+            res.set_header("Access-Control-Allow-Origin", "*"); // 允许所有来源访问
+            res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // 允许的 HTTP 方法
+            res.set_header("Access-Control-Allow-Headers", "Content-Type"); // 允许的头部字段
+
+            std::string cookies = req.get_header_value("Cookie");
+            std::string password, uid;
+            transCookie(password, uid, cookies);
+
+            // 如果 uid 为空，尝试从查询参数获取
+            if (uid.empty() && req.has_param("uid")) {
+                uid = req.get_param_value("uid");
+            }
+
+            // 获取用户名
+            int uid_;
+            if (uid.empty() || !str::safeatoi(uid, uid_)) {
+                res.status = 401;
+                res.set_content("Invalid uid or user not found", "text/plain");
+                return;
+            }
+
+            user* foundUser = FindUser(uid_);
+            if (foundUser == nullptr) {
+                res.status = 401;
+                res.set_content("Invalid uid or user not found", "text/plain");
+                return;
+            }
+
+            std::string username = foundUser->getname();
+
+            if (username.empty()) {
+                res.status = 401;
+                res.set_content("Invalid uid or user not found", "text/plain");
+            }
+            else {
+                Json::Value response;
+                response["username"] = username;
+                res.set_header("Access-Control-Allow-Origin", "*");
+                res.set_header("Content-Type", "application/json");
+                res.set_content(response.toStyledString(), "application/json");
+            }
+        }
+        catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "获取用户名时发生错误: " + string(e.what()));
+            res.status = 500;
+            res.set_content("Internal server error", "text/plain");
         }
     }
 }

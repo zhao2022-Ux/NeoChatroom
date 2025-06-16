@@ -9,6 +9,8 @@
 #include <vector>
 #include <tuple>
 #include <string>
+#include "../../../../../lib/httplib.h" // 添加 httplib 头文件
+
 namespace manager {
 	const string banedName = "封禁用户";
 	const string AluserType = "AllUser";
@@ -73,6 +75,12 @@ namespace manager {
 
 	// Function to invalidate user cache
 	void InvalidateUserCache(int uid, const std::string& name);
+	
+	// 解析 Cookie (从 chatroom 移动过来)
+	void transCookie(std::string& password, std::string& uid, std::string cookie);
+	
+	// 获取用户名API (从 chatroom 移动过来)
+	void getUsername(const httplib::Request& req, httplib::Response& res);
 }
 
 #endif

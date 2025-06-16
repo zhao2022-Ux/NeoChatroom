@@ -318,13 +318,28 @@ async function updateLoginStatus() {
 async function checkLoginStatus() {
     try {
         const response = await fetch(`${serverUrl}/user/username?uid=${uid}`);
-        if (!response.ok) {
+        
+        // 授权错误时重定向到登录页
+        if (response.status === 401 || response.status === 403) {
             window.location.href = '/login';
             return false;
         }
+        
+        // 处理404错误 - 可能是路由未注册
+        if (response.status === 404) {
+            console.error('检查登录状态失败: 404 - 用户名API路由未找到');
+            return false; // 返回false但不重定向
+        }
+        
+        // 其他错误情况返回false但不重定向
+        if (!response.ok) {
+            console.error('检查登录状态失败:', response.status);
+            return false;
+        }
+        
         return true;
     } catch (error) {
-        window.location.href = '/login';
+        console.error('检查登录状态出错:', error);
         return false;
     }
 }
@@ -417,7 +432,7 @@ function renderVisibleItems(container, startIndex, visibleRows) {
 
 // 调用 /list 接口获取已加入的聊天室
 async function fetchJoinedChatrooms() {
-    if (!await checkLoginStatus()) return;
+    if (!await updateLoginStatus()) return; // 仍然检查登录状态
 
     try {
         const response = await fetch('/list', {
@@ -425,8 +440,16 @@ async function fetchJoinedChatrooms() {
             credentials: 'include',
         });
 
-        if (!response.ok) {
+        // 只有在授权错误时才重定向
+        if (response.status === 401 || response.status === 403) {
             window.location.href = '/login';
+            return;
+        }
+        
+        // 其他错误情况处理，但不重定向
+        if (!response.ok) {
+            console.error('获取聊天室列表失败:', response.status);
+            renderJoinedChatrooms([]); // 显示空列表
             return;
         }
 
@@ -436,7 +459,7 @@ async function fetchJoinedChatrooms() {
         initTouchGestures(); // 初始化触摸手势支持
     } catch (error) {
         console.error('获取已加入聊天室失败:', error);
-        window.location.href = '/login';
+        renderJoinedChatrooms([]); // 显示空列表
     }
 }
 
@@ -448,6 +471,9 @@ function renderJoinedChatrooms(rooms) {
         container.innerHTML = '<p class="empty-message">当前没有加入的聊天室。</p>';
         return;
     }
+    
+    // 使用文档片段减少重绘次数
+    const fragment = document.createDocumentFragment();
 
     rooms.forEach((room, index) => {
         if (parseInt(room.id) < 1) return;  // 只显示 ID≥1
@@ -458,8 +484,8 @@ function renderJoinedChatrooms(rooms) {
         card.dataset.roomId = room.id;
         card.dataset.roomName = room.name;
         
-        // 设置交错动画，但保持初始可见
-        card.style.opacity = '1'; 
+        // 设置交错动画
+        card.style.animationDelay = `${index * 0.05}s`;
         card.style.animation = `slideIn 0.3s ease forwards ${index * 0.05}s`;
         
         const roomName = room.name.trim() ? room.name : '无名称的聊天室';
@@ -489,18 +515,16 @@ function renderJoinedChatrooms(rooms) {
             }
         });
 
-        container.appendChild(card);
-        
-        // 确保卡片可见性
-        setTimeout(() => {
-            card.style.opacity = '1';
-        }, 0);
+        fragment.appendChild(card);
     });
+    
+    // 一次性添加所有卡片到容器
+    container.appendChild(fragment);
 }
 
 // 调用 /allchatlist 接口获取所有聊天室
 async function fetchAllChatrooms() {
-    if (!await checkLoginStatus()) return;
+    if (!await updateLoginStatus()) return;
 
     try {
         const response = await fetch('/allchatlist', {
@@ -508,15 +532,24 @@ async function fetchAllChatrooms() {
             credentials: 'include',
         });
 
+        // 只有在授权错误时才重定向
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = '/login';
+            return;
+        }
+
+        // 其他错误情况处理，但不重定向
         if (!response.ok) {
-            throw new Error('获取聊天室列表失败');
+            console.error('获取聊天室列表失败:', response.status);
+            renderAllChatrooms([]); // 显示空列表
+            return;
         }
 
         const rooms = await response.json();
         renderAllChatrooms(rooms);
     } catch (error) {
         console.error('获取所有聊天室失败:', error);
-        window.location.href = '/login';
+        renderAllChatrooms([]); // 显示空列表
     }
 }
 
@@ -528,6 +561,9 @@ function renderAllChatrooms(rooms) {
         container.innerHTML = '<p class="empty-message">当前没有可用的聊天室。</p>';
         return;
     }
+    
+    // 使用文档片段减少重绘次数
+    const fragment = document.createDocumentFragment();
 
     rooms.forEach((room, index) => {
         if (parseInt(room.id) < 1) return;  // 过滤 ID<1
@@ -543,8 +579,8 @@ function renderAllChatrooms(rooms) {
         card.dataset.roomId = room.id;
         card.dataset.roomName = room.name;
         
-        // 设置交错动画，但保持初始可见
-        card.style.opacity = '1';
+        // 设置交错动画
+        card.style.animationDelay = `${index * 0.05}s`;
         card.style.animation = `slideIn 0.3s ease forwards ${index * 0.05}s`;
         
         const roomName = room.name.trim() ? room.name : '无名称的聊天室';
@@ -568,13 +604,11 @@ function renderAllChatrooms(rooms) {
             }
         });
 
-        container.appendChild(card);
-        
-        // 确保卡片可见性
-        setTimeout(() => {
-            card.style.opacity = '1';
-        }, 0);
+        fragment.appendChild(card);
     });
+    
+    // 一次性添加所有卡片到容器
+    container.appendChild(fragment);
 }
 
 // 初始化拖放功能
@@ -587,9 +621,6 @@ function initDragAndDrop() {
     if (roomCards.length === 0) return;
     
     roomCards.forEach(card => {
-        // 确保所有卡片一开始是可见的
-        card.style.opacity = '1';
-        
         // 拖动开始
         card.addEventListener('dragstart', (e) => {
             draggedItem = card;
@@ -720,10 +751,6 @@ function setupSearch() {
             
             if (roomName.includes(value) || roomId.includes(value)) {
                 card.style.display = '';
-                // 添加一个微小的动画效果表示过滤结果
-                card.style.animation = 'none';
-                card.offsetHeight; // 触发重绘
-                card.style.animation = 'fadeIn 0.3s ease forwards';
                 hasVisibleCard = true;
             } else {
                 card.style.display = 'none';
@@ -755,10 +782,6 @@ function setupSearch() {
             
             if (roomName.includes(value) || roomId.includes(value)) {
                 card.style.display = '';
-                // 添加一个微小的动画效果表示过滤结果
-                card.style.animation = 'none';
-                card.offsetHeight; // 触发重绘
-                card.style.animation = 'fadeIn 0.3s ease forwards';
                 hasVisibleCard = true;
             } else {
                 card.style.display = 'none';
@@ -920,36 +943,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     await fetchAllChatrooms();
     setupJoinPanel();
     setupSearch();
-    
-    // 如果支持IntersectionObserver，可以用它来实现延迟加载
-    if ('IntersectionObserver' in window) {
-        const options = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // 元素进入可视区域，触发动画
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, options);
-        
-        // 观察所有容器
-        document.querySelectorAll('.container').forEach(container => {
-            observer.observe(container);
-        });
-    }
-    
-    // 确保所有卡片在页面加载后是可见的
-    setTimeout(() => {
-        document.querySelectorAll('.room-card').forEach(card => {
-            card.style.opacity = '1';
-        });
-    }, 100);
 });
