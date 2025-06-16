@@ -485,7 +485,8 @@ using namespace std;
     }
     
     void chatroom::init() {
-        clearMessage();
+        // 不再自动清空消息，避免丢失已有消息
+        // clearMessage();  // 移除此行
         allowID.clear();
         isActive = false;
         lastAccessTime = 0;

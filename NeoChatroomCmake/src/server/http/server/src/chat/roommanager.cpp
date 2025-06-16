@@ -744,15 +744,28 @@ void start_manager() {
             return;
         }
 
-        // 提供聊天室HTML页面
-        std::ifstream htmlFile("html/index.html");
-        if (htmlFile) {
-            std::stringstream buffer;
-            buffer << htmlFile.rdbuf();
-            res.set_content(buffer.str(), "text/html");
+        // 特殊处理：对于chat1提供privatechat.html而不是index.html
+        if (roomId == 1) {
+            std::ifstream htmlFile("html/files/privatechat.html");
+            if (htmlFile) {
+                std::stringstream buffer;
+                buffer << htmlFile.rdbuf();
+                res.set_content(buffer.str(), "text/html");
+            } else {
+                res.status = 404;
+                res.set_content("Private chat room template not found", "text/plain");
+            }
         } else {
-            res.status = 404;
-            res.set_content("Chat room template not found", "text/plain");
+            // 对于其他聊天室，提供标准HTML页面
+            std::ifstream htmlFile("html/index.html");
+            if (htmlFile) {
+                std::stringstream buffer;
+                buffer << htmlFile.rdbuf();
+                res.set_content(buffer.str(), "text/html");
+            } else {
+                res.status = 404;
+                res.set_content("Chat room template not found", "text/plain");
+            }
         }
     });
 
@@ -781,15 +794,28 @@ void start_manager() {
             return;
         }
 
-        // 提供聊天室HTML页面
-        std::ifstream htmlFile("html/index.html");
-        if (htmlFile) {
-            std::stringstream buffer;
-            buffer << htmlFile.rdbuf();
-            res.set_content(buffer.str(), "text/html");
+        // 特殊处理：对于chat1提供privatechat.html而不是index.html
+        if (roomId == 1) {
+            std::ifstream htmlFile("html/privatechat.html");
+            if (htmlFile) {
+                std::stringstream buffer;
+                buffer << htmlFile.rdbuf();
+                res.set_content(buffer.str(), "text/html");
+            } else {
+                res.status = 404;
+                res.set_content("Private chat room template not found", "text/plain");
+            }
         } else {
-            res.status = 404;
-            res.set_content("Chat room template not found", "text/plain");
+            // 对于其他聊天室，提供标准HTML页面
+            std::ifstream htmlFile("html/index.html");
+            if (htmlFile) {
+                std::stringstream buffer;
+                buffer << htmlFile.rdbuf();
+                res.set_content(buffer.str(), "text/html");
+            } else {
+                res.status = 404;
+                res.set_content("Chat room template not found", "text/plain");
+            }
         }
     });
 
@@ -959,4 +985,17 @@ void start_manager() {
     
     // 初始化聊天室列表缓存
     updateRoomListCache();
+
+    // 提供私聊页面的JS文件
+    server.getInstance().handleRequest("/files/privatechat.html.js", [](const httplib::Request& req, httplib::Response& res) {
+        std::ifstream jsFile("html/files/privatechat.html.js", std::ios::binary);
+        if (jsFile) {
+            std::stringstream buffer;
+            buffer << jsFile.rdbuf();
+            res.set_content(buffer.str(), "application/javascript; charset=utf-8");
+        } else {
+            res.status = 404;
+            res.set_content("privatechat.html.js not found", "text/plain");
+        }
+    });
 }

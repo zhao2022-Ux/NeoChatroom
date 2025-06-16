@@ -9,6 +9,8 @@ ChatDBManager::ChatDBManager() : db(nullptr) {
 
 ChatDBManager::~ChatDBManager() {
     if (db) {
+        // 确保关闭数据库前执行WAL检查点
+        sqlite3_exec(db, "PRAGMA wal_checkpoint(FULL);", nullptr, nullptr, nullptr);
         sqlite3_close(db);
     }
 }
@@ -21,13 +23,17 @@ ChatDBManager& ChatDBManager::getInstance() {
 }
 
 bool ChatDBManager::initDatabase() {
-    Logger& logger = Logger::getInstance();
     int rc = sqlite3_open("database.db", &db);
     
     if (rc) {
-        logger.logError("ChatDBManager", "无法打开数据库: " + std::string(sqlite3_errmsg(db)));
         return false;
     }
+    
+    // 设置SQLite的同步模式，确保数据写入磁盘
+    executeQuery("PRAGMA synchronous = NORMAL;");
+    
+    // 使用WAL模式提高性能和可靠性
+    executeQuery("PRAGMA journal_mode = WAL;");
     
     // 创建聊天室表
     if (!checkTableExists("chatrooms")) {
@@ -39,7 +45,6 @@ bool ChatDBManager::initDatabase() {
                          "flags INTEGER);";
         
         if (!executeQuery(sql)) {
-            logger.logError("ChatDBManager", "创建聊天室表失败");
             return false;
         }
     } else {
@@ -59,11 +64,8 @@ bool ChatDBManager::initDatabase() {
             
             // 如果没有roomid列，需要重建表
             if (!hasRoomId) {
-                logger.logWarning("ChatDBManager", "chatrooms表缺少roomid列，重建表...");
-                
                 // 重命名现有表
                 if (!executeQuery("ALTER TABLE chatrooms RENAME TO chatrooms_old;")) {
-                    logger.logError("ChatDBManager", "无法重命名chatrooms表");
                     return false;
                 }
                 
@@ -76,23 +78,18 @@ bool ChatDBManager::initDatabase() {
                                  "flags INTEGER);";
                 
                 if (!executeQuery(sql)) {
-                    logger.logError("ChatDBManager", "创建新chatrooms表失败");
                     return false;
                 }
                 
                 // 迁移数据
                 if (!executeQuery("INSERT INTO chatrooms SELECT id as roomid, title, password_hash, password, flags FROM chatrooms_old;")) {
-                    logger.logError("ChatDBManager", "迁移chatrooms数据失败");
                     return false;
                 }
                 
                 // 删除旧表
                 if (!executeQuery("DROP TABLE chatrooms_old;")) {
-                    logger.logError("ChatDBManager", "删除旧chatrooms表失败");
                     return false;
                 }
-                
-                logger.logInfo("ChatDBManager", "chatrooms表重建完成");
             }
         }
     }
@@ -108,41 +105,40 @@ bool ChatDBManager::initDatabase() {
                          "message TEXT, "
                          "image_url TEXT, "
                          "timestamp INTEGER, "
+                         "metadata TEXT, "
                          "FOREIGN KEY(room_id) REFERENCES chatrooms(roomid));";
         
         if (!executeQuery(sql)) {
-            logger.logError("ChatDBManager", "创建消息表失败");
             return false;
         }
-        logger.logInfo("ChatDBManager", "创建了消息表");
     } else {
         // 检查消息表结构并添加缺失的列
-        logger.logInfo("ChatDBManager", "检查消息表结构...");
         
         // 检查 label 列
         bool hasLabel = checkColumnExists("messages", "label");
         if (!hasLabel) {
-            logger.logWarning("ChatDBManager", "messages表缺少label列，添加列...");
             if (!executeQuery("ALTER TABLE messages ADD COLUMN label TEXT;")) {
-                logger.logError("ChatDBManager", "无法添加label列到messages表");
                 return false;
             }
-            logger.logInfo("ChatDBManager", "成功添加label列");
         }
         
         // 检查 image_url 列
         bool hasImageUrl = checkColumnExists("messages", "image_url");
         if (!hasImageUrl) {
-            logger.logWarning("ChatDBManager", "messages表缺少image_url列，添加列...");
             if (!executeQuery("ALTER TABLE messages ADD COLUMN image_url TEXT;")) {
-                logger.logError("ChatDBManager", "无法添加image_url列到messages表");
                 return false;
             }
-            logger.logInfo("ChatDBManager", "成功添加image_url列");
+        }
+        
+        // 检查 metadata 列
+        bool hasMetadata = checkColumnExists("messages", "metadata");
+        if (!hasMetadata) {
+            if (!executeQuery("ALTER TABLE messages ADD COLUMN metadata TEXT;")) {
+                return false;
+            }
         }
     }
     
-    logger.logInfo("ChatDBManager", "数据库初始化完成");
     return true;
 }
 
@@ -169,13 +165,10 @@ bool ChatDBManager::checkColumnExists(const std::string& tableName, const std::s
 }
 
 bool ChatDBManager::executeQuery(const std::string& query) {
-    Logger& logger = Logger::getInstance();
     char* errMsg = nullptr;
     int rc = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &errMsg);
     
     if (rc != SQLITE_OK) {
-        std::string error = errMsg ? errMsg : "未知错误";
-        logger.logError("ChatDBManager", "SQL错误: " + error);
         if (errMsg) sqlite3_free(errMsg);
         return false;
     }
@@ -283,35 +276,76 @@ std::vector<int> ChatDBManager::getAllChatRoomIds() {
 }
 
 bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
+    // 开始事务
+    if (!executeQuery("BEGIN TRANSACTION;")) {
+        return false;
+    }
+    
     std::string user = message["user"].asString();
-    std::string label = message.isMember("labei") ? message["labei"].asString() : "";
+    std::string label = message.isMember("label") ? message["label"].asString() : "";
     std::string msgContent = message["message"].asString();
     std::string imageUrl = message.isMember("imageUrl") ? message["imageUrl"].asString() : "";
     long long timestamp = message["timestamp"].asInt64();
     
-    // 转义单引号以防止SQL注入
-    user = std::string(user).find('\'') != std::string::npos ? 
-           std::string(user).replace(std::string(user).find('\''), 1, "''") : user;
-    label = std::string(label).find('\'') != std::string::npos ? 
-            std::string(label).replace(std::string(label).find('\''), 1, "''") : label;
-    msgContent = std::string(msgContent).find('\'') != std::string::npos ? 
-                 std::string(msgContent).replace(std::string(msgContent).find('\''), 1, "''") : msgContent;
-    imageUrl = std::string(imageUrl).find('\'') != std::string::npos ? 
-               std::string(imageUrl).replace(std::string(imageUrl).find('\''), 1, "''") : imageUrl;
+    // 创建metadata字段的JSON字符串，用于保存私聊信息
+    std::string metadataStr = "";
+    if (message.isMember("metadata")) {
+        Json::FastWriter writer;
+        metadataStr = writer.write(message["metadata"]);
+        // 移除尾部的换行符
+        if (!metadataStr.empty() && metadataStr[metadataStr.length()-1] == '\n') {
+            metadataStr = metadataStr.substr(0, metadataStr.length()-1);
+        }
+    }
     
-    std::string query = "INSERT INTO messages (room_id, user, label, message, image_url, timestamp) VALUES (" +
-                       std::to_string(roomId) + ", '" +
-                       user + "', '" +
-                       label + "', '" +
-                       msgContent + "', '" +
-                       imageUrl + "', " +
-                       std::to_string(timestamp) + ");";
-                       
-    return executeQuery(query);
+    // 转义所有的单引号以防止SQL注入
+    auto escapeQuotes = [](std::string str) {
+        std::string result;
+        for (char c : str) {
+            if (c == '\'') {
+                result += "''";
+            } else {
+                result += c;
+            }
+        }
+        return result;
+    };
+    
+    user = escapeQuotes(user);
+    label = escapeQuotes(label);
+    msgContent = escapeQuotes(msgContent);
+    imageUrl = escapeQuotes(imageUrl);
+    metadataStr = escapeQuotes(metadataStr);
+    
+    // 插入消息
+    std::string query = "INSERT INTO messages (room_id, user, label, message, image_url, timestamp, metadata) VALUES (" +
+            std::to_string(roomId) + ", '" +
+            user + "', '" +
+            label + "', '" +
+            msgContent + "', '" +
+            imageUrl + "', " +
+            std::to_string(timestamp) + ", '" +
+            metadataStr + "');";
+    
+    bool success = executeQuery(query);
+    
+    // 提交或回滚事务
+    if (success) {
+        if (!executeQuery("COMMIT;")) {
+            executeQuery("ROLLBACK;");
+            return false;
+        }
+        // 执行WAL检查点，确保数据写入主数据库文件
+        executeQuery("PRAGMA wal_checkpoint;");
+    } else {
+        executeQuery("ROLLBACK;");
+    }
+    
+    return success;
 }
 
 bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, long long lastTimestamp) {
-    std::string query = "SELECT user, label, message, image_url, timestamp FROM messages WHERE room_id = " + 
+    std::string query = "SELECT user, label, message, image_url, timestamp, metadata FROM messages WHERE room_id = " + 
                        std::to_string(roomId);
     
     if (lastTimestamp > 0) {
@@ -332,9 +366,14 @@ bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, l
         const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
         const char* messageText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
         const char* imageUrlText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        const char* metadataText = nullptr;
+        
+        if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
+            metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+        }
         
         msg["user"] = userText ? userText : "";
-        msg["labei"] = labelText ? labelText : "";
+        msg["label"] = labelText ? labelText : "";
         msg["message"] = messageText ? messageText : "";
         
         if (imageUrlText && strlen(imageUrlText) > 0) {
@@ -342,6 +381,64 @@ bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, l
         }
         
         msg["timestamp"] = static_cast<Json::Int64>(sqlite3_column_int64(stmt, 4));
+        
+        // 处理metadata
+        if (metadataText && strlen(metadataText) > 0) {
+            Json::Value metadata;
+            Json::Reader reader;
+            bool parseSuccess = false;
+            
+            // 尝试直接解析
+            parseSuccess = reader.parse(metadataText, metadata);
+            
+            if (parseSuccess) {
+                msg["metadata"] = metadata;
+            } else {
+                // 如果解析失败，尝试修复常见的JSON格式问题
+                std::string fixedMetadata = std::string(metadataText);
+                
+                // 修复双引号问题
+                std::string::size_type pos = 0;
+                while ((pos = fixedMetadata.find("'", pos)) != std::string::npos) {
+                    fixedMetadata.replace(pos, 1, "\"");
+                    pos += 1;
+                }
+                
+                // 确保是有效的JSON对象
+                if (fixedMetadata.front() != '{') fixedMetadata = '{' + fixedMetadata;
+                if (fixedMetadata.back() != '}') fixedMetadata += '}';
+                
+                if (reader.parse(fixedMetadata, metadata)) {
+                    msg["metadata"] = metadata;
+                } else {
+                    // 极端情况：如果仍然无法解析，手动创建metadata对象
+                    // 查找to字段的值
+                    std::string toValue;
+                    std::string::size_type toPos = std::string(metadataText).find("\"to\":");
+                    if (toPos != std::string::npos) {
+                        toPos += 5; // 跳过 "to":
+                        std::string::size_type valueStart = std::string(metadataText).find("\"", toPos);
+                        if (valueStart != std::string::npos) {
+                            valueStart += 1; // 跳过开始的引号
+                            std::string::size_type valueEnd = std::string(metadataText).find("\"", valueStart);
+                            if (valueEnd != std::string::npos) {
+                                toValue = std::string(metadataText).substr(valueStart, valueEnd - valueStart);
+                                
+                                // 手动创建metadata对象
+                                Json::Value manualMetadata;
+                                manualMetadata["to"] = toValue;
+                                msg["metadata"] = manualMetadata;
+                            }
+                        }
+                    }
+                    
+                    if (toValue.empty()) {
+                        // 如果无法手动解析，存储原始字符串
+                        msg["metadata"] = metadataText;
+                    }
+                }
+            }
+        }
         
         messages.push_back(msg);
     }
@@ -351,6 +448,19 @@ bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, l
 }
 
 bool ChatDBManager::clearMessages(int roomId) {
+    // 在事务中执行删除操作
+    if (!executeQuery("BEGIN TRANSACTION;")) {
+        return false;
+    }
+    
     std::string query = "DELETE FROM messages WHERE room_id = " + std::to_string(roomId) + ";";
-    return executeQuery(query);
+    bool success = executeQuery(query);
+    
+    // 提交或回滚事务
+    if (success) {
+        return executeQuery("COMMIT;");
+    } else {
+        executeQuery("ROLLBACK;");
+        return false;
+    }
 }
