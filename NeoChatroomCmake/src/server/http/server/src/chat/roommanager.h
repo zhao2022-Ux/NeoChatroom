@@ -11,6 +11,7 @@
 using namespace std;
 #include <filesystem>
 #include "chatroom.h"
+#include "privatechat.h"
 #include <thread>
 #include <chrono>
 #include <atomic>

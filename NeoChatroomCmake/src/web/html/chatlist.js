@@ -149,7 +149,7 @@ function typeinPassword() {
         `;
         setTimeout(() => passwordDialog.style.opacity = 1, 10); // 淡入动画
 
-        // 创建对话框内容区域
+        // 创建对话框内容容器
         const dialogContent = document.createElement('div');
         dialogContent.style.cssText = `
             background: white;
@@ -249,13 +249,13 @@ function typeinPassword() {
     });
 }
 
-// 关闭对话框的通用函数
+// 关闭对话框通用函数
 function closeDialog(dialogElement, resolve, result) {
     dialogElement.style.opacity = 0; // 开始淡出动画
     setTimeout(() => {
         document.body.removeChild(dialogElement);
         resolve(result);
-    }, 100); // 等待动画完成后再移除
+    }, 100); // 等待动画完成后移除
 }
 
 
@@ -319,19 +319,19 @@ async function checkLoginStatus() {
     try {
         const response = await fetch(`${serverUrl}/user/username?uid=${uid}`);
         
-        // 授权错误时重定向到登录页
+        // 未授权时重定向到登录页
         if (response.status === 401 || response.status === 403) {
             window.location.href = '/login';
             return false;
         }
         
-        // 处理404错误 - 可能是路由未注册
+        // 处理404错误 - 服务器路径未注册
         if (response.status === 404) {
-            console.error('检查登录状态失败: 404 - 用户名API路由未找到');
+            console.error('检查登录状态失???: 404 - 用户名API路径未找到');
             return false; // 返回false但不重定向
         }
         
-        // 其他错误情况返回false但不重定向
+        // 其他错误返回false但不重定向
         if (!response.ok) {
             console.error('检查登录状态失败:', response.status);
             return false;
@@ -339,7 +339,7 @@ async function checkLoginStatus() {
         
         return true;
     } catch (error) {
-        console.error('检查登录状态出错:', error);
+        console.error('检查登录状态错误:', error);
         return false;
     }
 }
@@ -361,7 +361,7 @@ function createTransitionOverlay(color = 'rgba(0, 123, 255, 0.2)') {
 
 // 虚拟列表实现
 function applyVirtualList(container, items, renderItemFn, rowHeight = 60) {
-    // 保存原始的渲染项目
+    // 保存原始待渲染项目
     container._allItems = items;
     container._renderItemFn = renderItemFn;
     container._rowHeight = rowHeight;
@@ -379,7 +379,7 @@ function applyVirtualList(container, items, renderItemFn, rowHeight = 60) {
         renderVisibleItems(container, startIndex, visibleRows);
     });
     
-    // 返回搜索和过滤函数
+    // 返回过滤和重置函数
     return {
         filter: (filterFn) => {
             const filteredItems = items.filter(filterFn);
@@ -399,7 +399,7 @@ function renderVisibleItems(container, startIndex, visibleRows) {
     const rowHeight = container._rowHeight;
     const endIndex = Math.min(startIndex + visibleRows, items.length);
     
-    // 创建或获取占位容器
+    // 创建或获取占位元素
     let placeholder = container.querySelector('.virtual-list-placeholder');
     if (!placeholder) {
         placeholder = document.createElement('div');
@@ -410,7 +410,7 @@ function renderVisibleItems(container, startIndex, visibleRows) {
     // 设置占位高度以保持滚动条尺寸
     placeholder.style.height = `${items.length * rowHeight}px`;
     
-    // 清除现有的项目，但保留占位符
+    // 移除所有项目除了占位符
     Array.from(container.children).forEach(child => {
         if (child !== placeholder) {
             container.removeChild(child);
@@ -432,7 +432,7 @@ function renderVisibleItems(container, startIndex, visibleRows) {
 
 // 调用 /list 接口获取已加入的聊天室
 async function fetchJoinedChatrooms() {
-    if (!await updateLoginStatus()) return; // 仍然检查登录状态
+    if (!await updateLoginStatus()) return; // 检查登录状态
 
     try {
         const response = await fetch('/list', {
@@ -440,13 +440,13 @@ async function fetchJoinedChatrooms() {
             credentials: 'include',
         });
 
-        // 只有在授权错误时才重定向
+        // 只有未授权时才重定向
         if (response.status === 401 || response.status === 403) {
             window.location.href = '/login';
             return;
         }
         
-        // 其他错误情况处理，但不重定向
+        // 其他错误只记录不重定向
         if (!response.ok) {
             console.error('获取聊天室列表失败:', response.status);
             renderJoinedChatrooms([]); // 显示空列表
@@ -468,14 +468,16 @@ function renderJoinedChatrooms(rooms) {
     container.innerHTML = '';
 
     if (!rooms || rooms.length === 0) {
-        container.innerHTML = '<p class="empty-message">当前没有加入的聊天室。</p>';
+        container.innerHTML = '<p class="empty-message">当前没有加入任何聊天室。</p>';
         return;
     }
     
-    // 使用文档片段减少重绘次数
+    // 使用文档片段提高渲染性能
     const fragment = document.createDocumentFragment();
 
     rooms.forEach((room, index) => {
+        // 跳过 ID 为 1 的聊天室
+        if (parseInt(room.id) === 1) return;
         if (parseInt(room.id) < 1) return;  // 只显示 ID≥1
 
         const card = document.createElement('div');
@@ -484,11 +486,11 @@ function renderJoinedChatrooms(rooms) {
         card.dataset.roomId = room.id;
         card.dataset.roomName = room.name;
         
-        // 设置交错动画
+        // 设置进入动画
         card.style.animationDelay = `${index * 0.05}s`;
         card.style.animation = `slideIn 0.3s ease forwards ${index * 0.05}s`;
-        
-        const roomName = room.name.trim() ? room.name : '无名称的聊天室';
+
+        const roomName = room.name.trim() ? room.name : '未命名的聊天室';
 
         card.innerHTML = `
             <span class="room-id">ID: ${room.id}</span>
@@ -500,7 +502,7 @@ function renderJoinedChatrooms(rooms) {
         const quitBtn = card.querySelector('.quit-btn');
         quitBtn.addEventListener('click', async (e) => {
             e.stopPropagation(); // Prevent card click event
-            if (confirm(`确定要退出聊天室 "${roomName}" 吗？`)) {
+            if (confirm(`确认要退出聊天室 "${roomName}" 吗`)) {
                 await quitRoom(room.id, roomName);
             }
         });
@@ -517,7 +519,7 @@ function renderJoinedChatrooms(rooms) {
 
         fragment.appendChild(card);
     });
-    
+
     // 一次性添加所有卡片到容器
     container.appendChild(fragment);
 }
@@ -532,13 +534,13 @@ async function fetchAllChatrooms() {
             credentials: 'include',
         });
 
-        // 只有在授权错误时才重定向
+        // 只有未授权时才重定向
         if (response.status === 401 || response.status === 403) {
             window.location.href = '/login';
             return;
         }
 
-        // 其他错误情况处理，但不重定向
+        // 其他错误只记录不重定向
         if (!response.ok) {
             console.error('获取聊天室列表失败:', response.status);
             renderAllChatrooms([]); // 显示空列表
@@ -561,12 +563,14 @@ function renderAllChatrooms(rooms) {
         container.innerHTML = '<p class="empty-message">当前没有可用的聊天室。</p>';
         return;
     }
-    
-    // 使用文档片段减少重绘次数
+
+    // 使用文档片段提高渲染性能
     const fragment = document.createDocumentFragment();
 
     rooms.forEach((room, index) => {
-        if (parseInt(room.id) < 1) return;  // 过滤 ID<1
+        // 跳过 ID 为 1 的聊天室
+        if (parseInt(room.id) === 1) return;
+        if (parseInt(room.id) < 1) return;  // 跳过 ID<1
 
         // 根据 flags 判断是否隐藏或禁止
         const isHidden = (room.flags & 0x01) !== 0;
@@ -578,12 +582,12 @@ function renderAllChatrooms(rooms) {
         card.className = 'room-card list-item-animation';
         card.dataset.roomId = room.id;
         card.dataset.roomName = room.name;
-        
-        // 设置交错动画
+
+        // 设置进入动画
         card.style.animationDelay = `${index * 0.05}s`;
         card.style.animation = `slideIn 0.3s ease forwards ${index * 0.05}s`;
-        
-        const roomName = room.name.trim() ? room.name : '无名称的聊天室';
+
+        const roomName = room.name.trim() ? room.name : '未命名的聊天室';
 
         card.innerHTML = `
             <span class="room-id">ID: ${room.id}</span>
@@ -593,7 +597,7 @@ function renderAllChatrooms(rooms) {
             </div>
         `;
 
-        // 添加加入按钮功能
+        // 添加加入按钮处理
         const joinBtn = card.querySelector('.join-btn');
         joinBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -606,7 +610,7 @@ function renderAllChatrooms(rooms) {
 
         fragment.appendChild(card);
     });
-    
+
     // 一次性添加所有卡片到容器
     container.appendChild(fragment);
 }
@@ -616,10 +620,10 @@ function initDragAndDrop() {
     const container = document.getElementById('joined-chatrooms');
     let draggedItem = null;
     let roomCards = Array.from(container.querySelectorAll('.room-card'));
-    
+
     // 如果没有卡片，直接返回
     if (roomCards.length === 0) return;
-    
+
     roomCards.forEach(card => {
         // 拖动开始
         card.addEventListener('dragstart', (e) => {
@@ -628,50 +632,50 @@ function initDragAndDrop() {
                 card.style.opacity = '0.5';
             }, 0);
         });
-        
+
         // 拖动结束
         card.addEventListener('dragend', () => {
             draggedItem.style.opacity = '1';
             draggedItem = null;
         });
-        
-        // 拖动经过其他元素
+
+        // 拖动经过目标元素
         card.addEventListener('dragover', (e) => {
             e.preventDefault();
         });
-        
-        // 拖动进入其他元素
+
+        // 拖动进入目??元素
         card.addEventListener('dragenter', (e) => {
             e.preventDefault();
             if (card !== draggedItem) {
                 card.style.borderTop = '2px solid #007BFF';
             }
         });
-        
-        // 拖动离开其他元素
+
+        // 拖动离开目标元素
         card.addEventListener('dragleave', () => {
             card.style.borderTop = '';
         });
-        
-        // 放置
+
+        // 放下
         card.addEventListener('drop', (e) => {
             e.preventDefault();
             card.style.borderTop = '';
-            
+
             if (card !== draggedItem) {
                 // 获取所有卡片的当前顺序
                 const cards = Array.from(container.querySelectorAll('.room-card'));
                 const draggedIndex = cards.indexOf(draggedItem);
                 const targetIndex = cards.indexOf(card);
-                
+
                 // 确定是放在目标前面还是后面
                 if (draggedIndex < targetIndex) {
                     container.insertBefore(draggedItem, card.nextSibling);
                 } else {
                     container.insertBefore(draggedItem, card);
                 }
-                
-                // 重置动画并确保可见性
+
+                // 设置动画确保可见性
                 cards.forEach((c, i) => {
                     c.style.animation = 'none';
                     c.offsetHeight; // 触发重绘
@@ -686,26 +690,26 @@ function initDragAndDrop() {
 // 初始化触摸手势
 function initTouchGestures() {
     const cards = document.querySelectorAll('.room-card');
-    
+
     cards.forEach(card => {
         let startX, moveX;
         let isSwiping = false;
-        
+
         // 获取退出按钮
         const quitBtn = card.querySelector('.quit-btn');
-        
+
         card.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
             isSwiping = true;
         });
-        
+
         card.addEventListener('touchmove', (e) => {
             if (!isSwiping) return;
-            
+
             moveX = e.touches[0].clientX;
             const diff = moveX - startX;
-            
-            // 左滑显示退出按钮
+
+            // 显示退出按钮
             if (diff < -30) {
                 quitBtn.style.right = '10px';
                 quitBtn.style.opacity = '1';
@@ -714,10 +718,10 @@ function initTouchGestures() {
                 quitBtn.style.opacity = diff < 0 ? Math.min(Math.abs(diff) / 30, 1) : 0;
             }
         });
-        
+
         card.addEventListener('touchend', () => {
             isSwiping = false;
-            
+
             // 如果按钮已经显示超过一半，保持显示状态
             if (parseFloat(quitBtn.style.opacity) > 0.5) {
                 quitBtn.style.right = '10px';
@@ -734,21 +738,21 @@ function initTouchGestures() {
 function setupSearch() {
     const joinedSearchInput = document.getElementById('search-joined-rooms');
     const allSearchInput = document.getElementById('search-all-rooms');
-    
+
     // 添加动画效果到搜索框
     joinedSearchInput.classList.add('animate-in');
     allSearchInput.classList.add('animate-in');
-    
+
     // 已加入聊天室搜索
     joinedSearchInput.addEventListener('input', (e) => {
         const value = e.target.value.toLowerCase();
         const cards = document.querySelectorAll('#joined-chatrooms .room-card');
         let hasVisibleCard = false;
-        
+
         cards.forEach(card => {
             const roomName = card.dataset.roomName.toLowerCase();
             const roomId = card.dataset.roomId;
-            
+
             if (roomName.includes(value) || roomId.includes(value)) {
                 card.style.display = '';
                 hasVisibleCard = true;
@@ -756,7 +760,7 @@ function setupSearch() {
                 card.style.display = 'none';
             }
         });
-        
+
         // 显示没有结果的提示
         const emptyMessage = document.querySelector('#joined-chatrooms .empty-message') || document.createElement('p');
         if (!hasVisibleCard && cards.length > 0) {
@@ -769,17 +773,17 @@ function setupSearch() {
             document.getElementById('joined-chatrooms').removeChild(emptyMessage);
         }
     });
-    
+
     // 所有聊天室搜索
     allSearchInput.addEventListener('input', (e) => {
         const value = e.target.value.toLowerCase();
         const cards = document.querySelectorAll('#all-chatrooms .room-card');
         let hasVisibleCard = false;
-        
+
         cards.forEach(card => {
             const roomName = card.dataset.roomName.toLowerCase();
             const roomId = card.dataset.roomId;
-            
+
             if (roomName.includes(value) || roomId.includes(value)) {
                 card.style.display = '';
                 hasVisibleCard = true;
@@ -787,7 +791,7 @@ function setupSearch() {
                 card.style.display = 'none';
             }
         });
-        
+
         // 显示没有结果的提示
         const emptyMessage = document.querySelector('#all-chatrooms .empty-message') || document.createElement('p');
         if (!hasVisibleCard && cards.length > 0) {
@@ -807,12 +811,12 @@ async function showPasswordPrompt() {
     return password !== null ? password.trim() : null;
 }
 
-// 通用的加入聊天室函数，通过 /addroom 路由执行加入操作
+// 通用的加入聊天室函数，通过 /addroom 路径执行加入操作
 async function joinRoom(roomId, roomName) {
     if (!await checkLoginStatus()) return;
 
     // 添加过渡效果
-    const transitionOverlay = createTransitionOverlay();
+    let transitionOverlay = createTransitionOverlay();
 
     try {
         let passwordHash = sha256("");
@@ -829,17 +833,17 @@ async function joinRoom(roomId, roomName) {
             if (response.status === 403) {
                 const errorText = await response.text();
                 if (errorText.trim() === "Password mismatch") {
-                    // 移除过渡效果进行密码输入
+                    // 移除过渡效果并请求密码
                     document.body.removeChild(transitionOverlay);
-                    
+
                     const password = await showPasswordPrompt();
                     if (password === null) {
                         return;
                     }
                     passwordHash = sha256(password);
                     needRetry = true;
-                    
-                    // 重新添加过渡效果
+
+                    // 重建过渡效果
                     const newOverlay = createTransitionOverlay();
                     transitionOverlay = newOverlay;
                     continue;
@@ -851,7 +855,7 @@ async function joinRoom(roomId, roomName) {
                 throw new Error(errorText);
             }
 
-            alert(`成功加入聊天室 ${roomName.trim() ? roomName : '无名称的聊天室'}`);
+            alert(`成功加入聊天室 ${roomName.trim() ? roomName : '未命名的聊天室'}`);
             await fetchJoinedChatrooms();
             document.body.removeChild(transitionOverlay);
             return;
@@ -859,8 +863,8 @@ async function joinRoom(roomId, roomName) {
 
     } catch (error) {
         document.body.removeChild(transitionOverlay);
-        console.error('加入聊天室时出现错误:', error);
-        alert('加入聊天室时出现错误: ' + error.message);
+        console.error('加入聊天室时发生错误:', error);
+        alert('加入聊天室时发生错误: ' + error.message);
     }
 }
 
@@ -882,20 +886,20 @@ async function quitRoom(roomId, roomName) {
             throw new Error(errorText);
         }
 
-        // 延迟执行后续操作，让过渡效果可见
+        // 延迟执行回调以让过渡效果可见
         setTimeout(async () => {
-            alert(`已退出聊天室 ${roomName.trim() ? roomName : '无名称的聊天室'}`);
+            alert(`已退出聊天室 ${roomName.trim() ? roomName : '未命名的聊天室'}`);
             await fetchJoinedChatrooms();
             document.body.removeChild(transitionOverlay);
         }, 300);
     } catch (error) {
         document.body.removeChild(transitionOverlay);
-        console.error('退出聊天室时出现错误:', error);
-        alert('退出聊天室时出现错误: ' + error.message);
+        console.error('退出聊天室时发生错误:', error);
+        alert('退出聊天室时发生错误: ' + error.message);
     }
 }
 
-// 处理"指定加入"面板的提交
+// ???置"指定加入"面板提交
 function setupJoinPanel() {
     const joinBtn = document.getElementById('join-room-btn');
     const input = document.getElementById('join-room-input');
@@ -927,11 +931,234 @@ function setupJoinPanel() {
     }
 }
 
-// 页面加载完毕后拉取数据、设置加入面板并更新登录状态
+// 用户列表状态
+let userListState = {
+    users: [],
+    startUid: 1,
+    endUid: 10,  // 改为10
+    pageSize: 10, // 改为10
+    totalLoaded: 0,
+    hasMoreUsers: true,
+    searchTerm: '',
+    loading: false
+};
+
+// 获取用户列表
+async function fetchUserList(start, end, pageSize = 10) {  // 默认值改为10
+    if (!await checkLoginStatus()) return [];
+    
+    userListState.loading = true;
+    updateUserListLoadingState(true);
+    
+    try {
+        const response = await fetch(`/api/users?start=${start}&end=${end}&size=${pageSize}`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            console.error('获取用户列表失败：未授权');
+            return [];
+        }
+
+        if (!response.ok) {
+            console.error('获取用户列表失败:', response.status);
+            return [];
+        }
+
+        const data = await response.json();
+        userListState.totalLoaded = data.totalCount || 0;
+        userListState.hasMoreUsers = data.users && data.users.length >= pageSize;
+        
+        return data.users || [];
+    } catch (error) {
+        console.error('获取用户列表时发生错误:', error);
+        return [];
+    } finally {
+        userListState.loading = false;
+        updateUserListLoadingState(false);
+    }
+}
+
+// 更新用户列表加载状态
+function updateUserListLoadingState(isLoading) {
+    const userList = document.getElementById('user-list');
+    if (!userList) return;
+    
+    if (isLoading) {
+        // 添加加载动画
+        if (!document.getElementById('user-list-loader')) {
+            const loader = document.createElement('div');
+            loader.id = 'user-list-loader';
+            loader.textContent = '加载中...';
+            loader.style.textAlign = 'center';
+            loader.style.padding = '20px';
+            loader.style.color = '#888';
+            userList.appendChild(loader);
+        }
+    } else {
+        // 移除加载动画
+        const loader = document.getElementById('user-list-loader');
+        if (loader) {
+            loader.remove();
+        }
+    }
+}
+
+// 渲染用户列表
+function renderUserList(users) {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+    
+    if (!users || users.length === 0) {
+        userList.innerHTML = '<p class="empty-message">没有找到用户。</p>';
+        return;
+    }
+    
+    // 使用文档片段提高性能
+    const fragment = document.createDocumentFragment();
+    
+    users.forEach((user, index) => {
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.style.animationDelay = `${index * 0.03}s`;
+        
+        let userTypeClass = '';
+        let userTypeText = '普通用户';
+        
+        if (user.labei === 'GM') {
+            userTypeClass = 'admin';
+            userTypeText = '管理员';
+        } else if (user.labei === 'BAN') {
+            userTypeClass = 'banned';
+            userTypeText = '已封禁';
+        }
+        
+        card.innerHTML = `
+            <span class="user-id">${user.uid}</span>
+            <span class="user-name">${user.username}</span>
+            <span class="user-type ${userTypeClass}">${userTypeText}</span>
+        `;
+        
+        fragment.appendChild(card);
+    });
+    
+    userList.appendChild(fragment);
+    
+    // 更新分页信息
+    updatePaginationInfo();
+}
+
+// 更新分页信息
+function updatePaginationInfo() {
+    const paginationInfo = document.getElementById('pagination-info');
+    if (!paginationInfo) return;
+    
+    paginationInfo.textContent = `显示 ${userListState.startUid}-${userListState.endUid} 共 ${userListState.totalLoaded} 个用户`;
+    
+    // 更新分页按钮状态
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    
+    if (prevButton) {
+        prevButton.disabled = userListState.startUid <= 1;
+    }
+    
+    if (nextButton) {
+        nextButton.disabled = !userListState.hasMoreUsers;
+    }
+}
+
+// 加载上一页用户
+async function loadPreviousPage() {
+    if (userListState.startUid <= 1 || userListState.loading) return;
+    
+    const newEndUid = userListState.startUid - 1;
+    const newStartUid = Math.max(1, newEndUid - userListState.pageSize + 1);
+    
+    userListState.startUid = newStartUid;
+    userListState.endUid = newEndUid;
+    
+    const users = await fetchUserList(newStartUid, newEndUid, userListState.pageSize);
+    if (users.length > 0) {
+        userListState.users = users;
+        renderUserList(users);
+    }
+}
+
+// 加载下一页用户
+async function loadNextPage() {
+    if (!userListState.hasMoreUsers || userListState.loading) return;
+    
+    const newStartUid = userListState.endUid + 1;
+    const newEndUid = newStartUid + userListState.pageSize - 1;
+    
+    userListState.startUid = newStartUid;
+    userListState.endUid = newEndUid;
+    
+    const users = await fetchUserList(newStartUid, newEndUid, userListState.pageSize);
+    if (users.length > 0) {
+        userListState.users = users;
+        renderUserList(users);
+    } else {
+        // 如果没有更多用户，回退到上一页
+        userListState.hasMoreUsers = false;
+        userListState.startUid = Math.max(1, newStartUid - userListState.pageSize);
+        userListState.endUid = newEndUid - userListState.pageSize;
+        updatePaginationInfo();
+    }
+}
+
+// 搜索用户
+function searchUsers(term) {
+    userListState.searchTerm = term.toLowerCase();
+    
+    if (!term) {
+        renderUserList(userListState.users);
+        return;
+    }
+    
+    const filteredUsers = userListState.users.filter(user => 
+        user.username.toLowerCase().includes(term) || 
+        user.uid.toString().includes(term)
+    );
+    
+    renderUserList(filteredUsers);
+}
+
+// 初始化用户列表
+async function initUserList() {
+    // 绑定分页按钮事件
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    
+    if (prevButton) {
+        prevButton.addEventListener('click', loadPreviousPage);
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', loadNextPage);
+    }
+    
+    // 绑定搜索框事件
+    const searchInput = document.getElementById('user-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchUsers(e.target.value);
+        });
+    }
+    
+    // 加载初始用户列表
+    const users = await fetchUserList(userListState.startUid, userListState.endUid, userListState.pageSize);
+    userListState.users = users;
+    renderUserList(users);
+}
+
+// ページ初期化後に実行
 document.addEventListener('DOMContentLoaded', async () => {
     if (!await checkLoginStatus()) return;
 
-    // 添加页面载入动画
+    // ページ読み込みアニメーション
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.5s ease';
     setTimeout(() => {
@@ -943,4 +1170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await fetchAllChatrooms();
     setupJoinPanel();
     setupSearch();
+    
+    // 初始化用户列表
+    initUserList();
 });

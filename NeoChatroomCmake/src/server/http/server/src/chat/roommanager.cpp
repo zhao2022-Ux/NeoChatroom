@@ -125,7 +125,7 @@ void updateRoomListCache() {
                 roomListCache.push_back({i, room[i].gettittle()});
             }
         }
-        
+
         roomCacheValid = true;
         logger.logInfo("roommanager", "聊天室列表缓存更新完成，共 " + std::to_string(roomListCache.size()) + " 个聊天室");
     } catch (const std::exception& e) {
@@ -161,7 +161,7 @@ void loadChatroomsFromDB() {
                     room[id].setPasswordHash(passwordHash);
                     room[id].setPassword(password);
                     room[id].setflag(flags);
-                    
+
                     // 不再立即启动聊天室
                     // 仅初始化元数据
                     //logger.logInfo("roommanager", "已从数据库加载聊天室元数据 ID: " + std::to_string(id) + ", 标题: " + title);
@@ -187,10 +187,10 @@ int addroom() {
 
             // 将新聊天室添加到数据库
             dbManager.createChatRoom(i, "", "", "", 0);
-            
+
             // 使缓存失效
             invalidateRoomCache();
-            
+
             return i;
         }
     }
@@ -206,10 +206,10 @@ void delroom(int x) {
         if (room[x].isActivated()) {
             room[x].deactivate();
         }
-        
+
         used[x] = false;
         room[x].init();
-        
+
         // 使缓存失效
         invalidateRoomCache();
     }
@@ -233,7 +233,7 @@ int editroom(int x, string Roomtittle) {
     if (room[x].hasFlag(chatroom::ROOM_NO_JOIN)) flags |= chatroom::ROOM_NO_JOIN;
 
     dbManager.updateChatRoom(x, title, passwordHash, password, flags);
-    
+
     // 使缓存失效
     invalidateRoomCache();
 
@@ -252,7 +252,7 @@ int setroomtype(int x, int type) {
     unsigned int flags = type; // 直接使用传入的flags
 
     dbManager.updateChatRoom(x, title, passwordHash, password, flags);
-    
+
     // 使缓存失效
     invalidateRoomCache();
 
@@ -375,7 +375,7 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
     // 获取分页参数
     int page = 0;
     int pageSize = 50; // 默认每页50个聊天室
-    
+
     if (req.has_param("page")) {
         try {
             page = std::stoi(req.get_param_value("page"));
@@ -384,7 +384,7 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
             // 忽略无效参数
         }
     }
-    
+
     if (req.has_param("size")) {
         try {
             pageSize = std::stoi(req.get_param_value("size"));
@@ -394,7 +394,7 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
             // 忽略无效参数
         }
     }
-    
+
     // 如果缓存无效，更新缓存
     {
         std::lock_guard<std::mutex> lock(roomCacheMutex);
@@ -404,25 +404,25 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
             roomCacheMutex.lock();
         }
     }
-    
+
     // 计算分页数据
     int startIndex = page * pageSize;
     int endIndex = startIndex + pageSize;
-    
+
     // 预分配响应对象的大小，避免动态扩容
     Json::Value response(Json::arrayValue);
-    
+
     // 从缓存中读取数据
     {
         std::lock_guard<std::mutex> lock(roomCacheMutex);
-        
+
         // 检查范围是否有效
         if (startIndex < roomListCache.size()) {
             // 确保结束索引不超出边界
             if (endIndex > roomListCache.size()) {
                 endIndex = roomListCache.size();
             }
-            
+
             // 从缓存中添加指定范围的聊天室
             for (int i = startIndex; i < endIndex; i++) {
                 Json::Value roomObj;
@@ -432,12 +432,12 @@ void getAllList(const httplib::Request& req, httplib::Response& res) {
             }
         }
     }
-    
+
     // 添加分页信息到响应头
     res.set_header("X-Total-Count", std::to_string(roomListCache.size()));
     res.set_header("X-Page", std::to_string(page));
     res.set_header("X-Page-Size", std::to_string(pageSize));
-    
+
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Access-Control-Expose-Headers", "X-Total-Count, X-Page, X-Page-Size");
     res.set_header("Content-Type", "application/json");
@@ -700,17 +700,25 @@ void start_manager() {
         // 从数据库加载聊天室
         logger.logInfo("roommanager", "开始初始化聊天室管理器...");
         loadChatroomsFromDB();
-        
+
         // 启动聊天室监控线程
         startRoomMonitor();
+
+        // 启动私聊系统
+        PrivateChat& privateChat = PrivateChat::getInstance();
+        if (!privateChat.start()) {
+            logger.logError("roommanager", "无法启动私聊系统");
+        } else {
+            logger.logInfo("roommanager", "私聊系统启动成功");
+        }
     } catch (const std::exception& e) {
-        logger.logError("roommanager", "加载聊天室时发生异常: " + std::string(e.what()));
+        logger.logError("roommanager", "加载聊天室���发生异常: " + std::string(e.what()));
     } catch (...) {
         logger.logError("roommanager", "加载聊天室时发生未知异常");
     }
 
     Server& server = Server::getInstance(HOST);
-    
+
     // 添加一个拦截器路由，用于懒加载聊天室 - 直接访问 /chatX 格式
     server.getInstance().handleRequest(R"(/chat(\d+))", [](const httplib::Request& req, httplib::Response& res) {
         // 从URL提取聊天室ID
@@ -721,21 +729,21 @@ void start_manager() {
             res.set_content("Invalid room ID", "text/plain");
             return;
         }
-        
+
         // 检查聊天室是否存在
         if (roomId < 1 || roomId >= MAXROOM || !used[roomId]) {
             res.status = 404;
             res.set_content("Room not found", "text/plain");
             return;
         }
-        
+
         // 激活聊天室
         if (!activateRoom(roomId)) {
             res.status = 500;
             res.set_content("Failed to activate room", "text/plain");
             return;
         }
-        
+
         // 提供聊天室HTML页面
         std::ifstream htmlFile("html/index.html");
         if (htmlFile) {
@@ -747,7 +755,7 @@ void start_manager() {
             res.set_content("Chat room template not found", "text/plain");
         }
     });
-    
+
     // 懒加载拦截器 - 标准格式 /chat/X
     server.getInstance().handleRequest(R"(/chat/(\d+)$)", [](const httplib::Request& req, httplib::Response& res) {
         // 从URL提取聊天室ID
@@ -758,21 +766,21 @@ void start_manager() {
             res.set_content("Invalid room ID", "text/plain");
             return;
         }
-        
+
         // 检查聊天室是否存在
         if (roomId < 1 || roomId >= MAXROOM || !used[roomId]) {
             res.status = 404;
             res.set_content("Room not found", "text/plain");
             return;
         }
-        
+
         // 激活聊天室
         if (!activateRoom(roomId)) {
             res.status = 500;
             res.set_content("Failed to activate room", "text/plain");
             return;
         }
-        
+
         // 提供聊天室HTML页面
         std::ifstream htmlFile("html/index.html");
         if (htmlFile) {
@@ -795,18 +803,18 @@ void start_manager() {
             res.set_content("Invalid room ID", "text/plain");
             return;
         }
-        
+
         // 确保聊天室已激活
         if (!activateRoom(roomId)) {
             res.status = 500;
             res.set_content("Failed to activate room", "text/plain");
             return;
         }
-        
+
         // 将请求转发给原始路由处理程序
         room[roomId].getChatMessages(req, res);
     });
-    
+
     // 全部消息路由
     server.getInstance().handleRequest(R"(/chat/(\d+)/all-messages)", [](const httplib::Request& req, httplib::Response& res) {
         // 从URL提取聊天室ID
@@ -817,18 +825,18 @@ void start_manager() {
             res.set_content("Invalid room ID", "text/plain");
             return;
         }
-        
+
         // 确保聊天室已激活
         if (!activateRoom(roomId)) {
             res.status = 500;
             res.set_content("Failed to activate room", "text/plain");
             return;
         }
-        
+
         // 将请求转发给原始路由处理程序
         room[roomId].getAllChatMessages(req, res);
     });
-    
+
     // 图片上传路由
     server.getInstance().handleRequest(R"(/chat/(\d+)/upload)", [](const httplib::Request& req, httplib::Response& res) {
         // 从URL提取聊天室ID
@@ -839,26 +847,29 @@ void start_manager() {
             res.set_content("Invalid room ID", "text/plain");
             return;
         }
-        
+
         // 确保聊天室已激活
         if (!activateRoom(roomId)) {
             res.status = 500;
             res.set_content("Failed to activate room", "text/plain");
             return;
         }
-        
+
         // 将请求转发给原始路由处理程序
         room[roomId].uploadImage(req, res);
     });
-    
+
     // 添加其他路由处理...
     server.handleRequest("/list", getRoomList);
     server.handleRequest("/allchatlist", getAllList);
     server.handleRequest("/joinquitroom", editRoomToUserRoute);
     server.handleRequest("/chatroomname", getChatroomName);
-    
-    // 添加获取用户名的路由 - 修复404错误
+
+    // 添加获���用户名的路由 - 修复404错误
     server.handleRequest("/user/username", manager::getUsername);
+
+    // 添加获取用户列表的路由
+    server.handleRequest("/api/users", manager::getUserList);
 
     // 提供图片文件 /logo.png
     server.getInstance().handleRequest("/logo.png", [](const httplib::Request& req, httplib::Response& res) {

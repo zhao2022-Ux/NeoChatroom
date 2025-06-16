@@ -7,6 +7,7 @@
 #include <json/json.h>
 #include <vector>
 #include <tuple>
+#include <json/json.h>
 #include <sqlite3.h>
 #include <iostream>
 #include <unordered_map>
@@ -588,34 +589,184 @@ namespace manager {
         }
     }
 
-    // 关闭SQLite3数据库，增强健壮性并记录日志
-    void CloseDatabase() {
+    // 获取指定范围的用户列表
+    std::vector<Json::Value> GetUserList(int startUid, int endUid, int pageSize, bool withPassword) {
         try {
-            StopCacheCleaner();
-            // 清理所有缓存的用户
+            std::vector<Json::Value> userList;
+            if (startUid <= 0 || endUid <= 0 || startUid > endUid) {
+                Logger::getInstance().logWarning("database", "获取用户列表参数无效: start=" + std::to_string(startUid) + ", end=" + std::to_string(endUid));
+                return userList;
+            }
+
+            // 限制一次请求的最大用户数量，避免性能问题
+            if (endUid - startUid + 1 > pageSize) {
+                endUid = startUid + pageSize - 1;
+                Logger::getInstance().logInfo("database", "调整用户列表范围至: " + std::to_string(startUid) + "-" + std::to_string(endUid));
+            }
+
+            const char* selectQuery = R"(
+                SELECT uid, name, labei FROM users 
+                WHERE uid >= ? AND uid <= ? 
+                ORDER BY uid ASC
+                LIMIT ?;
+            )";
+
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, selectQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "准备查询用户列表时发生错误: " + std::string(sqlite3_errmsg(db)));
+                return userList;
+            }
+
+            sqlite3_bind_int(stmt, 1, startUid);
+            sqlite3_bind_int(stmt, 2, endUid);
+            sqlite3_bind_int(stmt, 3, pageSize);
+
+            // 使用计数器追踪处理的行数
+            int rowCount = 0;
+            auto startTime = std::chrono::high_resolution_clock::now();
+
+            // 先检查缓存
+            std::unordered_map<int, user*> cachedUsers;
             {
                 lock_guard<mutex> lock(mtx);
-                for (auto& entry : userCacheById) {
-                    delete entry.second.userPtr;
+                for (int uid = startUid; uid <= endUid; uid++) {
+                    auto it = userCacheById.find(uid);
+                    if (it != userCacheById.end()) {
+                        cachedUsers[uid] = it->second.userPtr;
+                        // 更新访问时间
+                        it->second.lastAccess = std::chrono::steady_clock::now();
+                    }
                 }
-                userCacheById.clear();
-                userCacheByName.clear();
             }
-            if (db) {
-                if (sqlite3_close(db) == SQLITE_OK) {
-                    Logger::getInstance().logInfo("database", "数据库已成功关闭。");
+
+            // 处理数据库结果
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                int uid = sqlite3_column_int(stmt, 0);
+                Json::Value userObj;
+                userObj["uid"] = uid;
+
+                // 如果用户在缓存中，优先使用缓存数据
+                auto cacheIt = cachedUsers.find(uid);
+                if (cacheIt != cachedUsers.end()) {
+                    user* cachedUser = cacheIt->second;
+                    userObj["username"] = cachedUser->getname();
+                    userObj["labei"] = cachedUser->getlabei();
+                    if (withPassword) {
+                        userObj["password"] = cachedUser->getpassword();
+                    }
+                } else {
+                    // 使用数据库结果
+                    std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                    std::string labei = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                    userObj["username"] = name;
+                    userObj["labei"] = labei;
                 }
-                else {
-                    Logger::getInstance().logError("database", "关闭数据库时发生错误: " + std::string(sqlite3_errmsg(db)));
-                }
-                db = nullptr;
+
+                userList.push_back(userObj);
+                rowCount++;
             }
-            else {
-                Logger::getInstance().logInfo("database", "数据库已关闭或未初始化。");
+
+            sqlite3_finalize(stmt);
+
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+            
+            // 记录性能信息
+            if (duration > 100) { // 只记录慢查询
+                Logger::getInstance().logWarning("database", "用户列表查询耗时较长: " + std::to_string(duration) + 
+                    "ms, 范围: " + std::to_string(startUid) + "-" + std::to_string(endUid) + 
+                    ", 结果数: " + std::to_string(rowCount));
             }
+
+            return userList;
         }
         catch (const std::exception& e) {
-            Logger::getInstance().logError("database", "关闭数据库时发生错误: " + string(e.what()));
+            Logger::getInstance().logError("database", "获取用户列表时发生错误: " + string(e.what()));
+            return {};
+        }
+    }
+
+    // 获取用户列表API
+    void getUserList(const httplib::Request& req, httplib::Response& res) {
+        try {
+            // 设置CORS头
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_header("Access-Control-Allow-Methods", "GET, OPTIONS");
+            res.set_header("Access-Control-Allow-Headers", "Content-Type");
+            
+            // 处理OPTIONS请求（预检请求）
+            if (req.method == "OPTIONS") {
+                res.status = 204; // No content for OPTIONS
+                return;
+            }
+            
+            // 验证参数
+            if (!req.has_param("start") || !req.has_param("end")) {
+                res.status = 400;
+                res.set_content("Missing required parameters: start and end", "text/plain");
+                return;
+            }
+            
+            int startUid = 0, endUid = 0;
+            std::string startParam = req.get_param_value("start");
+            std::string endParam = req.get_param_value("end");
+            
+            if (!str::safeatoi(startParam, startUid) || !str::safeatoi(endParam, endUid)) {
+                res.status = 400;
+                res.set_content("Invalid parameters: start and end must be integers", "text/plain");
+                return;
+            }
+            
+            // 获取可选参数
+            int pageSize = 100; // 默认页大小
+            if (req.has_param("size")) {
+                std::string sizeParam = req.get_param_value("size");
+                int requestedSize = 0;
+                if (str::safeatoi(sizeParam, requestedSize) && requestedSize > 0) {
+                    // 限制最大页大小为500，防止服务器过载
+                    pageSize = std::min(requestedSize, 500);
+                }
+            }
+            
+            // 检查范围是否合理
+            if (startUid <= 0 || endUid <= 0 || startUid > endUid) {
+                res.status = 400;
+                res.set_content("Invalid range: start must be positive and not greater than end", "text/plain");
+                return;
+            }
+            
+            // 限制一次请求的最大用户数量
+            if (endUid - startUid + 1 > 500) {
+                endUid = startUid + 499; // 最多500个用户
+            }
+            
+            // 获取用户列表
+            std::vector<Json::Value> userList = GetUserList(startUid, endUid, pageSize);
+            
+            // 构建响应
+            Json::Value response;
+            response["totalCount"] = userList.size();
+            response["startUid"] = startUid;
+            response["endUid"] = endUid;
+            
+            Json::Value usersArray;
+            for (const auto& user : userList) {
+                usersArray.append(user);
+            }
+            response["users"] = usersArray;
+            
+            // 设置分页头部
+            res.set_header("X-Total-Count", std::to_string(userList.size()));
+            res.set_header("X-Start-Id", std::to_string(startUid));
+            res.set_header("X-End-Id", std::to_string(endUid));
+            
+            // 发送响应
+            res.set_content(response.toStyledString(), "application/json");
+        }
+        catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "处理用户列表请求时发生错误: " + string(e.what()));
+            res.status = 500;
+            res.set_content("Internal server error", "text/plain");
         }
     }
 
@@ -687,6 +838,45 @@ namespace manager {
             Logger::getInstance().logError("database", "获取用户名时发生错误: " + string(e.what()));
             res.status = 500;
             res.set_content("Internal server error", "text/plain");
+        }
+    }
+
+    // 关闭数据库连接
+    void CloseDatabase() {
+        try {
+        // 停止缓存清理线程
+        StopCacheCleaner();
+        
+        // 等待一段时间确保缓存清理线程完全停止
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        
+        // 清理缓存中的所有用户对象
+        {
+            lock_guard<mutex> lock(mtx);
+            for (auto& entry : userCacheById) {
+                if (entry.second.userPtr) {
+                    delete entry.second.userPtr;
+                    entry.second.userPtr = nullptr;
+                }
+            }
+            userCacheById.clear();
+            userCacheByName.clear();
+            Logger::getInstance().logInfo("database", "用户缓存已清空");
+        }
+        
+        // 关闭数据库连接
+        if (db) {
+            int result = sqlite3_close(db);
+            if (result != SQLITE_OK) {
+                Logger::getInstance().logWarning("database", "关闭数据库时出现警告: " + std::string(sqlite3_errmsg(db)));
+            } else {
+                db = nullptr;
+                Logger::getInstance().logInfo("database", "数据库连接已安全关闭");
+            }
+        }
+        }
+        catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "关闭数据库时发生错误: " + string(e.what()));
         }
     }
 }

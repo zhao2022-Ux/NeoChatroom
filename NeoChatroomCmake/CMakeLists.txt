@@ -28,11 +28,13 @@ file(GLOB_RECURSE SOURCES
         src/server/http/server/src/chat/*.cpp
         src/server/http/server/src/data/*.cpp
         src/server/http/server/tool/*.cpp
-        jsoncpp.cpp
+        src/lib/json/jsoncpp.cpp
 )
 
 # 可执行文件
-add_executable(NeoChatroom ${SOURCES})
+add_executable(NeoChatroom ${SOURCES}
+        src/server/http/server/src/chat/privatechat.cpp
+        src/server/http/server/src/chat/privatechat.h)
 
 # 找依赖
 find_package(OpenSSL REQUIRED)

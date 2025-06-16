@@ -16,11 +16,16 @@
 #include "../../../../../lib/httplib.h"
 #include <atomic>
 
+// 前向声明
+class PrivateChat;
+
 using namespace std;
 const int MAXROOM = 1000;
 class chatroom {
 public:
     vector<int> allowID;
+    // 声明友元类，使PrivateChat可以访问私有成员
+    friend class PrivateChat;
 private:
     // Maximum number of messages to store in the chat history
     const size_t MAXSIZE = 100;  // Updated comment to clarify usage
@@ -122,7 +127,7 @@ public:
     // 设置标志
     void setFlag(RoomFlags flag);
 
-    // 清除标志
+    // 清除标���
     void clearFlag(RoomFlags flag);
 
     // 检查标志

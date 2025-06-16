@@ -6,6 +6,7 @@
 #include "../config/config.h"
 #include<map>
 #include <string>
+#include <json/json.h>
 #include <vector>
 #include <tuple>
 #include <string>
@@ -81,6 +82,12 @@ namespace manager {
 	
 	// 获取用户名API (从 chatroom 移动过来)
 	void getUsername(const httplib::Request& req, httplib::Response& res);
+	
+	// 获取用户列表API (新增)
+	void getUserList(const httplib::Request& req, httplib::Response& res);
+	
+	// 获取指定范围的用户列表(新增)
+	std::vector<Json::Value> GetUserList(int startUid, int endUid, int pageSize = 100, bool withPassword = false);
 }
 
 #endif
