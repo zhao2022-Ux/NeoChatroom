@@ -88,6 +88,18 @@ namespace manager {
 	
 	// 获取指定范围的用户列表(新增)
 	std::vector<Json::Value> GetUserList(int startUid, int endUid, int pageSize = 100, bool withPassword = false);
+
+	// 获取用户总数
+	int getUserCount();
+	
+	// 分页获取用户列表
+	std::vector<user> getUsers(int start, int end);
+	
+	// 搜索用户
+	std::vector<user> searchUsers(const std::string& searchTerm, int start, int end);
+	
+	// 获取搜索结果总数
+	int searchUsersCount(const std::string& searchTerm);
 }
 
 #endif

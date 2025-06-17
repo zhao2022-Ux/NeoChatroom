@@ -218,7 +218,7 @@
         }
 
         .user-badge {
-            background-color: var(--primary-color);
+            background-color: var(--danger-color);  /* 改为红色警示色 */
             color: white;
             border-radius: 50%;
             width: 20px;
@@ -228,6 +228,72 @@
             justify-content: center;
             font-size: 12px;
             font-weight: bold;
+        }
+
+        /* 新增：用户列表分区样式 */
+        .user-section {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-weight: bold;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .section-content {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .recent-chats .section-content {
+            max-height: 200px;
+        }
+
+        .all-users .section-content {
+            max-height: 300px;
+        }
+
+        .user-search-box {
+            padding: 5px 10px;
+            margin-bottom: 10px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .pagination-controls button {
+            padding: 5px 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+        }
+
+        .pagination-controls button:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 0.8em;
+            color: var(--text-secondary);
         }
 
         /* 聊天区域 */
@@ -497,12 +563,31 @@
     <div class="main-container">
         <!-- 用户列表侧边栏 -->
         <div class="user-sidebar">
-            <div class="user-search">
-                <input type="text" class="search-input" id="userSearchInput" placeholder="搜索用户...">
+            <div class="user-section recent-chats">
+                <div class="section-title">最近聊天</div>
+                <div class="user-search-box">
+                    <input type="text" class="search-input" id="userSearchInput" placeholder="搜索最近聊天...">
+                </div>
+                <div class="section-content" id="userList">
+                    <!-- 最近聊天用户列表将通过JavaScript动态加载 -->
+                    <div class="empty-message">加载中...</div>
+                </div>
             </div>
-            <div class="user-list" id="userList">
-                <!-- 用户列表将通过JavaScript动态加载 -->
-                <div class="empty-message">加载中...</div>
+            
+            <div class="user-section all-users">
+                <div class="section-title">所有用户</div>
+                <div class="user-search-box">
+                    <input type="text" class="search-input" id="allUserSearchInput" placeholder="搜索用户...">
+                </div>
+                <div class="section-content" id="allUserList">
+                    <!-- 所有用户列表将通过JavaScript动态加载 -->
+                    <div class="empty-message">加载中...</div>
+                </div>
+                <div class="pagination-controls">
+                    <button id="prev-page" disabled>上一页</button>
+                    <div class="pagination-info" id="pagination-info">显示 0-0 共 0 个用户</div>
+                    <button id="next-page" disabled>下一页</button>
+                </div>
             </div>
         </div>
 
@@ -514,7 +599,7 @@
             </div>
         </div>
 
-        <!-- 聊天区域 - 选择用户后显示 -->
+        <!-- 聊天区域 - ���择用户后显示 -->
         <div class="chat-area" id="chatArea" style="display: none;">
             <div class="chat-header">
                 <div class="user-avatar" id="chatUserAvatar"></div>
