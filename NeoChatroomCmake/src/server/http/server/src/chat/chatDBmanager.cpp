@@ -312,7 +312,18 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
     }
 
     std::string user = message["user"].asString();
-    std::string label = message.isMember("label") ? message["label"].asString() : "";
+    
+    // 不再使用消息中的label，而是从数据库中查询用户的label
+    std::string label = "";
+    // 使用manager::FindUser获取用户的label
+    auto userObj = manager::FindUser(user);
+    if (userObj != nullptr) {
+        label = userObj->getlabel();
+    } else {
+        Logger::getInstance().logWarning("ChatDBManager", "User not found in database: " + user);
+    }
+
+
     std::string msgContent = message["message"].asString();
     std::string imageUrl = message.isMember("imageUrl") ? message["imageUrl"].asString() : "";
     long long timestamp = message["timestamp"].asInt64();
@@ -347,7 +358,6 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
     msgContent = escapeQuotes(msgContent);
     imageUrl = escapeQuotes(imageUrl);
     metadataStr = escapeQuotes(metadataStr);
-
     // 插入消息
     std::string query = "INSERT INTO messages (room_id, user, label, message, image_url, timestamp, metadata, is_read) VALUES (" +
             std::to_string(roomId) + ", '" +
@@ -404,8 +414,13 @@ bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, l
             metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
         }
 
+        // 用户名处理
         msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
+        
+        // label处理改进 - 如果label为空，尝试从用户对象获取
+        std::string label = (labelText && strlen(labelText) > 0) ? labelText : "";
+        msg["label"] = label;
+        
         msg["message"] = messageText ? messageText : "";
 
         if (imageUrlText && strlen(imageUrlText) > 0) {
@@ -815,7 +830,18 @@ bool ChatDBManager::getPagedMessages(int roomId, const std::string& userA, const
         int isRead = sqlite3_column_int(stmt, 6);
 
         msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
+        
+        // 改进label处理 - 如果label为空，尝试从用户对象获取
+        std::string label = (labelText && strlen(labelText) > 0) ? labelText : "";
+        if (label.empty() && userText) {
+            // 尝试从datamanage获取用户label
+            auto userObj = manager::FindUser(userText);
+            if (userObj != nullptr) {
+                label = userObj->getlabel();
+            }
+        }
+        msg["label"] = label;
+        
         msg["message"] = messageText ? messageText : "";
 
         if (imageUrlText && strlen(imageUrlText) > 0) {
@@ -904,7 +930,18 @@ bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& userna
         int isRead = sqlite3_column_int(stmt, 6);
 
         msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
+        
+        // 改进label处理 - 如果label为空，尝试从用户对象获取
+        std::string label = (labelText && strlen(labelText) > 0) ? labelText : "";
+        if (label.empty() && userText) {
+            // 尝试从datamanage获取用户label
+            auto userObj = manager::FindUser(userText);
+            if (userObj != nullptr) {
+                label = userObj->getlabel();
+            }
+        }
+        msg["label"] = label;
+        
         msg["message"] = messageText ? messageText : "";
 
         if (imageUrlText && strlen(imageUrlText) > 0) {

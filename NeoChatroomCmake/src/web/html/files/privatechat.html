@@ -7,7 +7,7 @@
     <link rel="icon" href="/images/logo16.ico" type="image/x-icon">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
@@ -20,19 +20,19 @@
 
         /* 通用滚动条样式（浅色模式） */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
             background-color: #e0e0e0;
-            border-radius: 4px;
+            border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb {
             background-color: #999;
-            border-radius: 4px;
-            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -51,10 +51,12 @@
             justify-content: space-between;
             background-color: #007BFF;
             color: white;
-            padding: 8px 20px;
+            padding: 12px 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             position: relative;
             flex-wrap: wrap;
+            /* 移除圆角，改为矩形 */
+            border-radius: 0;
         }
 
         .header-left,
@@ -65,7 +67,8 @@
 
         .header-left img {
             height: 40px;
-            margin-right: 10px;
+            margin-right: 12px;
+            border-radius: 12px;
             transition: transform 0.3s ease, filter 0.3s ease;
             will-change: transform, filter;
         }
@@ -91,18 +94,18 @@
 
         .chatroom-title {
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             white-space: nowrap;
         }
 
         .badge {
             background-color: #ffebee;
             color: #f44336;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 4px 10px;
+            border-radius: 16px;
             font-size: 12px;
-            font-weight: bold;
-            margin-left: 8px;
+            font-weight: 600;
+            margin-left: 10px;
             border: 1px solid #f44336;
         }
 
@@ -111,29 +114,30 @@
         .return-button,
         .login-button {
             font-size: 14px;
-            padding: 6px 10px;
-            border-radius: 5px;
+            padding: 8px 14px;
+            border-radius: 20px;
             border: none;
-            background-color: #dcdcdc;
-            color: #007BFF;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s ease;
+            transition: all 0.2s ease;
             margin-left: 8px;
-            height: 32px;
+            height: 36px;
             min-width: 80px;
+            font-weight: 500;
         }
 
         .notification-toggle:hover,
         .theme-toggle:hover,
         .return-button:hover,
         .login-button:hover {
-            background-color: #c0c0c0;
+            background-color: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
         }
 
         .username {
-            margin-right: 10px;
-            font-weight: bold;
+            margin-right: 12px;
+            font-weight: 600;
             white-space: nowrap;
         }
 
@@ -142,76 +146,144 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            max-width: 1000px;
+            max-height: calc(100vh - 80px);
+            height: clamp(500px, 80vh, 900px);
+            margin: 16px auto 0;
+            width: calc(100% - 32px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            background: white;
+        }
+
+        /* 针对超大屏幕的优化 */
+        @media (min-width: 1920px) {
+            .main-container {
+                max-width: 1600px;
+            }
         }
 
         /* 用户列表侧边栏 */
         .user-sidebar {
             width: 280px;
             background-color: #fff;
-            border-right: 1px solid #ddd;
+            border-right: 1px solid #e8e8e8;
             display: flex;
             flex-direction: column;
             transition: background-color 0.3s;
+            border-radius: 16px 0 0 16px;
         }
 
         .user-search {
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
+            padding: 16px;
+            border-bottom: 1px solid #e8e8e8;
         }
 
         .search-input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
             font-size: 14px;
             transition: border-color 0.3s, box-shadow 0.3s;
             box-sizing: border-box;
+            background: #f8f9fa;
         }
 
         .search-input:focus {
             border-color: #007BFF;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
             outline: none;
+            background: white;
         }
 
         .user-list {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: 8px;
         }
 
+        /* 卡片划入动画样式 */
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 用户项卡片样式 */
         .user-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 5px;
+            padding: 12px;
+            border-radius: 16px;
+            margin: 4px 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
             position: relative;
-            animation: fadeIn 0.3s ease backwards;
+            background: transparent;
+            /* 初始状态隐藏 */
+            opacity: 0;
+            transform: translateX(-50px) scale(0.9);
+        }
+
+        /* 用户项划入动画 - 从左向右依次划入 */
+        .user-item.slide-in {
+            animation: slideInFromLeft 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         .user-item:hover {
-            background-color: rgba(0, 123, 255, 0.1);
+            background-color: #f0f2f5;
+            transform: translateY(-1px);
         }
 
         .user-item.active {
-            background-color: rgba(0, 123, 255, 0.2);
+            background-color: #e3f2fd;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
             background-color: #007BFF;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            margin-right: 10px;
+            font-weight: 600;
+            margin-right: 12px;
+            transition: transform 0.2s ease;
+            font-size: 18px;
+        }
+
+        .user-item:hover .user-avatar {
+            transform: scale(1.05);
         }
 
         .user-info {
@@ -220,49 +292,56 @@
         }
 
         .user-name {
-            font-weight: bold;
-            margin-bottom: 3px;
+            font-weight: 600;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-size: 15px;
         }
 
         .user-status {
-            font-size: 12px;
-            color: #666;
+            font-size: 13px;
+            color: #8e8e93;
         }
 
         .user-badge {
             background-color: #f44336;
             color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            border-radius: 12px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .user-item:hover .user-badge {
+            transform: scale(1.1);
         }
 
         /* 用户列表分区样式 */
         .user-section {
-            margin-bottom: 15px;
-            border-bottom: 1px solid #ddd;
+            margin-bottom: 16px;
         }
 
         .section-title {
-            font-weight: bold;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 5px;
-            margin-bottom: 10px;
+            font-weight: 600;
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            margin: 8px;
+            font-size: 14px;
+            color: #65676b;
         }
 
         .section-content {
             max-height: 250px;
             overflow-y: auto;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .recent-chats .section-content {
@@ -274,41 +353,60 @@
         }
 
         .user-search-box {
-            padding: 5px 10px;
-            margin-bottom: 10px;
+            padding: 8px 16px;
+            margin-bottom: 8px;
         }
 
         .pagination-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.03);
-            border-radius: 5px;
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            margin: 8px;
+            gap: 8px;
         }
 
         .pagination-controls button {
-            padding: 5px 10px;
+            /* 改为长条形按钮 */
+            padding: 8px 20px;
             background-color: #007BFF;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 13px;
+            white-space: nowrap;
+            min-width: 70px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .pagination-controls button:hover:not(:disabled) {
             background-color: #0056b3;
+            transform: scale(1.02);
         }
 
         .pagination-controls button:disabled {
             background-color: #6c757d;
             cursor: not-allowed;
+            transform: none;
         }
 
         .pagination-info {
-            font-size: 0.8em;
-            color: #666;
+            font-size: 12px;
+            color: #8e8e93;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* 聊天区域 */
@@ -318,20 +416,30 @@
             flex-direction: column;
             background-color: #fafafa;
             transition: background-color 0.3s;
+            border-radius: 0 16px 16px 0;
         }
 
         .chat-header {
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
             background-color: #fff;
             display: flex;
             align-items: center;
             transition: background-color 0.3s;
+            border-radius: 0 16px 0 0;
         }
 
         .chat-header .user-name {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        .chat-header .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            margin-right: 0;
         }
 
         .chat-messages {
@@ -340,80 +448,112 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 8px;
         }
 
+        /* 消息卡片样式 */
         .message {
-            max-width: 80%;
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 8px;
+            max-width: 70%;
+            margin-bottom: 4px;
+            padding: 12px 16px;
+            border-radius: 18px;
             position: relative;
             word-wrap: break-word;
-            transition: background-color 0.3s ease, transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: all 0.2s ease;
+            /* 初始状态隐藏 */
+            opacity: 0;
+            transform: translateX(50px) scale(0.9);
+            line-height: 1.4;
+        }
+
+        /* 消息划入动画 - 从右向左依次划入 */
+        .message.slide-in {
+            animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* 发送消息保持从右侧划入 */
+        .message.sent {
+            align-self: flex-end;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        /* 接收消息也从右侧划入（统一方向） */
+        .message.received {
+            align-self: flex-start;
+            background-color: white;
+            color: #333;
+            border-radius: 18px 18px 18px 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .message-time {
-            font-size: 12px;
+            font-size: 11px;
             color: rgba(255, 255, 255, 0.7);
-            margin-top: 5px;
+            margin-top: 6px;
             display: block;
         }
 
-        .message.sent {
-            align-self: flex-end;
-            background-color: #65a3ff;
-            color: #333;
-        }
-
-        .message.received {
-            align-self: flex-start;
-            background-color: #e0e0e0;
-            color: #333;
+        .message.received .message-time {
+            color: #8e8e93;
         }
 
         .message-input {
-            padding: 10px;
+            padding: 16px 20px;
             background-color: #fff;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #e8e8e8;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             transition: background-color 0.3s;
+            border-radius: 0 0 16px 0;
+            gap: 12px;
         }
 
         .message-input textarea {
             flex: 1;
-            padding: 6px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
             resize: none;
             font-family: inherit;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.4;
             height: auto;
-            min-height: 24px;
+            min-height: 20px;
             max-height: 120px;
             overflow-y: auto;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
         }
 
         .message-input textarea:focus {
             border-color: #007BFF;
             outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
 
         .send-button {
-            padding: 10px;
-            margin-left: 10px;
+            padding: 12px 16px;
             background-color: #007BFF;
             border: none;
             color: white;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.2s, transform 0.1s ease;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            min-width: 60px;
         }
 
         .send-button:hover {
             background-color: #0056b3;
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .send-button:active {
@@ -428,30 +568,35 @@
             justify-content: center;
             background-color: #fafafa;
             transition: background-color 0.3s;
+            border-radius: 0 16px 16px 0;
         }
 
         .welcome-icon {
-            font-size: 5rem;
+            font-size: 4rem;
             color: #007BFF;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .welcome-text {
-            font-size: 1.5rem;
-            color: #666;
+            font-size: 1.3rem;
+            color: #8e8e93;
             text-align: center;
             max-width: 400px;
             line-height: 1.5;
+            font-weight: 500;
         }
 
         .empty-message {
             text-align: center;
-            color: #666;
+            color: #8e8e93;
             padding: 20px;
             font-style: italic;
+            border-radius: 12px;
+            background: #f8f9fa;
+            margin: 8px;
         }
 
-        /* 动画 */
+        /* 移除原有的动画 */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -461,110 +606,120 @@
             }
         }
 
-        .message.fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
         /* 深色模式 */
         body.dark-mode {
-            background-color: #333;
+            background-color: #1a1a1a;
             color: #fff;
         }
 
         body.dark-mode .header {
-            background-color: #222;
+            background-color: #2c2c2e;
+        }
+
+        body.dark-mode .main-container {
+            background: #2c2c2e;
         }
 
         body.dark-mode .user-sidebar {
-            background-color: #444;
-            border-color: #555;
+            background-color: #2c2c2e;
+            border-color: #3a3a3c;
         }
 
         body.dark-mode .user-search {
-            border-color: #555;
+            border-color: #3a3a3c;
         }
 
         body.dark-mode .search-input {
-            background-color: #666;
+            background-color: #3a3a3c;
             color: #fff;
-            border-color: #555;
+            border-color: #3a3a3c;
+        }
+
+        body.dark-mode .search-input:focus {
+            background: #48484a;
         }
 
         body.dark-mode .user-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.08);
         }
 
         body.dark-mode .user-item.active {
-            background-color: rgba(255, 255, 255, 0.15);
+            background-color: rgba(0, 123, 255, 0.2);
         }
 
         body.dark-mode .user-status {
-            color: #aaa;
+            color: #8e8e93;
         }
 
         body.dark-mode .section-title {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: #3a3a3c;
+            color: #8e8e93;
         }
 
         body.dark-mode .pagination-controls {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: #3a3a3c;
         }
 
         body.dark-mode .pagination-info {
-            color: #aaa;
+            color: #8e8e93;
         }
 
         body.dark-mode .chat-area {
-            background-color: #555;
+            background-color: #1c1c1e;
         }
 
         body.dark-mode .chat-header {
-            background-color: #444;
-            border-color: #555;
+            background-color: #2c2c2e;
+            border-color: #3a3a3c;
         }
 
         body.dark-mode .message.received {
-            background-color: #666;
+            background-color: #3a3a3c;
             color: #fff;
         }
 
         body.dark-mode .message.sent {
-            background-color: #438cd9;
+            background-color: #007AFF;
             color: #fff;
         }
 
         body.dark-mode .message-input {
-            background-color: #444;
-            border-color: #555;
+            background-color: #2c2c2e;
+            border-color: #3a3a3c;
         }
 
         body.dark-mode .message-input textarea {
-            background-color: #666;
+            background-color: #3a3a3c;
             color: #fff;
-            border-color: #555;
+            border-color: #3a3a3c;
+        }
+
+        body.dark-mode .message-input textarea:focus {
+            background: #48484a;
         }
 
         body.dark-mode .send-button {
-            background-color: #0056b3;
+            background-color: #007AFF;
         }
 
         body.dark-mode .welcome-screen {
-            background-color: #444;
+            background-color: #1c1c1e;
         }
 
         body.dark-mode .welcome-text {
-            color: #aaa;
+            color: #8e8e93;
         }
 
         body.dark-mode .empty-message {
-            color: #aaa;
+            color: #8e8e93;
+            background: #3a3a3c;
         }
 
         body.dark-mode .notification-toggle,
         body.dark-mode .theme-toggle,
         body.dark-mode .return-button,
         body.dark-mode .login-button {
-            background-color: #444;
+            background-color: rgba(255, 255, 255, 0.1);
             color: #fff;
         }
 
@@ -572,42 +727,94 @@
         body.dark-mode .theme-toggle:hover,
         body.dark-mode .return-button:hover,
         body.dark-mode .login-button:hover {
-            background-color: #555;
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         body.dark-mode ::-webkit-scrollbar-track {
-            background-color: #444;
+            background-color: #3a3a3c;
         }
 
         body.dark-mode ::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border: 2px solid #444;
+            background-color: #8e8e93;
+            border: 1px solid #3a3a3c;
         }
 
         body.dark-mode ::-webkit-scrollbar-thumb:hover {
-            background-color: #aaa;
+            background-color: #aeaeb2;
         }
 
         body.dark-mode * {
-            scrollbar-color: #aaa #444;
+            scrollbar-color: #8e8e93 #3a3a3c;
         }
 
         /* 响应式布局 */
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column;
+                margin: 8px;
+                width: calc(100% - 16px);
+                border-radius: 12px;
             }
 
             .user-sidebar {
                 width: 100%;
                 height: 40%;
                 border-right: none;
-                border-bottom: 1px solid #ddd;
+                border-bottom: 1px solid #e8e8e8;
+                border-radius: 12px 12px 0 0;
             }
 
             .chat-area {
                 height: 60%;
+                border-radius: 0 0 12px 12px;
             }
+
+            .welcome-screen {
+                border-radius: 0 0 12px 12px;
+            }
+
+            .chat-header {
+                border-radius: 0;
+            }
+
+            .message-input {
+                border-radius: 0 0 12px 12px;
+            }
+
+            .pagination-controls {
+                padding: 8px 12px;
+                gap: 6px;
+            }
+
+            .pagination-controls button {
+                padding: 6px 12px;
+                font-size: 12px;
+                min-width: 60px;
+                height: 28px;
+            }
+
+            .pagination-info {
+                font-size: 11px;
+            }
+        }
+
+        /* 防止重复动画的标记类 */
+        .user-item.animated,
+        .message.animated {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* 消息加载提示 */
+        .message-loading {
+            text-align: center;
+            color: #8e8e93;
+            font-style: italic;
+            padding: 16px;
+            opacity: 0.7;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 8px;
         }
     </style>
 </head>
@@ -684,25 +891,198 @@
         </div>
         <div class="message-input">
             <textarea id="messageInput" placeholder="输入消息... shift+enter换行" rows="1"></textarea>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;" />
             <button class="send-button" id="sendButton">发送</button>
         </div>
     </div>
+
 </div>
+
+<script>
+    // 动画控制函数
+    function addSlideInAnimation() {
+        // 限制消息数量的常量
+        const MAX_MESSAGES = 10;
+
+        // 为用户项添加依次划入动画（从上往下，从左向右）
+        function animateUserItems(container) {
+            const userItems = container.querySelectorAll('.user-item:not(.animated)');
+            userItems.forEach((item, index) => {
+                // 按照在DOM中的顺序依次添加动画
+                setTimeout(() => {
+                    item.classList.add('slide-in');
+                    // 动画完成后添加标记类防止重复动画
+                    item.addEventListener('animationend', () => {
+                        item.classList.add('animated');
+                        item.style.opacity = '1';
+                        item.style.transform = 'none';
+                    }, { once: true });
+                }, index * 10 ); // 每个元素延迟100ms，创造依次划入效果
+            });
+        }
+
+        // 为消息添加依次划入动画（从上往下，从右向左）
+        function animateMessages(container) {
+            const messages = container.querySelectorAll('.message:not(.animated)');
+
+            // 限制消息数量
+            if (messages.length > MAX_MESSAGES) {
+                // 移除最老的消息（前面的消息）
+                const messagesToRemove = messages.length - MAX_MESSAGES;
+                for (let i = 0; i < messagesToRemove; i++) {
+                    const oldMessage = container.querySelector('.message');
+                    if (oldMessage) {
+                        oldMessage.remove();
+                    }
+                }
+                // 重新获取消息列表
+                const newMessages = container.querySelectorAll('.message:not(.animated)');
+                animateMessageArray(newMessages);
+            } else {
+                animateMessageArray(messages);
+            }
+        }
+
+        // 执行消息动画的具体函数
+        // 执行消息动画的具体函数
+        function animateMessageArray(messages) {
+            messages.forEach((message, index) => {
+                // 立即添加动画类，但通过CSS延迟控制开始时间
+                message.style.animationDelay = `${index * 0.01}s`; // 50ms间隔
+                message.classList.add('slide-in');
+                // 动画完成后添加标记类防止重复动画
+                message.addEventListener('animationend', () => {
+                    message.classList.add('animated');
+                    message.style.opacity = '1';
+                    message.style.transform = 'none';
+                    message.style.animationDelay = ''; // 清除延迟
+                }, { once: true });
+            });
+        }
+
+        // 监听用户列表变化
+        const userListObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    let hasNewUserItems = false;
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('user-item')) {
+                            hasNewUserItems = true;
+                        }
+                    });
+
+                    // 如果有新的用户项添加，重新执行动画
+                    if (hasNewUserItems) {
+                        setTimeout(() => {
+                            animateUserItems(mutation.target);
+                        }, 50);
+                    }
+                }
+            });
+        });
+
+        // 监听消息列表变化
+        const messageObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    let hasNewMessages = false;
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('message')) {
+                            hasNewMessages = true;
+                        }
+                    });
+
+                    // 如果有新消息添加，执行动画并检查消息数量
+                    if (hasNewMessages) {
+                        setTimeout(() => {
+                            animateMessages(mutation.target);
+                        }, 50);
+                    }
+                }
+            });
+        });
+
+        // 清理过多消息的函数
+        function cleanupMessages(container) {
+            const messages = container.querySelectorAll('.message');
+            if (messages.length > MAX_MESSAGES) {
+                const messagesToRemove = messages.length - MAX_MESSAGES;
+                for (let i = 0; i < messagesToRemove; i++) {
+                    messages[i].remove();
+                }
+            }
+        }
+
+        // 开始观察
+        const userListContainer = document.getElementById('userList');
+        const allUserListContainer = document.getElementById('private-chat-user-list');
+        const chatMessagesContainer = document.getElementById('chatMessages');
+
+        if (userListContainer) {
+            userListObserver.observe(userListContainer, { childList: true, subtree: true });
+            // 初始化已存在的用户项
+            setTimeout(() => animateUserItems(userListContainer), 100);
+        }
+
+        if (allUserListContainer) {
+            userListObserver.observe(allUserListContainer, { childList: true, subtree: true });
+            // 初始化已存在的用户项
+            setTimeout(() => animateUserItems(allUserListContainer), 100);
+        }
+
+        if (chatMessagesContainer) {
+            messageObserver.observe(chatMessagesContainer, { childList: true, subtree: true });
+            // 初始化已存在的消息
+            setTimeout(() => animateMessages(chatMessagesContainer), 100);
+
+            // 定期清理过多消息（防止内存占用过大）
+            setInterval(() => {
+                cleanupMessages(chatMessagesContainer);
+            }, 30000); // 每30秒清理一次
+        }
+
+        // 为搜索结果重新添加动画
+        document.getElementById('userSearchInput')?.addEventListener('input', () => {
+            // 清除现有的animated标记以便重新播放动画
+            const userItems = document.querySelectorAll('#userList .user-item');
+            userItems.forEach(item => {
+                item.classList.remove('animated', 'slide-in');
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-50px) scale(0.9)';
+            });
+
+            setTimeout(() => {
+                animateUserItems(document.getElementById('userList'));
+            }, 50);
+        });
+
+        document.getElementById('allUserSearchInput')?.addEventListener('input', () => {
+            // 清除现有的animated标记以便重新播放动画
+            const userItems = document.querySelectorAll('#private-chat-user-list .user-item');
+            userItems.forEach(item => {
+                item.classList.remove('animated', 'slide-in');
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-50px) scale(0.9)';
+            });
+
+            setTimeout(() => {
+                animateUserItems(document.getElementById('private-chat-user-list'));
+            }, 100);
+        });
+
+        // 暴露清理函数供外部调用
+        window.cleanupMessages = () => {
+            if (chatMessagesContainer) {
+                cleanupMessages(chatMessagesContainer);
+            }
+        };
+    }
+
+    // 页面加载完成后初始化动画
+    document.addEventListener('DOMContentLoaded', addSlideInAnimation);
+</script>
 
 <script src="/files/privatechat.html.js" charset="utf-8"></script>
 <script src="/files/privatechatlist.js" charset="utf-8"></script>
-<script>
-    // 为Logo添加点击事件
-    document.addEventListener('DOMContentLoaded', () => {
-        const logoImg = document.querySelector('.header-left img');
-        if (logoImg) {
-            logoImg.addEventListener('click', () => {
-                logoImg.classList.add('logo-clicked');
-                setTimeout(() => logoImg.classList.remove('logo-clicked'), 500);
-                window.location.href = '/';
-            });
-        }
-    });
-</script>
 </body>
 </html>

@@ -15,9 +15,9 @@
 namespace manager {
 	const string banedName = "封禁用户";
 	const string AluserType = "AllUser";
-	const string GMlabei = "GM";//管理员
-	const string Usuallabei = "U";//普通用户
-	const string BanedLabei = "BAN";//封禁用户
+	const string GMlabel = "GM";//管理员
+	const string Usuallabel = "U";//普通用户
+	const string Banedlabel = "BAN";//封禁用户
 	//检查char是否安全
 	bool SafeWord(char word);
 	//检查用户名是否合法
@@ -28,25 +28,25 @@ namespace manager {
 
 	class user {
 		string name, password;
-		string cookie, labei;
+		string cookie, label;
 		int uid;
 	public:
 		string getname();
 		string getcookie();
-		string getlabei();
+		string getlabel();
 		string getpassword();
 
 		void setcookie(string new_cookie); // Updates cookie in memory and database
-		void ban(); // Updates labei in memory and database
+		void ban(); // Updates label in memory and database
 
 		bool setname(string str);
 		int getuid();
 		bool operator <(user x);
-		user(string name_ = "NULL", string password_ = "", string cookie_ = "", string labei_ = "NULL");
+		user(string name_ = "NULL", string password_ = "", string cookie_ = "", string label_ = "NULL");
 		void setuid(int value = -1);
 	};
 	//向数据中新增用户
-	bool AddUser(const std::string& name, const std::string& psw, const std::string& cookie, const std::string& labei); // Updated signature
+	bool AddUser(const std::string& name, const std::string& psw, const std::string& cookie, const std::string& label); // Updated signature
 	//通过uid查找用户
 	user* FindUser(int uid);
 	//通过id查找用户

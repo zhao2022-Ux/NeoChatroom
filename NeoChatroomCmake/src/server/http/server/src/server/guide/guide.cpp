@@ -73,7 +73,7 @@ auto Register = [](const httplib::Request& req, httplib::Response& res, const Js
 
     Logger& logger = Logger::getInstance();
     if(check_uid_same(username) == true){
-        if (!manager::AddUser(username, password, "", manager::Usuallabei)) {
+        if (!manager::AddUser(username, password, "", manager::Usuallabel)) {
             res.status = 500;//服务器无法完成请求
             res.set_content("unkown error", "text/plain");
             logger.logError("LoginSys", req.remote_addr + " 在试图以 " + username + "注册时发生未知错误");

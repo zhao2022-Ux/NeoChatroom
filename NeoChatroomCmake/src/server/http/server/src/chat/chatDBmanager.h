@@ -8,6 +8,7 @@
 #include "json/json.h"
 #include "../tool/log.h"
 #include <deque>
+#include "../data/datamanage.h" // 添加数据管理头文件引用
 
 class ChatDBManager {
 private:

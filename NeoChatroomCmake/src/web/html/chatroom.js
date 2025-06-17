@@ -216,7 +216,7 @@ function createMessageElement(msg) {
     const isOwnMessage = (msg.user === currentUsername);
     const messageClass = isOwnMessage ? 'message user' : 'message';
 
-    // 修改处：获取解码后的消息，并对系统消息（msg.labei === 'GM'）转换为GBK
+    // 修改处：获取解码后的消息，并对系统消息（msg.label === 'GM'）转换为GBK
     let decodedMessage = decodeBase64(msg.message);
 
     const renderMarkdown = /[#*_`$]/.test(decodedMessage);
@@ -226,7 +226,7 @@ function createMessageElement(msg) {
     messageDiv.className = `${messageClass} ${msg.isNew ? 'fade-in' : ''}`;
 
     let messageStyle = '';
-    switch (msg.labei) {
+    switch (msg.label) {
         case 'GM':
             messageStyle = document.body.classList.contains("dark-mode") ?
                 'background-color: black; color: white;' :

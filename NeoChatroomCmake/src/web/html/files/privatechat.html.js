@@ -42,7 +42,7 @@ const Base64 = {
     }
 };
 
-// 获取 cookie ���工具函数
+// 获取 cookie 的工具函数
 function getCookie(name) {
     const value = "; " + document.cookie;
     const parts = value.split("; " + name + "=");
@@ -180,10 +180,11 @@ async function fetchUserList() {
             }
         }
 
-        // 过滤掉自己和被封禁的用户
+        // 【修改】过滤用户：只显示有聊天消息的用户（排除自己和被封禁的用户）
         userList = allUsers.filter(user =>
             user.username !== currentUsername &&
-            user.labei !== 'BAN'
+            user.labei !== 'BAN' &&
+            hasMessagesWith(user.username) // 新增条件：必须有聊天消息
         );
 
         renderUserList(userList);
@@ -191,6 +192,39 @@ async function fetchUserList() {
         console.error('获取用户列表失败:', error);
         document.getElementById('userList').innerHTML = '<div class="empty-message">获取用户列表失败</div>';
     }
+}
+
+// 【新增】检查是否与某个用户有聊天消息的函数
+function hasMessagesWith(username) {
+    // 如果 allMessages 中没有该用户的消息记录，返回 false
+    if (!allMessages[username] || allMessages[username].length === 0) {
+        return false;
+    }
+
+    // 检查是否存在与该用户的有效聊天消息
+    return allMessages[username].some(msg => {
+        // 检查消息的发送者和接收者
+        let messageReceiver = "";
+
+        if (msg.metadata) {
+            if (typeof msg.metadata === 'string') {
+                try {
+                    const metadata = JSON.parse(msg.metadata);
+                    messageReceiver = metadata.to || "";
+                } catch (e) {
+                    console.error('解析metadata失败:', e);
+                }
+            } else if (typeof msg.metadata === 'object') {
+                messageReceiver = msg.metadata.to || "";
+            }
+        }
+
+        // 返回 true 如果：
+        // 1. 当前用户发送给该用户的消息，或
+        // 2. 该用户发送给当前用户的消息
+        return (msg.user === currentUsername && messageReceiver === username) ||
+            (msg.user === username && messageReceiver === currentUsername);
+    });
 }
 
 // 【核心修复】选择用户开始聊天 - 立即标记对方发来的消息为已读
@@ -245,7 +279,7 @@ async function markAllMessagesFromUserAsRead(fromUsername) {
     // 1. 先在前端更新已读状态
     updateMessagesReadStatusInFrontend(fromUsername);
 
-    // 2. 发送到后端标记��读
+    // 2. 发送到后端标记已读
     try {
         const response = await fetch('/private/mark-read', {
             method: 'POST',
@@ -274,7 +308,7 @@ async function markAllMessagesFromUserAsRead(fromUsername) {
                 updateChatView(fromUsername);
             }
         } else {
-            console.error("后端标记已���失���，状态码:", response.status);
+            console.error("后端标记已读失败，状态码:", response.status);
         }
     } catch (error) {
         console.error('标记消息为已读失败:', error);
@@ -306,7 +340,7 @@ function updateMessagesReadStatusInFrontend(fromUsername) {
             }
         }
 
-        // 只更新对方发送给我���未读消息
+        // 只更新对方发送给我的未读消息
         if (msg.user === fromUsername && // 消息发送者是对方
             messageReceiver === currentUsername && // 消息接收者是我
             Number(msg.is_read) === 0) { // 且未读
@@ -327,7 +361,7 @@ function hasUnread(user) {
 
     // 【关键修复】只检查对方发送给我的未读消息，不检查我发送给对方的消息
     return allMessages[user.username].some(msg => {
-        // ��查消息的接收者是否是当前用户
+        // 检查消息的接收者是否是当前用户
         let messageReceiver = "";
 
         // 从metadata中提取接收者
@@ -383,10 +417,13 @@ function isMessageToCurrentUser(msg) {
     return messageReceiver === currentUsername;
 }
 
-// 优化：渲染用户列表，避免不必要的重新渲染和动画
+// 【修改】优化：渲染用户列表，避免不必要的重新渲染和动画，并在消息加载后重新过滤
 function renderUserList(users) {
+    // 【新增】重新过滤用户列表：只显示有聊天消息的用户
+    const usersWithMessages = users.filter(user => hasMessagesWith(user.username));
+
     // 对用户列表排序：有未读消息的用户移到前面
-    const sortedUsers = [...users].sort((a, b) => {
+    const sortedUsers = [...usersWithMessages].sort((a, b) => {
         if (hasUnread(a) && !hasUnread(b)) return -1;
         if (!hasUnread(a) && hasUnread(b)) return 1;
         return 0;
@@ -395,7 +432,7 @@ function renderUserList(users) {
     const userListElement = document.getElementById('userList');
 
     if (!sortedUsers || sortedUsers.length === 0) {
-        userListElement.innerHTML = '<div class="empty-message">没有找到用户</div>';
+        userListElement.innerHTML = '<div class="empty-message">暂无聊天用户</div>';
         return;
     }
 
@@ -504,7 +541,7 @@ async function fetchPrivateMessages() {
             updateChatView(selectedUser.username);
         }
 
-        // 更新用户列表的未读状态
+        // 【修改】更新用户列表的未读状态，并重新过滤显示有聊天消息的用户
         renderUserList(userList); // renderUserList 会使用 allMessages 判断未读
         updateAllUsersUnreadStatus(); // 确保未读标记实时更新
 
@@ -528,7 +565,7 @@ function adjustPrivateFetchInterval() {
     }
 }
 
-// 【新增】用户列表未读状态检���功能
+// 【新增】用户列表未读状态检查功能
 function startUserListUnreadCheck() {
     // 清除现有的定时器
     if (userListUnreadCheckTimer) {
@@ -613,7 +650,7 @@ async function loadAllUserMessages() {
     if (!currentUsername) return;
 
     try {
-        // 对于轮询，��们通常获取从 lastMessageTimestamp 开始的所有新消息
+        // 对于轮询，我们通常获取从 lastMessageTimestamp 开始的所有新消息
         // 后端 getUserMessages 内部的 getUserRelatedMessages 有 LIMIT 100，
         // 所以如果一次轮询有很多新消息，可能需要多次获取，但目前简化处理，一次获取一批
         const pageSizeForPolling = 1000; // 获取足够多的新消息
@@ -638,12 +675,12 @@ async function loadAllUserMessages() {
             if (latestMessageInBatch && latestMessageInBatch.timestamp > lastMessageTimestamp) {
                 lastMessageTimestamp = latestMessageInBatch.timestamp;
             }
-            
+
             console.log(`Processed ${messages.length} new messages. New lastMessageTimestamp: ${lastMessageTimestamp}`);
 
             // 如果有选中的用户，并且新消息中有与当前选中用户的对话，则更新聊天界面
             if (selectedUser) {
-                 // updateChatView 将从 allMessages 中获取数据
+                // updateChatView 将从 allMessages 中获取数据
                 updateChatView(selectedUser.username);
             }
 
@@ -705,9 +742,9 @@ function processNewMessages(newMessages) {
             if (serverMessage.user === currentUsername) {
                 const optimisticMatchIndex = allMessages[chatPartner].findIndex(
                     optMsg => optMsg.isOptimistic &&
-                              optMsg.user === serverMessage.user &&
-                              optMsg.message === serverMessage.message && // 比较Base64编码后的内容
-                              Math.abs(optMsg.timestamp - serverMessage.timestamp) <= 3 // 时间戳在3秒内认为是同一个
+                        optMsg.user === serverMessage.user &&
+                        optMsg.message === serverMessage.message && // 比较Base64编码后的内容
+                        Math.abs(optMsg.timestamp - serverMessage.timestamp) <= 3 // 时间戳在3秒内认为是同一个
                 );
 
                 if (optimisticMatchIndex !== -1) {
@@ -721,9 +758,9 @@ function processNewMessages(newMessages) {
                 // 标准去重逻辑：检查是否已存在完全相同的消息
                 const isDuplicate = allMessages[chatPartner].some(
                     m => m.timestamp === serverMessage.timestamp &&
-                         m.user === serverMessage.user &&
-                         m.message === serverMessage.message &&
-                         JSON.stringify(m.metadata) === JSON.stringify(serverMessage.metadata) // 更严格的元数据比较
+                        m.user === serverMessage.user &&
+                        m.message === serverMessage.message &&
+                        JSON.stringify(m.metadata) === JSON.stringify(serverMessage.metadata) // 更严格的元数据比较
                 );
 
                 if (!isDuplicate) {
@@ -745,7 +782,7 @@ function processNewMessages(newMessages) {
             allMessages[partner].sort((a, b) => a.timestamp - b.timestamp);
         }
     });
-    
+
     if (unreadStatusChangedOverall) {
         // console.log("Unread status changed, re-rendering user list and indicators.");
         renderUserList(userList); // 重新渲染用户列表以反映未读状态和排序
@@ -771,7 +808,7 @@ async function loadDirectMessages(otherUsername) {
         // 如果是首次加载且没有选中用户，但 allMessages 有数据，也尝试更新视图
         // (这种情况较少，通常 selectUser 会先被调用)
     }
-    
+
     // 如果没有消息，显示提示
     if (selectedUser && selectedUser.username === otherUsername && (!allMessages[otherUsername] || allMessages[otherUsername].length === 0)) {
         document.getElementById('chatMessages').innerHTML = '<div class="empty-message">暂无消息</div>';
@@ -844,7 +881,7 @@ async function sendMessage() {
             user: currentUsername,
             message: Base64.encode(message), // 存储编码后的消息
             timestamp: Math.floor(Date.now() / 1000),
-            is_read: 0, 
+            is_read: 0,
             metadata: {
                 to: selectedUser.username
             },
@@ -882,12 +919,6 @@ async function sendMessage() {
             updateChatView(selectedUser.username); // 刷新视图
             throw new Error(`发送消息失败: ${response.status}`);
         }
-
-        // console.log('消息发送成功');
-        // 移除 setTimeout 调用 loadDirectMessages，依赖轮询更新
-        // setTimeout(() => {
-        //     loadDirectMessages(selectedUser.username);
-        // }, 500);
 
     } catch (error) {
         console.error('发送消息失败:', error);
@@ -946,7 +977,7 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// 更新未读指示��
+// 更新未读指示器
 function updateUnreadIndicators() {
     userList.forEach(user => {
         if (user.username !== currentUsername) {
@@ -1071,6 +1102,65 @@ function setupEventListeners() {
     });
 }
 
+// 【新增】获取全部用户列表的函数（保持原有的 fetchUserList 功能）
+async function fetchAllUsers() {
+    if (!await checkLoginStatus()) return;
+
+    try {
+        // 分页加载更多用户数据
+        let allUsers = [];
+        let startUid = 1;
+        let hasMore = true;
+        const pageSize = 100;  // 一次加载更多用户
+
+        while (hasMore) {
+            const endUid = startUid + pageSize - 1;
+            const response = await fetch(`/api/users?start=${startUid}&end=${endUid}&size=${pageSize}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`获取用户列表失败: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const users = data.users || [];
+
+            if (users.length === 0) break;
+
+            allUsers = [...allUsers, ...users];
+
+            // 如果获取的用户数量小于请求的数量，说明没有更多用户了
+            if (users.length < pageSize) {
+                hasMore = false;
+            } else {
+                startUid += pageSize;
+            }
+
+            // 防止请求过多，限制最多获取1000个用户
+            if (allUsers.length >= 1000) {
+                hasMore = false;
+            }
+        }
+
+        // 过滤掉自己和被封禁的用户，但不过滤是否有聊天消息
+        const allValidUsers = allUsers.filter(user =>
+            user.username !== currentUsername &&
+            user.labei !== 'BAN'
+        );
+
+        console.log(`获取到 ${allValidUsers.length} 个有效用户`);
+
+        // 将完整的用户列表存储在全局变量中，以便后续使用
+        // 注意：这里不直接修改 userList，因为 userList 应该只包含有聊天消息的用户
+        // 如果需要显示所有用户的功能，可以创建一个新的全局变量
+
+    } catch (error) {
+        console.error('获取全部用户列表失败:', error);
+    }
+}
+
 // 页面初始化
 async function initPage() {
     // 检查登录状态
@@ -1088,25 +1178,27 @@ async function initPage() {
     // 设置事件监听
     setupEventListeners();
 
-    // 获取用户列表
-    await fetchUserList(); // 获取用户列表后，userList 会被填充
-    await fetchAllUsers(); //全部列表，带翻页
+    // 【修改】先获取全部用户列表，然后获取消息，最后过滤显示
+    await fetchAllUsers(); // 获取全部用户列表
+
     // 初始加载所有与当前用户相关的消息
-    // 这���填充 allMessages 对象
-    await loadAllUserMessages(); 
+    // 这会填充 allMessages 对象
+    await loadAllUserMessages();
+
+    // 获取用户列表并过滤显示有聊天消息的用户
+    await fetchUserList(); // 获取用户列表后，userList 会被填充并过滤
 
     console.log('页面初始化完成');
     isFirstMessageLoad = false; // 标记初始加载完成
 
-    // 首次渲染用户列表，此时 allMessages 可能已有数据，可以正确显��未读
+    // 首次渲染用户列表，此时 allMessages 可能已有数据，可以正确显示未读
     renderUserList(userList);
     updateAllUsersUnreadStatus();
-
 
     // 启动高性能轮询
     privateIsPollingActive = true;
     fetchPrivateMessages(); // 开始轮询
-    startUserListUnreadCheck(); // 开始用户���表未读状态的定期检查
+    startUserListUnreadCheck(); // 开始用户列表未读状态的定期检查
 }
 
 // 页面加载完成后初始化
@@ -1152,7 +1244,7 @@ function startCheckingUnread() {
         clearInterval(checkUnreadInterval);
     }
 
-    // 设置新��定时器，间隔更长以减少性能影响
+    // 设置新的定时器，间隔更长以减少性能影响
     checkUnreadInterval = setInterval(() => {
         updateUnreadIndicators();
     }, 5000); // 5秒检查一次
@@ -1197,10 +1289,6 @@ function checkUnreadWithUser(username) {
     }
 }
 
-
-
-
-
 // 优化：清理已读状态缓存的函数
 function clearReadStatusCache() {
     // 定期清理缓存，防止内存泄漏
@@ -1208,8 +1296,6 @@ function clearReadStatusCache() {
         readStatusCache.clear();
     }
 }
-
-
 
 // 定期清理缓存
 setInterval(clearReadStatusCache, 300000); // 5分钟清理一次
