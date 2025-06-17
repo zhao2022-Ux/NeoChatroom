@@ -671,6 +671,66 @@
             border-color: var(--primary-color);
         }
 
+        /* 私信图标样式 */
+        .private-message-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .private-message-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .private-message-icon .envelope {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+
+        .private-message-icon .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--danger-color);
+            border-radius: 50%;
+            display: none;
+            animation: pulse 1.5s infinite;
+        }
+
+        .private-message-icon .text {
+            font-size: 14px;
+        }
+
+        /* 未读徽章的脉冲动画 */
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 5px rgba(220, 53, 69, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        /* 深色模式适配 */
+        body.dark-mode .private-message-icon {
+            color: #eee;
+        }
+        
         /* 响应式布局 */
         @media (max-width: 1024px) {
             .main-container {
@@ -694,6 +754,12 @@
         <div class="chatroom-title">seve's chatroom</div>
     </div>
     <div class="right-section">
+        <!-- 添加私信图标 -->
+        <a href="#" class="private-message-icon" id="privateMessageIcon">
+            <span class="envelope">✉</span>
+            <span class="badge" id="unreadBadge"></span>
+            <span class="text">私信</span>
+        </a>
         <div class="username" id="usernameDisplay"></div>
         <button class="login-button" id="loginButton" onclick="window.location.href='/login'">登录</button>
         <button class="theme-toggle" id="themeToggle">D/B</button>
@@ -702,7 +768,7 @@
 
 <!-- 主容器 - 两栏布局 -->
 <div class="main-container">
-    <!-- 左侧栏 - 聊天室列表 -->
+    <!-- ���侧栏 - 聊天室列表 -->
     <div class="left-column">
         <!-- 已加入的聊天室 -->
         <div class="container">

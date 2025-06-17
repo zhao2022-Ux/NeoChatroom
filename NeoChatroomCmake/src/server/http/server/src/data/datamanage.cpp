@@ -17,6 +17,19 @@
 using namespace std;
 
 namespace manager {
+    // 转义SQL字符串辅助方法
+    std::string escapeSqlString(const std::string& s) {
+        std::string escaped_s = "";
+        for (char c : s) {
+            if (c == '\'') {
+                escaped_s += "''";
+            } else {
+                escaped_s += c;
+            }
+        }
+        return escaped_s;
+    }
+
     std::mutex mtx;  // 用于保护共享数据的互斥锁
     sqlite3* db = nullptr;
 
@@ -356,7 +369,7 @@ namespace manager {
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, selectQuery, -1, &stmt, nullptr) != SQLITE_OK) {
-                Logger::getInstance().logError("database", "查找用户时发生错误: " + std::string(sqlite3_errmsg(db)));
+                Logger::getInstance().logError("database", "查找用户时发生错���: " + std::string(sqlite3_errmsg(db)));
                 return nullptr;
             }
             sqlite3_bind_int(stmt, 1, uid);
@@ -563,7 +576,7 @@ namespace manager {
         }
     }
 
-    // 函数返回包含用户名、密码和UID的元组向量
+    // 函数返回包含用���名、密码和UID的元组向量
     std::vector<std::tuple<std::string, std::string, int>> GetUserDetails() {
         try {
             const char* selectQuery = R"(
@@ -645,7 +658,7 @@ namespace manager {
                 Json::Value userObj;
                 userObj["uid"] = uid;
 
-                // 如果用户在缓存中，优先使用缓存数据
+                // 如果用户在��存中，优先使用缓存数据
                 auto cacheIt = cachedUsers.find(uid);
                 if (cacheIt != cachedUsers.end()) {
                     user* cachedUser = cacheIt->second;
@@ -841,6 +854,184 @@ namespace manager {
         }
     }
 
+    // 获取用户总数
+    int getUserCount() {
+        try {
+            // 使用数据库查询获取用户总数，而不是遍历AllUser数组
+            const char* countQuery = "SELECT COUNT(*) FROM users;";
+            sqlite3_stmt* stmt;
+            
+            if (sqlite3_prepare_v2(db, countQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "准备查询用户总数时发生错误");
+                return 0;
+            }
+            
+            int count = 0;
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                count = sqlite3_column_int(stmt, 0);
+            }
+            
+            sqlite3_finalize(stmt);
+            return count;
+        } catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "获取用户总数时发生错误: " + std::string(e.what()));
+            return 0;
+        }
+    }
+
+    // 分页获取用户列表
+    std::vector<user> getUsers(int start, int end) {
+        std::vector<user> result;
+        
+        try {
+            // 确保边界合法
+            if (start < 1) start = 1;
+            if (end < start) end = start;
+            
+            // 限制一次请求的最大用户数量
+            if (end - start > 500) {
+                end = start + 500;
+            }
+            
+            // 使用数据库查询获取用户列表
+            const char* selectQuery = R"(
+                SELECT uid, name, password, cookie, labei 
+                FROM users 
+                ORDER BY uid 
+                LIMIT ? OFFSET ?;
+            )";
+            
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, selectQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "准备分页查询用户列表时发生错误");
+                return result;
+            }
+            
+            int limit = end - start + 1;
+            int offset = start - 1;
+            
+            sqlite3_bind_int(stmt, 1, limit);
+            sqlite3_bind_int(stmt, 2, offset);
+            
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                int uid = sqlite3_column_int(stmt, 0);
+                const char* nameText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                const char* passwordText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                const char* cookieText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                const char* labeiText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                
+                std::string name = nameText ? nameText : "";
+                std::string password = passwordText ? passwordText : "";
+                std::string cookie = cookieText ? cookieText : "";
+                std::string labei = labeiText ? labeiText : "";
+                
+                user newUser(name, password, cookie, labei);
+                newUser.setuid(uid);
+                result.push_back(newUser);
+            }
+            
+            sqlite3_finalize(stmt);
+        } catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "分页获取用户列表时发生错误: " + std::string(e.what()));
+        }
+        
+        return result;
+    }
+    
+    // 搜索用户
+    std::vector<user> searchUsers(const std::string& searchTerm, int start, int end) {
+        std::vector<user> result;
+        
+        try {
+            // 确保边界合法
+            if (start < 1) start = 1;
+            if (end < start) end = start;
+            
+            // 限制一次请求的最大用户数量
+            if (end - start > 500) {
+                end = start + 500;
+            }
+            
+            // 转义搜索词，防止SQL注入
+            std::string safeTerm = "%" + escapeSqlString(searchTerm) + "%";
+            
+            // 使用数据库查询搜索用户
+            const char* searchQuery = R"(
+                SELECT uid, name, password, cookie, labei 
+                FROM users 
+                WHERE name LIKE ? 
+                ORDER BY uid 
+                LIMIT ? OFFSET ?;
+            )";
+            
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, searchQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "准备搜索用户查询时发生错误");
+                return result;
+            }
+            
+            int limit = end - start + 1;
+            int offset = start - 1;
+            
+            sqlite3_bind_text(stmt, 1, safeTerm.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_int(stmt, 2, limit);
+            sqlite3_bind_int(stmt, 3, offset);
+            
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                int uid = sqlite3_column_int(stmt, 0);
+                const char* nameText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                const char* passwordText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                const char* cookieText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                const char* labeiText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                
+                std::string name = nameText ? nameText : "";
+                std::string password = passwordText ? passwordText : "";
+                std::string cookie = cookieText ? cookieText : "";
+                std::string labei = labeiText ? labeiText : "";
+                
+                user newUser(name, password, cookie, labei);
+                newUser.setuid(uid);
+                result.push_back(newUser);
+            }
+            
+            sqlite3_finalize(stmt);
+        } catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "搜索用户时发生错误: " + std::string(e.what()));
+        }
+        
+        return result;
+    }
+    
+    // 获取搜索结果总数
+    int searchUsersCount(const std::string& searchTerm) {
+        try {
+            // 转义搜���词，防止SQL注入
+            std::string safeTerm = "%" + escapeSqlString(searchTerm) + "%";
+            
+            // 使用数据库查询获取匹配用户数量
+            const char* countQuery = "SELECT COUNT(*) FROM users WHERE name LIKE ?;";
+            sqlite3_stmt* stmt;
+            
+            if (sqlite3_prepare_v2(db, countQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "准备搜索用户计数查询时发生错误");
+                return 0;
+            }
+            
+            sqlite3_bind_text(stmt, 1, safeTerm.c_str(), -1, SQLITE_STATIC);
+            
+            int count = 0;
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                count = sqlite3_column_int(stmt, 0);
+            }
+            
+            sqlite3_finalize(stmt);
+            return count;
+        } catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "获取搜索结果总数时发生错误: " + std::string(e.what()));
+            return 0;
+        }
+    }
+    
     // 关闭数据库连接
     void CloseDatabase() {
         try {
