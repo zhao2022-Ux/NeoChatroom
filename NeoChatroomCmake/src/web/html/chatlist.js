@@ -290,6 +290,60 @@ let currentUsername = "";
 const uid = getCookie("uid");
 const serverUrl = window.location.origin;
 
+// 私信未读消息轮询
+let privateMessagePollInterval = null;
+
+// 检查未读私信消息
+async function checkUnreadPrivateMessages() {
+    if (!currentUsername) return; // 未登录不检查
+    
+    try {
+        const response = await fetch('/private/check-unread', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            console.error('检查未读私信失败:', response.status);
+            return;
+        }
+        
+        const data = await response.json();
+        const unreadBadge = document.getElementById('unreadBadge');
+        
+        if (data.hasUnread) {
+            // 显示未读徽章
+            unreadBadge.style.display = 'block';
+        } else {
+            // 隐藏未读徽章
+            unreadBadge.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('检查未读私信时发生错误:', error);
+    }
+}
+
+// 启动私信轮询
+function startPrivateMessagePolling() {
+    if (privateMessagePollInterval) {
+        clearInterval(privateMessagePollInterval);
+    }
+    
+    // 立即执行一次
+    checkUnreadPrivateMessages();
+    
+    // 设置5秒轮询间隔
+    privateMessagePollInterval = setInterval(checkUnreadPrivateMessages, 5000);
+}
+
+// 停止私信轮询
+function stopPrivateMessagePolling() {
+    if (privateMessagePollInterval) {
+        clearInterval(privateMessagePollInterval);
+        privateMessagePollInterval = null;
+    }
+}
+
 // 更新登录状态
 async function updateLoginStatus() {
     try {
@@ -299,17 +353,29 @@ async function updateLoginStatus() {
             currentUsername = data.username;
             document.getElementById('usernameDisplay').textContent = currentUsername;
             document.getElementById('loginButton').style.display = 'none';
+            
+            // 用户已登录，启动私信轮询
+            startPrivateMessagePolling();
+            
             return true;
         } else {
             document.getElementById('loginButton').style.display = 'inline-block';
             currentUsername = '';
             document.getElementById('usernameDisplay').textContent = '';
+            
+            // 用户未登录，停止私信轮询
+            stopPrivateMessagePolling();
+            
             return false;
         }
     } catch (error) {
         document.getElementById('loginButton').style.display = 'inline-block';
         currentUsername = '';
         document.getElementById('usernameDisplay').textContent = '';
+        
+        // 出错时停止私信轮询
+        stopPrivateMessagePolling();
+        
         return false;
     }
 }
@@ -668,7 +734,7 @@ function initDragAndDrop() {
                 const draggedIndex = cards.indexOf(draggedItem);
                 const targetIndex = cards.indexOf(card);
 
-                // 确定是放在目标前面还是后面
+                // 确定是放在目标前面???是后面
                 if (draggedIndex < targetIndex) {
                     container.insertBefore(draggedItem, card.nextSibling);
                 } else {
@@ -863,7 +929,7 @@ async function joinRoom(roomId, roomName) {
 
     } catch (error) {
         document.body.removeChild(transitionOverlay);
-        console.error('加入聊天室时发生错误:', error);
+        console.error('加入聊天??时发生错误:', error);
         alert('加入聊天室时发生错误: ' + error.message);
     }
 }
@@ -1154,11 +1220,34 @@ async function initUserList() {
     renderUserList(users);
 }
 
-// ページ初期化後に実行
+// 初始化私信图标点击处理
+function initPrivateMessageIcon() {
+    const privateMessageIcon = document.getElementById('privateMessageIcon');
+    if (privateMessageIcon) {
+        privateMessageIcon.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // 判断是否登录
+            if (!currentUsername) {
+                alert('请先登录以查看私信');
+                window.location.href = '/login';
+                return;
+            }
+            
+            // 添加页面过渡效果
+            const overlay = createTransitionOverlay();
+            setTimeout(() => {
+                window.location.href = '/chat1';
+            }, 300);
+        });
+    }
+}
+
+// 页面初始化后执行
 document.addEventListener('DOMContentLoaded', async () => {
     if (!await checkLoginStatus()) return;
 
-    // ページ読み込みアニメーション
+    // 页面加载动画
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.5s ease';
     setTimeout(() => {
@@ -1173,4 +1262,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 初始化用户列表
     initUserList();
+    
+    // 初始化私信图标
+    initPrivateMessageIcon();
+});
+
+// 页面关闭前清理
+window.addEventListener('beforeunload', () => {
+    stopPrivateMessagePolling();
 });

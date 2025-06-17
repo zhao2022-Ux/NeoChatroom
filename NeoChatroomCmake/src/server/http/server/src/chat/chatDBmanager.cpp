@@ -87,7 +87,7 @@ bool ChatDBManager::initDatabase() {
                     return false;
                 }
 
-                // 删除��表
+                // 删除旧表
                 if (!executeQuery("DROP TABLE chatrooms_old;")) {
                     return false;
                 }
@@ -503,7 +503,7 @@ bool ChatDBManager::hasUnreadMessages(int roomId, const std::string& fromUser, c
     std::string safeFromUser = escapeSqlString(fromUser);
     std::string safeToUser = escapeSqlString(toUser);
 
-    // 更高效的查询 - 只检查是否存在记录而不获取所有记录
+    // 使用 LIKE 查询替代 json_extract
     std::string query = "SELECT 1 FROM messages WHERE room_id = " + std::to_string(roomId) +
                         " AND is_read = 0";
 
@@ -512,9 +512,9 @@ bool ChatDBManager::hasUnreadMessages(int roomId, const std::string& fromUser, c
     }
 
     query += " AND (";
-    query += "(user = '" + safeFromUser + "' AND json_extract(metadata, '$.to') = '" + safeToUser + "')";
+    query += "(user = '" + safeFromUser + "' AND metadata LIKE '%\"to\":\"" + safeToUser + "\"%')";
     query += " OR ";
-    query += "(user = '" + safeToUser + "' AND json_extract(metadata, '$.to') = '" + safeFromUser + "')";
+    query += "(user = '" + safeToUser + "' AND metadata LIKE '%\"to\":\"" + safeFromUser + "\"%')";
     query += ") LIMIT 1"; // 只需要知道是否存在，使用LIMIT 1提高效率
 
     sqlite3_stmt* stmt;
@@ -532,15 +532,16 @@ bool ChatDBManager::hasUnreadMessages(int roomId, const std::string& fromUser, c
 bool ChatDBManager::userHasUnreadMessages(int roomId, const std::string& toUser, long long lastTimestamp) {
     std::string safeToUser = escapeSqlString(toUser);
 
-    // 更高效的查询
+    // 使用 LIKE 查询替代 json_extract
     std::string query = "SELECT 1 FROM messages WHERE room_id = " + std::to_string(roomId) +
-                        " AND is_read = 0 AND json_extract(metadata, '$.to') = '" + safeToUser + "'";
+                        " AND is_read = 0 AND metadata LIKE '%\"to\":\"" + safeToUser + "\"%'";
 
+    // 只有当 lastTimestamp 大于 0 时才添加时间戳条件
     if (lastTimestamp > 0) {
         query += " AND timestamp > " + std::to_string(lastTimestamp);
     }
 
-    query += " LIMIT 1"; // 只需要知道是否存在
+    query += " LIMIT 1";
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
@@ -557,18 +558,24 @@ bool ChatDBManager::userHasUnreadMessages(int roomId, const std::string& toUser,
 bool ChatDBManager::getUserRecentChats(int roomId, const std::string& username, std::vector<std::string>& chatUsers, int limit) {
     std::string safeUsername = escapeSqlString(username);
 
-    // 查询最近与用户交流的联系人
+    // 使用 LIKE 查询替代 json_extract
     std::string query =
         "SELECT DISTINCT "
         "CASE "
-        "  WHEN user = '" + safeUsername + "' THEN json_extract(metadata, '$.to') "
+        "  WHEN user = '" + safeUsername + "' THEN "
+        "    CASE "
+        "      WHEN metadata LIKE '%\"to\":\"%' THEN "
+        "        SUBSTR(metadata, INSTR(metadata, '\"to\":\"') + 6, "
+        "               INSTR(SUBSTR(metadata, INSTR(metadata, '\"to\":\"') + 6), '\"') - 1) "
+        "      ELSE '' "
+        "    END "
         "  ELSE user "
         "END AS chat_user "
         "FROM messages "
         "WHERE room_id = " + std::to_string(roomId) + " AND ("
         "  (user = '" + safeUsername + "') OR "
-        "  (json_extract(metadata, '$.to') = '" + safeUsername + "')"
-        ") "
+        "  (metadata LIKE '%\"to\":\"" + safeUsername + "\"%')"
+        ") AND chat_user != '' "
         "ORDER BY MAX(timestamp) DESC "
         "LIMIT " + std::to_string(limit);
 
@@ -581,7 +588,7 @@ bool ChatDBManager::getUserRecentChats(int roomId, const std::string& username, 
     chatUsers.clear();
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         const char* chatUser = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-        if (chatUser) {
+        if (chatUser && strlen(chatUser) > 0) {
             chatUsers.push_back(chatUser);
         }
     }
@@ -618,10 +625,11 @@ bool ChatDBManager::getPrivateMessagesBetweenUsers(int roomId, const std::string
     // 添加消息数量限制，防止内存溢出
     const int MESSAGE_LIMIT = 100;
 
+    // 使用 LIKE 查询替代 json_extract
     std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " +
                        std::to_string(roomId) + " AND (";
-    query += "(user = '" + safeUserA + "' AND json_extract(metadata, '$.to') = '" + safeUserB + "') OR ";
-    query += "(user = '" + safeUserB + "' AND json_extract(metadata, '$.to') = '" + safeUserA + "')";
+    query += "(user = '" + safeUserA + "' AND metadata LIKE '%\"to\":\"" + safeUserB + "\"%') OR ";
+    query += "(user = '" + safeUserB + "' AND metadata LIKE '%\"to\":\"" + safeUserA + "\"%')";
     query += ")";
 
     if (lastTimestamp > 0) {
@@ -700,8 +708,9 @@ bool ChatDBManager::getPrivateMessagesBetweenUsers(int roomId, const std::string
 int ChatDBManager::getUserUnreadCount(int roomId, const std::string& username) {
     std::string safeUsername = escapeSqlString(username);
 
+    // 使用 LIKE 查询替代 json_extract
     std::string query = "SELECT COUNT(*) FROM messages WHERE room_id = " + std::to_string(roomId) +
-                       " AND json_extract(metadata, '$.to') = '" + safeUsername + "'" +
+                       " AND metadata LIKE '%\"to\":\"" + safeUsername + "\"%'" +
                        " AND is_read = 0;";
 
     sqlite3_stmt* stmt;
@@ -719,7 +728,7 @@ int ChatDBManager::getUserUnreadCount(int roomId, const std::string& username) {
     return count;
 }
 
-// 添加：批量标��消息为已读
+// 添加：批量标记消息为已读
 bool ChatDBManager::batchMarkMessagesAsRead(int roomId, const std::string& fromUser, const std::string& toUser) {
     std::string safeFromUser = escapeSqlString(fromUser);
     std::string safeToUser = escapeSqlString(toUser);
@@ -729,10 +738,10 @@ bool ChatDBManager::batchMarkMessagesAsRead(int roomId, const std::string& fromU
         return false;
     }
 
-    // 将接收到的消息标记为已读
+    // 使用 LIKE 查询替代 json_extract
     std::string query = "UPDATE messages SET is_read = 1 WHERE room_id = " + std::to_string(roomId) +
                        " AND user = '" + safeFromUser + "'" +
-                       " AND json_extract(metadata, '$.to') = '" + safeToUser + "'" +
+                       " AND metadata LIKE '%\"to\":\"" + safeToUser + "\"%'" +
                        " AND is_read = 0;";
 
     bool success = executeQuery(query);
@@ -766,10 +775,11 @@ bool ChatDBManager::getPagedMessages(int roomId, const std::string& userA, const
     // 计算偏移量
     int offset = page * pageSize;
 
+    // 使用 LIKE 查询替代 json_extract
     std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " +
                        std::to_string(roomId) + " AND (";
-    query += "(user = '" + safeUserA + "' AND json_extract(metadata, '$.to') = '" + safeUserB + "') OR ";
-    query += "(user = '" + safeUserB + "' AND json_extract(metadata, '$.to') = '" + safeUserA + "')";
+    query += "(user = '" + safeUserA + "' AND metadata LIKE '%\"to\":\"" + safeUserB + "\"%') OR ";
+    query += "(user = '" + safeUserB + "' AND metadata LIKE '%\"to\":\"" + safeUserA + "\"%')";
     query += ")";
 
     if (lastTimestamp > 0) {
@@ -840,7 +850,7 @@ bool ChatDBManager::getPagedMessages(int roomId, const std::string& userA, const
     return true;
 }
 
-// 添加：获取与用户相��的所有消息
+// 添加：获取与用户相关的所有消息
 bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& username,
                                          std::deque<Json::Value>& messages, long long lastTimestamp) {
     std::string safeUsername = escapeSqlString(username);
@@ -849,14 +859,14 @@ bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& userna
     const int MESSAGE_LIMIT = 100;
 
     // 记录详细日志
-    Logger::getInstance().logInfo("ChatDBManager", "执行getUserRelatedMessages: roomId=" + std::to_string(roomId) + 
-                                 ", username=" + username + ", lastTimestamp=" + std::to_string(lastTimestamp));
+    //Logger::getInstance().logInfo("ChatDBManager", "执行getUserRelatedMessages: roomId=" + std::to_string(roomId) +
+   //                              ", username=" + username + ", lastTimestamp=" + std::to_string(lastTimestamp));
 
-    // 改进查询语句，使用LIKE操作符增加灵活性并记录更多细节
+    // 使用LIKE操作符替代json_extract，更加可靠
     std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " +
                        std::to_string(roomId) + " AND (";
     query += "user = '" + safeUsername + "' OR ";
-    query += "json_extract(metadata, '$.to') = '" + safeUsername + "'";
+    query += "metadata LIKE '%\"to\":\"" + safeUsername + "\"%'";
     query += ")";
 
     if (lastTimestamp > 0) {
@@ -864,8 +874,8 @@ bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& userna
     }
 
     query += " ORDER BY timestamp DESC LIMIT " + std::to_string(MESSAGE_LIMIT);
-    
-    Logger::getInstance().logInfo("ChatDBManager", "SQL查询: " + query);
+
+    //Logger::getInstance().logInfo("ChatDBManager", "SQL查询: " + query);
 
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
@@ -910,20 +920,20 @@ bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& userna
             Json::Reader reader;
             if (reader.parse(metadataText, metadata)) {
                 msg["metadata"] = metadata;
-                Logger::getInstance().logInfo("ChatDBManager", "成功解析metadata: " + std::string(metadataText));
+                //Logger::getInstance().logInfo("ChatDBManager", "成功解析metadata: " + std::string(metadataText));
             } else {
                 // 创建基本元数据
                 Json::Value fallbackMetadata;
                 fallbackMetadata["to"] = (std::string(userText) == username) ? "" : username;
                 msg["metadata"] = fallbackMetadata;
-                Logger::getInstance().logWarning("ChatDBManager", "无法解析metadata，使用默认值: " + std::string(metadataText));
+                //Logger::getInstance().logWarning("ChatDBManager", "无法解析metadata，使用默认值: " + std::string(metadataText));
             }
         } else {
             // 确保即使没有元数据也创建一个默认的
             Json::Value defaultMetadata;
             defaultMetadata["to"] = (std::string(userText) == username) ? "" : username;
             msg["metadata"] = defaultMetadata;
-            Logger::getInstance().logInfo("ChatDBManager", "创建默认metadata");
+            //Logger::getInstance().logInfo("ChatDBManager", "创建默认metadata");
         }
 
         messages.push_back(msg);
@@ -931,9 +941,9 @@ bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& userna
     }
 
     sqlite3_finalize(stmt);
-    
-    Logger::getInstance().logInfo("ChatDBManager", "获取到 " + std::to_string(messageCount) + " 条相关消息");
-    
+
+    //Logger::getInstance().logInfo("ChatDBManager", "获取到 " + std::to_string(messageCount) + " 条相关消息");
+
     // 修改：即使消息为空也返回true，表示查询成功执行
     return true;
 }

@@ -132,10 +132,8 @@ std::string escapeSqlString(const std::string& s) {
 bool PrivateChat::getUserMessages(const std::string& currentUserName, const std::string& partner,
     std::vector<Json::Value>& messages, long long lastTimestamp, int page, int pageSize) {
     
-
-    
     if (!initialized) {
-        Logger::getInstance().logError("PrivateChat", "系统未初始化");
+        Logger::getInstance().logError("PrivateChat", "系统未初���化");
         return false;
     }
 
@@ -144,11 +142,10 @@ bool PrivateChat::getUserMessages(const std::string& currentUserName, const std:
         return false;
     }
 
-    // 生成缓存键时结合发送者和对话对象
-    std::string cacheKey = "messages_" + currentUserName + "_" + partner + "_" + std::to_string(lastTimestamp) +
+    // 生成缓存键时仅基于当前用户和分页/时间戳参数
+    std::string cacheKey = "all_messages_" + currentUserName + "_" + std::to_string(lastTimestamp) +
                           "_" + std::to_string(page) + "_" + std::to_string(pageSize);
     
-
     {
         std::lock_guard<std::mutex> lock(cacheMutex);
         auto it = messageCache.find(cacheKey);
@@ -156,60 +153,49 @@ bool PrivateChat::getUserMessages(const std::string& currentUserName, const std:
             for (const auto& msg : it->second) {
                 messages.push_back(msg);
             }
+            // Logger::getInstance().logInfo("PrivateChat", "从缓存加载消息 for " + currentUserName);
             return true;
         }
     }
 
     ChatDBManager& dbManager = ChatDBManager::getInstance();
-    std::deque<Json::Value> tempMessages;
+    std::deque<Json::Value> dbRawMessages;
 
-    // 调用已经实现的获取两个用户之间消息的函数
-    bool querySuccess = dbManager.getPrivateMessagesBetweenUsers(0, currentUserName, partner, tempMessages, lastTimestamp);
+    // 调用获取用户所有相关消息的函数
+    bool querySuccess = dbManager.getUserRelatedMessages(0, currentUserName, dbRawMessages, lastTimestamp);
     if (!querySuccess) {
-        Logger::getInstance().logError("PrivateChat", "从数据库加载消息失败");
+        Logger::getInstance().logError("PrivateChat", "从数据库加载用户相关消息失败 for " + currentUserName);
         return false;
     }
 
+    // dbRawMessages 从 getUserRelatedMessages 返回时是��� timestamp DESC 排序的
+    // 需要反转为 timestamp ASC 以便正确分页
+    std::vector<Json::Value> sortedMessages(dbRawMessages.begin(), dbRawMessages.end());
+    std::reverse(sortedMessages.begin(), sortedMessages.end()); // 现在是 ASC
 
-    // 应用分页：先将结果转换为升序，再取指定页
-    std::vector<Json::Value> tempVector(tempMessages.begin(), tempMessages.end());
-    std::sort(tempVector.begin(), tempVector.end(),
-        [](const Json::Value& a, const Json::Value& b) {
-            return a["timestamp"].asInt64() < b["timestamp"].asInt64();
-    });
-    
-    int startIndex = page * pageSize;
-    int endIndex = std::min(startIndex + pageSize, static_cast<int>(tempVector.size()));
+    // 应用分页
     messages.clear();
-    if (startIndex < static_cast<int>(tempVector.size())) {
+    int startIndex = page * pageSize;
+    if (startIndex < static_cast<int>(sortedMessages.size())) {
+        int endIndex = std::min(startIndex + pageSize, static_cast<int>(sortedMessages.size()));
         for (int i = startIndex; i < endIndex; i++) {
-            messages.push_back(tempVector[i]);
+            messages.push_back(sortedMessages[i]);
         }
     }
-
 
     {
         std::lock_guard<std::mutex> lock(cacheMutex);
-        // 缓存整个查询结果（未分页的tempVector），前端可取指定分页数据
-        std::deque<Json::Value> cacheData(tempVector.begin(), tempVector.end());
+        // 缓存分页后的结果
+        std::deque<Json::Value> cacheData;
+        for(const auto& msg : messages) {
+            cacheData.push_back(msg);
+        }
         messageCache[cacheKey] = cacheData;
+        // Logger::getInstance().logInfo("PrivateChat", "缓存 " + std::to_string(messages.size()) + " 条消息 for " + currentUserName + " with key " + cacheKey);
     }
 
-    // 标记未读：标记除当前发送者外的消息为已读
-    if (!tempMessages.empty()) {
-        std::set<std::string> senders;
-        for (const auto& msg : tempMessages) {
-            if (msg.isMember("user") && msg["user"].asString() != currentUserName) {
-                senders.insert(msg["user"].asString());
-            }
-        }
-        for (const auto& sender : senders) {
-            if (!dbManager.batchMarkMessagesAsRead(0, sender, partner)) {
-                Logger::getInstance().logWarning("PrivateChat", "标记消息为已读失败，但继续处理");
-            }
-        }
-    }
-
+    // 移除自动标记已读的逻辑。已读标记由前端在选择特定对话时通过 /private/mark-read 接口触发。
+    // Logger::getInstance().logInfo("PrivateChat", "获取了 " + std::to_string(messages.size()) + " 条消息 for " + currentUserName);
     cleanupCache();
 
     return true;
@@ -218,10 +204,11 @@ bool PrivateChat::getUserMessages(const std::string& currentUserName, const std:
 // 优化：处理获取私聊消息的请求
 void handleGetPrivateMessages(const httplib::Request& req, httplib::Response& res) {
 
-    std::string debugInfo = "请求参���: ";
+    std::string debugInfo = "请求参数: ";
     for (const auto& param : req.params) {
         debugInfo += param.first + "=" + param.second + ", ";
     }
+    // Logger::getInstance().logInfo("PrivateChat:API", debugInfo);
 
     // 用户验证
     std::string cookies = req.get_header_value("Cookie");
@@ -255,18 +242,17 @@ void handleGetPrivateMessages(const httplib::Request& req, httplib::Response& re
         return;
     }
 
-    if (!req.has_param("to")) {
-        Logger::getInstance().logError("PrivateChat:API", "缺少to参数");
-        res.status = 400;
-        res.set_content("Missing 'to' parameter", "text/plain");
-        return;
+    // 'to' 参数现在是可选的，主要用于前端上下文，后端主要根据登录用户获取消息
+    std::string partner; // partner (对方用户)
+    if (req.has_param("to")) {
+        partner = req.get_param_value("to");
+    } else {
+        // 如果前端没有指定 'to'，partner 可以为空。
+        // getUserMessages 将主要使用 currentUserName (fromParam)
+        partner = ""; 
     }
-    std::string partner = req.get_param_value("to");
-    // 如果请求中包含from参数则使用，否则以当前用户为发送者
-    std::string fromParam = currentUser->getname();
-    if (req.has_param("from")) {
-        fromParam = req.get_param_value("from");
-    }
+    
+    std::string fromParam = currentUser->getname(); // 当前登录用户
 
     long long lastTimestamp = 0;
     if (req.has_param("lastTimestamp")) {
@@ -281,34 +267,35 @@ void handleGetPrivateMessages(const httplib::Request& req, httplib::Response& re
     }
 
     int page = 0;
-    int pageSize = 50;
+    int pageSize = 50; // 默认页面大小
     if (req.has_param("page")) {
         try {
             page = std::stoi(req.get_param_value("page"));
             if (page < 0) page = 0;
         } catch (...) {
-            Logger::getInstance().logWarning("PrivateChat:API", "无效的页码参数，使用默认值 0");
+            Logger::getInstance().logWarning("PrivateChat:API", "无效的页码参数，���用默认值 0");
         }
     }
     if (req.has_param("pageSize")) {
         try {
             pageSize = std::stoi(req.get_param_value("pageSize"));
-            if (pageSize > 100) pageSize = 100;
+            if (pageSize > 1000) pageSize = 1000; // 允许前端请求更大的页面大小用于轮询
             if (pageSize < 1) pageSize = 1;
         } catch (...) {
-            Logger::getInstance().logWarning("PrivateChat:API", "无效的页面大小参数，使用默认值 50");
+            Logger::getInstance().logWarning("PrivateChat:API", "无效的页面大小参数，使用默认值 " + std::to_string(pageSize));
         }
     }
 
     std::vector<Json::Value> messages;
+    // 调用 getUserMessages 时，partner 参数主要用于兼容性或日志，核心逻辑依赖 fromParam
     if (!PrivateChat::getInstance().getUserMessages(fromParam, partner, messages, lastTimestamp, page, pageSize)) {
-        Logger::getInstance().logError("PrivateChat:API", "获取消息失败");
+        Logger::getInstance().logError("PrivateChat:API", "获取消息失败 for " + fromParam);
         Json::Value emptyArray(Json::arrayValue);
-        res.status = 200;
+        res.status = 200; // 或者 500，但通常即使失败也返回空数组
         res.set_header("Access-Control-Allow-Origin", "*");
         res.set_header("Content-Type", "application/json");
         res.set_content(emptyArray.toStyledString(), "application/json");
-        Logger::getInstance().logInfo("PrivateChat:API", "返回空消息数组");
+        // Logger::getInstance().logInfo("PrivateChat:API", "返回空消息数组 for " + fromParam);
         return;
     }
 
@@ -320,6 +307,7 @@ void handleGetPrivateMessages(const httplib::Request& req, httplib::Response& re
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Content-Type", "application/json");
     res.set_content(messageArray.toStyledString(), "application/json");
+    // Logger::getInstance().logInfo("PrivateChat:API", "成功返回 " + std::to_string(messages.size()) + " 条消息 for " + fromParam);
 }
 
 // 修复：添加私聊消息函数，确保消息在数据库和缓存中都正确保存
@@ -334,7 +322,7 @@ bool PrivateChat::addPrivateMessage(const std::string& fromUser, const std::stri
     // 创建消息对象
     Json::Value msg;
     msg["user"] = fromUser;
-    msg["message"] = message; // 保持Base64编码状态
+    msg["message"] = message; // ��持Base64编码状态
     msg["timestamp"] = static_cast<Json::Int64>(time(nullptr));
     msg["is_read"] = 0;  // ��认设置为未读
 
@@ -498,7 +486,7 @@ void handleMarkMessagesAsRead(const httplib::Request& req, httplib::Response& re
     }
 }
 
-// 添加：检查用户是否有未读消息的函数实现
+// 添加：检查用户是否有未读消息��函数实现
 bool PrivateChat::checkUnreadMessages(const std::string& username, Json::Value& response) {
     if (!initialized) {
         Logger::getInstance().logError("PrivateChat", "系统未初始化");
@@ -508,14 +496,14 @@ bool PrivateChat::checkUnreadMessages(const std::string& username, Json::Value& 
     // 使用数据库直接查询，不加载消息内容
     ChatDBManager& dbManager = ChatDBManager::getInstance();
     bool hasUnreadMessages = dbManager.userHasUnreadMessages(0, username);
-    
+
     // 如果需要更详细的未读消息信息，可以获取未读消息计数
     int unreadCount = dbManager.getUserUnreadCount(0, username);
-    
+
     // 准备响应数据
     response["hasUnread"] = hasUnreadMessages;
     response["unreadCount"] = unreadCount;
-    
+    Logger::getInstance().logInfo("Debug", "检查用户 " + username + " 的未读消息: hasUnread=" + std::to_string(hasUnreadMessages) + ", unreadCount=" + std::to_string(unreadCount));
     return true;
 }
 
@@ -538,24 +526,24 @@ void handleCheckUnreadMessages(const httplib::Request& req, httplib::Response& r
         if (pos4 == std::string::npos) pos4 = cookies.length();
         uid_str = cookies.substr(pos3, pos4 - pos3);
     }
-    
+
     int userId;
     if (!str::safeatoi(uid_str, userId)) {
         res.status = 400;
         res.set_content("Invalid user ID in cookie", "text/plain");
         return;
     }
-    
+
     manager::user* currentUser = manager::FindUser(userId);
     if (currentUser == nullptr || currentUser->getpassword() != password) {
         res.status = 401;
         res.set_content("Unauthorized", "text/plain");
         return;
     }
-    
+
     // 获取当前用户名
     std::string username = currentUser->getname();
-    
+
     // 检查未读消息
     Json::Value response;
     if (!PrivateChat::getInstance().checkUnreadMessages(username, response)) {
@@ -563,7 +551,7 @@ void handleCheckUnreadMessages(const httplib::Request& req, httplib::Response& r
         res.set_content("Failed to check unread messages", "text/plain");
         return;
     }
-    
+
     // 设置响应
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Content-Type", "application/json");
@@ -587,10 +575,10 @@ void PrivateChat::setupRoutes() {
 
     // 发送私聊消息的路由
     server.getInstance().handlePostRequest("/private/send", handleSendPrivateMessage);
-    
+
     // 修改：使用 JSON 处理版本注册标记已读接口
     server.getInstance().handlePostRequest("/private/mark-read", handleMarkMessagesAsRead);
-    
+
     // 添加：检查未读消息的路由
     server.getInstance().handleRequest("/private/check-unread", handleCheckUnreadMessages);
 
