@@ -8,6 +8,7 @@
 #include "json/json.h"
 #include "../tool/log.h"
 #include <deque>
+#include "../data/datamanage.h" // 添加数据管理头文件引用
 
 class ChatDBManager {
 private:
@@ -75,8 +76,8 @@ public:
     bool getUserRelatedMessages(int roomId, const std::string& username, std::deque<Json::Value>& messages, long long lastTimestamp = 0);
     
     // 获取两个特定用户之间的私聊消息
-    bool getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB, 
-                                      std::deque<Json::Value>& messages, long long lastTimestamp = 0);
+    //bool getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB,
+    //                                  std::deque<Json::Value>& messages, long long lastTimestamp = 0);
 
     // 获取用户的最近聊天列表
     bool getUserRecentChats(int roomId, const std::string& username, std::vector<std::string>& chatUsers, int limit = 20);

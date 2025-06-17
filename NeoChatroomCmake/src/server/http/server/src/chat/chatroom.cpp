@@ -27,7 +27,7 @@ using namespace std;
         if (chatMessages.empty()) {
             Json::Value initialMessage;
             initialMessage["user"] = "system";
-            initialMessage["labei"] = "GM";
+            initialMessage["label"] = "GM";
             initialMessage["timestamp"] = static_cast<Json::Int64>(time(0));
             initialMessage["message"] = Base64::base64_encode("欢迎来到聊天室");
 
@@ -51,7 +51,7 @@ using namespace std;
     void chatroom::systemMessage(string message) {
         Json::Value initialMessage;
         initialMessage["user"] = "system";
-        initialMessage["labei"] = "GM";
+        initialMessage["label"] = "GM";
         initialMessage["timestamp"] = time(0);
 
         string gbkMessage = (message.c_str());
@@ -258,7 +258,7 @@ using namespace std;
         }
 
         // Check if the user is banned
-        if (nowuser.getlabei() == "BAN") {
+        if (nowuser.getlabel() == "BAN") {
             res.status = 403;
             res.set_content("User is banned", "text/plain");
             logger.logInfo("ChatSys", req.remote_addr + "尝试发送消息，但用户已被封禁 ");
@@ -283,8 +283,7 @@ using namespace std;
         // 保存聊天消息
         Json::Value newMessage;
         newMessage["user"] = nowuser.getname();
-        newMessage["labei"] = nowuser.getlabei();
-
+        newMessage["label"] = nowuser.getlabel();
         string gbkMsg = decodedMsg.c_str();
         string msgSafe = Keyword::process_string(gbkMsg);
         string codedmsg = Base64::base64_encode(msgSafe);

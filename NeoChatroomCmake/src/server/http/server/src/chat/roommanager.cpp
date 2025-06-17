@@ -701,6 +701,43 @@ void start_manager() {
         logger.logInfo("roommanager", "开始初始化聊天室管理器...");
         loadChatroomsFromDB();
 
+        // 检查并确保聊天室 id=1 存在（用于私聊功能）
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        std::string title, passwordHash, password;
+        unsigned int flags;
+        
+        if (!dbManager.getChatRoom(1, title, passwordHash, password, flags)) {
+            // 如果聊天室 id=1 不存在，则创建它
+            logger.logInfo("roommanager", "创建聊天室 id=1 (用于私聊功能)");
+            
+            // 设置聊天室属性
+            if (!used[1]) {
+                used[1] = true;
+                room[1].init();
+                room[1].setRoomID(1);
+                room[1].settittle("私聊");
+                // 不设置密码，保持为空字符串
+                room[1].setflag(0); // 不设置任何特殊标志
+                
+                // 将新聊天室添加到数据库
+                dbManager.createChatRoom(1, "私聊", "", "", 0);
+                
+                logger.logInfo("roommanager", "聊天室 id=1 创建成功");
+            }
+        } else {
+            logger.logInfo("roommanager", "聊天室 id=1 已存在，用于私聊功能");
+            // 确保本地状态正确设置
+            if (!used[1]) {
+                used[1] = true;
+                room[1].init();
+                room[1].setRoomID(1);
+                room[1].settittle(title);
+                room[1].setPasswordHash(passwordHash);
+                room[1].setPassword(password);
+                room[1].setflag(flags);
+            }
+        }
+
         // 启动聊天室监控线程
         startRoomMonitor();
 

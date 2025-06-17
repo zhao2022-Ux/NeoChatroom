@@ -48,6 +48,7 @@ bool PrivateChat::init() {
         if (used[0]) {
             // 私聊室已经存在，检查配置但不重新初始化内容
         } else {
+
             used[0] = true;
             room[0].setRoomID(0);  // 设置特殊ID为0
             room[0].settittle("私聊系统");  // 设置标题
@@ -424,7 +425,7 @@ void handleSendPrivateMessage(const httplib::Request& req, httplib::Response& re
 
 
     // 检查发送者是否被禁
-    if (user->getlabei() == "BAN") {
+    if (user->getlabel() == "BAN") {
         Logger::getInstance().logError("PrivateChat:API", "发送者已被禁止: " + user->getname());
         res.status = 403;
         res.set_content("User is banned", "text/plain");
@@ -503,7 +504,6 @@ bool PrivateChat::checkUnreadMessages(const std::string& username, Json::Value& 
     // 准备响应数据
     response["hasUnread"] = hasUnreadMessages;
     response["unreadCount"] = unreadCount;
-    Logger::getInstance().logInfo("Debug", "检查用户 " + username + " 的未读消息: hasUnread=" + std::to_string(hasUnreadMessages) + ", unreadCount=" + std::to_string(unreadCount));
     return true;
 }
 

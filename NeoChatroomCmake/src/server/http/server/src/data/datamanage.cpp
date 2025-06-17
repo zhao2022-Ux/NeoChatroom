@@ -182,7 +182,7 @@ namespace manager {
 
     string user::getname() { return name; }
     string user::getcookie() { return cookie; }
-    string user::getlabei() { return labei; }
+    string user::getlabel() { return label; }
     string user::getpassword() { return password; }
 
     void user::setcookie(string new_cookie) {
@@ -225,17 +225,17 @@ namespace manager {
     void user::ban() {
         try {
             lock_guard<mutex> lock(mtx);
-            labei = BanedLabei;
+            label = Banedlabel;
             // 更新数据库
             const char* updateQuery = R"(
-                UPDATE users SET labei = ? WHERE uid = ?;
+                UPDATE users SET label = ? WHERE uid = ?;
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, updateQuery, -1, &stmt, nullptr) == SQLITE_OK) {
-                sqlite3_bind_text(stmt, 1, BanedLabei.c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 1, Banedlabel.c_str(), -1, SQLITE_STATIC);
                 sqlite3_bind_int(stmt, 2, uid);
                 if (sqlite3_step(stmt) != SQLITE_DONE) {
-                    Logger::getInstance().logError("database", "更新数据库中的labei失败: " + std::string(sqlite3_errmsg(db)));
+                    Logger::getInstance().logError("database", "更新数据库中的label失败: " + std::string(sqlite3_errmsg(db)));
                 }
                 sqlite3_finalize(stmt);
             }
@@ -264,8 +264,8 @@ namespace manager {
         return uid < x.uid;
     }
 
-    user::user(string name_, string password_, string cookie_, string labei_) {
-        name = name_, password = password_, cookie = cookie_, labei = labei_;
+    user::user(string name_, string password_, string cookie_, string label_) {
+        name = name_, password = password_, cookie = cookie_, label = label_;
         uid = 0;
     }
 
@@ -290,7 +290,7 @@ namespace manager {
                     name TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
                     cookie TEXT,
-                    labei TEXT
+                    label TEXT
                 );
             )";
             char* errMsg = nullptr;
@@ -308,14 +308,14 @@ namespace manager {
     }
 
     // 向数据库中新增用户
-    bool AddUser(const std::string& name, const std::string& psw, const std::string& cookie, const std::string& labei) {
+    bool AddUser(const std::string& name, const std::string& psw, const std::string& cookie, const std::string& label) {
         try {
             if (!CheckUserName(name) || Keyword::check_sql_keywords(name)) {
                 Logger::getInstance().logError("database", "用户名不合法，发现可能的sql注入: " + name);
                 return false;
             }
             const char* insertQuery = R"(
-                INSERT INTO users (name, password, cookie, labei)
+                INSERT INTO users (name, password, cookie, label)
                 VALUES (?, ?, ?, ?);
             )";
             sqlite3_stmt* stmt;
@@ -326,7 +326,7 @@ namespace manager {
             sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_text(stmt, 2, psw.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_text(stmt, 3, cookie.c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 4, labei.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 4, label.c_str(), -1, SQLITE_STATIC);
             bool success = (sqlite3_step(stmt) == SQLITE_DONE);
             if (!success) {
                 Logger::getInstance().logError("database", "插入用户数据失败: " + std::string(sqlite3_errmsg(db)));
@@ -338,7 +338,7 @@ namespace manager {
                 // Cache the new user
                 auto now = std::chrono::steady_clock::now();
                 lock_guard<mutex> lock(mtx);
-                user* newUser = new user(name, psw, cookie, labei);
+                user* newUser = new user(name, psw, cookie, label);
                 newUser->setuid(newUid);
                 userCacheById[newUid] = { newUser, now };
                 userCacheByName[name] = { newUser, now };
@@ -365,7 +365,7 @@ namespace manager {
                 }
             }
             const char* selectQuery = R"(
-                SELECT name, password, cookie, labei FROM users WHERE uid = ?;
+                SELECT name, password, cookie, label FROM users WHERE uid = ?;
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, selectQuery, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -378,8 +378,8 @@ namespace manager {
                 std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
                 std::string password = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
                 std::string cookie = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-                std::string labei = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-                foundUser = new user(name, password, cookie, labei);
+                std::string label = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                foundUser = new user(name, password, cookie, label);
                 foundUser->setuid(uid);
                 // 缓存用户
                 lock_guard<mutex> lock(mtx);
@@ -409,7 +409,7 @@ namespace manager {
             }
             if (Keyword::check_sql_keywords(name)) return nullptr;
             const char* selectQuery = R"(
-                SELECT uid, password, cookie, labei FROM users WHERE name = ?;
+                SELECT uid, password, cookie, label FROM users WHERE name = ?;
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, selectQuery, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -421,8 +421,8 @@ namespace manager {
                 int uid = sqlite3_column_int(stmt, 0);
                 std::string password = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
                 std::string cookie = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-                std::string labei = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-                foundUser = new user(name, password, cookie, labei);
+                std::string label = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                foundUser = new user(name, password, cookie, label);
                 foundUser->setuid(uid);
                 // 缓存用户
                 lock_guard<mutex> lock(mtx);
@@ -442,14 +442,14 @@ namespace manager {
     bool BanUser(int uid) {
         try {
             const char* updateQuery = R"(
-                UPDATE users SET labei = ? WHERE uid = ?;
+                UPDATE users SET label = ? WHERE uid = ?;
             )";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(db, updateQuery, -1, &stmt, nullptr) != SQLITE_OK) {
                 Logger::getInstance().logError("database", "准备封禁用户时发生错误: " + std::string(sqlite3_errmsg(db)));
                 return false;
             }
-            sqlite3_bind_text(stmt, 1, BanedLabei.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, Banedlabel.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_int(stmt, 2, uid);
             bool success = (sqlite3_step(stmt) == SQLITE_DONE);
             if (success) {
@@ -618,7 +618,7 @@ namespace manager {
             }
 
             const char* selectQuery = R"(
-                SELECT uid, name, labei FROM users 
+                SELECT uid, name, label FROM users 
                 WHERE uid >= ? AND uid <= ? 
                 ORDER BY uid ASC
                 LIMIT ?;
@@ -663,16 +663,16 @@ namespace manager {
                 if (cacheIt != cachedUsers.end()) {
                     user* cachedUser = cacheIt->second;
                     userObj["username"] = cachedUser->getname();
-                    userObj["labei"] = cachedUser->getlabei();
+                    userObj["label"] = cachedUser->getlabel();
                     if (withPassword) {
                         userObj["password"] = cachedUser->getpassword();
                     }
                 } else {
                     // 使用数据库结果
                     std::string name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-                    std::string labei = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                    std::string label = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
                     userObj["username"] = name;
-                    userObj["labei"] = labei;
+                    userObj["label"] = label;
                 }
 
                 userList.push_back(userObj);
@@ -895,7 +895,7 @@ namespace manager {
             
             // 使用数据库查询获取用户列表
             const char* selectQuery = R"(
-                SELECT uid, name, password, cookie, labei 
+                SELECT uid, name, password, cookie, label 
                 FROM users 
                 ORDER BY uid 
                 LIMIT ? OFFSET ?;
@@ -918,14 +918,14 @@ namespace manager {
                 const char* nameText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
                 const char* passwordText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
                 const char* cookieText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-                const char* labeiText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
                 
                 std::string name = nameText ? nameText : "";
                 std::string password = passwordText ? passwordText : "";
                 std::string cookie = cookieText ? cookieText : "";
-                std::string labei = labeiText ? labeiText : "";
+                std::string label = labelText ? labelText : "";
                 
-                user newUser(name, password, cookie, labei);
+                user newUser(name, password, cookie, label);
                 newUser.setuid(uid);
                 result.push_back(newUser);
             }
@@ -957,7 +957,7 @@ namespace manager {
             
             // 使用数据库查询搜索用户
             const char* searchQuery = R"(
-                SELECT uid, name, password, cookie, labei 
+                SELECT uid, name, password, cookie, label 
                 FROM users 
                 WHERE name LIKE ? 
                 ORDER BY uid 
@@ -982,14 +982,14 @@ namespace manager {
                 const char* nameText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
                 const char* passwordText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
                 const char* cookieText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-                const char* labeiText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
                 
                 std::string name = nameText ? nameText : "";
                 std::string password = passwordText ? passwordText : "";
                 std::string cookie = cookieText ? cookieText : "";
-                std::string labei = labeiText ? labeiText : "";
+                std::string label = labelText ? labelText : "";
                 
-                user newUser(name, password, cookie, labei);
+                user newUser(name, password, cookie, label);
                 newUser.setuid(uid);
                 result.push_back(newUser);
             }

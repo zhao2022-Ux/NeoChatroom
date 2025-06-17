@@ -312,7 +312,18 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
     }
 
     std::string user = message["user"].asString();
-    std::string label = message.isMember("label") ? message["label"].asString() : "";
+    
+    // 不再使用消息中的label，而是从数据库中查询用户的label
+    std::string label = "";
+    // 使用manager::FindUser获取用户的label
+    auto userObj = manager::FindUser(user);
+    if (userObj != nullptr) {
+        label = userObj->getlabel();
+    } else {
+        Logger::getInstance().logWarning("ChatDBManager", "User not found in database: " + user);
+    }
+
+
     std::string msgContent = message["message"].asString();
     std::string imageUrl = message.isMember("imageUrl") ? message["imageUrl"].asString() : "";
     long long timestamp = message["timestamp"].asInt64();
@@ -347,7 +358,6 @@ bool ChatDBManager::addMessage(int roomId, const Json::Value& message) {
     msgContent = escapeQuotes(msgContent);
     imageUrl = escapeQuotes(imageUrl);
     metadataStr = escapeQuotes(metadataStr);
-
     // 插入消息
     std::string query = "INSERT INTO messages (room_id, user, label, message, image_url, timestamp, metadata, is_read) VALUES (" +
             std::to_string(roomId) + ", '" +
@@ -404,8 +414,13 @@ bool ChatDBManager::getMessages(int roomId, std::deque<Json::Value>& messages, l
             metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
         }
 
+        // 用户名处理
         msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
+        
+        // label处理改进 - 如果label为空，尝试从用户对象获取
+        std::string label = (labelText && strlen(labelText) > 0) ? labelText : "";
+        msg["label"] = label;
+        
         msg["message"] = messageText ? messageText : "";
 
         if (imageUrlText && strlen(imageUrlText) > 0) {
@@ -617,92 +632,92 @@ bool ChatDBManager::checkIndexExists(const std::string& indexName) {
 }
 
 // 优化查询两个用户之间的私聊消息的方法
-bool ChatDBManager::getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB,
-                                                std::deque<Json::Value>& messages, long long lastTimestamp) {
-    std::string safeUserA = escapeSqlString(userA);
-    std::string safeUserB = escapeSqlString(userB);
-
-    // 添加消息数量限制，防止内存溢出
-    const int MESSAGE_LIMIT = 100;
-
-    // 使用 LIKE 查询替代 json_extract
-    std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " +
-                       std::to_string(roomId) + " AND (";
-    query += "(user = '" + safeUserA + "' AND metadata LIKE '%\"to\":\"" + safeUserB + "\"%') OR ";
-    query += "(user = '" + safeUserB + "' AND metadata LIKE '%\"to\":\"" + safeUserA + "\"%')";
-    query += ")";
-
-    if (lastTimestamp > 0) {
-        query += " AND timestamp > " + std::to_string(lastTimestamp);
-    }
-    query += " ORDER BY timestamp DESC LIMIT " + std::to_string(MESSAGE_LIMIT);
-
-    sqlite3_stmt* stmt;
-    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
-    if (rc != SQLITE_OK) {
-        Logger::getInstance().logError("ChatDBManager", "SQL准备失败: " + std::string(sqlite3_errmsg(db)));
-        return false;
-    }
-
-    int messageCount = 0;
-
-    // 预分配足够的空间
-    messages.clear();
-
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        Json::Value msg;
-        const char* userText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-        const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-        const char* messageText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-        const char* imageUrlText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-        long long msgTimestamp = sqlite3_column_int64(stmt, 4);
-        const char* metadataText = nullptr;
-
-        if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
-            metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
-        }
-
-        int isRead = sqlite3_column_int(stmt, 6);
-
-        msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
-        msg["message"] = messageText ? messageText : "";
-
-        if (imageUrlText && strlen(imageUrlText) > 0) {
-            msg["imageUrl"] = imageUrlText;
-        }
-
-        msg["timestamp"] = static_cast<Json::Int64>(msgTimestamp);
-        msg["is_read"] = isRead;
-
-        // 简化metadata处理
-        if (metadataText && strlen(metadataText) > 0) {
-            Json::Value metadata;
-            Json::Reader reader;
-            if (reader.parse(metadataText, metadata)) {
-                msg["metadata"] = metadata;
-            } else {
-                // 创建基本元数据
-                Json::Value fallbackMetadata;
-                fallbackMetadata["to"] = (std::string(userText) == userA) ? userB : userA;
-                msg["metadata"] = fallbackMetadata;
-            }
-        } else {
-            Json::Value emptyMetadata;
-            emptyMetadata["to"] = (std::string(userText) == userA) ? userB : userA;
-            msg["metadata"] = emptyMetadata;
-        }
-
-        messages.push_front(msg); // 前面使用了DESC排序，这里要反向插入
-        messageCount++;
-    }
-
-    // 恢复正确的时间顺序
-    std::reverse(messages.begin(), messages.end());
-
-    sqlite3_finalize(stmt);
-    return true;
-}
+// bool ChatDBManager::getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB,
+//                                                 std::deque<Json::Value>& messages, long long lastTimestamp) {
+//     std::string safeUserA = escapeSqlString(userA);
+//     std::string safeUserB = escapeSqlString(userB);
+//
+//     // 添加消息数量限制，防止内存溢出
+//     const int MESSAGE_LIMIT = 100;
+//
+//     // 使用 LIKE 查询替代 json_extract
+//     std::string query = "SELECT user, label, message, image_url, timestamp, metadata, is_read FROM messages WHERE room_id = " +
+//                        std::to_string(roomId) + " AND (";
+//     query += "(user = '" + safeUserA + "' AND metadata LIKE '%\"to\":\"" + safeUserB + "\"%') OR ";
+//     query += "(user = '" + safeUserB + "' AND metadata LIKE '%\"to\":\"" + safeUserA + "\"%')";
+//     query += ")";
+//
+//     if (lastTimestamp > 0) {
+//         query += " AND timestamp > " + std::to_string(lastTimestamp);
+//     }
+//     query += " ORDER BY timestamp DESC LIMIT " + std::to_string(MESSAGE_LIMIT);
+//
+//     sqlite3_stmt* stmt;
+//     int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+//     if (rc != SQLITE_OK) {
+//         Logger::getInstance().logError("ChatDBManager", "SQL准备失败: " + std::string(sqlite3_errmsg(db)));
+//         return false;
+//     }
+//
+//     int messageCount = 0;
+//
+//     // 预分配足够的空间
+//     messages.clear();
+//
+//     while (sqlite3_step(stmt) == SQLITE_ROW) {
+//         Json::Value msg;
+//         const char* userText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+//         const char* labelText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+//         const char* messageText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+//         const char* imageUrlText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+//         long long msgTimestamp = sqlite3_column_int64(stmt, 4);
+//         const char* metadataText = nullptr;
+//
+//         if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
+//             metadataText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+//         }
+//
+//         int isRead = sqlite3_column_int(stmt, 6);
+//
+//         msg["user"] = userText ? userText : "";
+//         msg["label"] = labelText ? labelText : "";
+//         msg["message"] = messageText ? messageText : "";
+//
+//         if (imageUrlText && strlen(imageUrlText) > 0) {
+//             msg["imageUrl"] = imageUrlText;
+//         }
+//
+//         msg["timestamp"] = static_cast<Json::Int64>(msgTimestamp);
+//         msg["is_read"] = isRead;
+//
+//         // 简化metadata处理
+//         if (metadataText && strlen(metadataText) > 0) {
+//             Json::Value metadata;
+//             Json::Reader reader;
+//             if (reader.parse(metadataText, metadata)) {
+//                 msg["metadata"] = metadata;
+//             } else {
+//                 // 创建基本元数据
+//                 Json::Value fallbackMetadata;
+//                 fallbackMetadata["to"] = (std::string(userText) == userA) ? userB : userA;
+//                 msg["metadata"] = fallbackMetadata;
+//             }
+//         } else {
+//             Json::Value emptyMetadata;
+//             emptyMetadata["to"] = (std::string(userText) == userA) ? userB : userA;
+//             msg["metadata"] = emptyMetadata;
+//         }
+//
+//         messages.push_front(msg); // 前面使用了DESC排序，这里要反向插入
+//         messageCount++;
+//     }
+//
+//     // 恢复正确的时间顺序
+//     std::reverse(messages.begin(), messages.end());
+//
+//     sqlite3_finalize(stmt);
+//     return true;
+// }
 
 // 添加：获取用户未读消息计数
 int ChatDBManager::getUserUnreadCount(int roomId, const std::string& username) {
@@ -815,7 +830,18 @@ bool ChatDBManager::getPagedMessages(int roomId, const std::string& userA, const
         int isRead = sqlite3_column_int(stmt, 6);
 
         msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
+        
+        // 改进label处理 - 如果label为空，尝试从用户对象获取
+        std::string label = (labelText && strlen(labelText) > 0) ? labelText : "";
+        if (label.empty() && userText) {
+            // 尝试从datamanage获取用户label
+            auto userObj = manager::FindUser(userText);
+            if (userObj != nullptr) {
+                label = userObj->getlabel();
+            }
+        }
+        msg["label"] = label;
+        
         msg["message"] = messageText ? messageText : "";
 
         if (imageUrlText && strlen(imageUrlText) > 0) {
@@ -904,7 +930,18 @@ bool ChatDBManager::getUserRelatedMessages(int roomId, const std::string& userna
         int isRead = sqlite3_column_int(stmt, 6);
 
         msg["user"] = userText ? userText : "";
-        msg["label"] = labelText ? labelText : "";
+        
+        // 改进label处理 - 如果label为空，尝试从用户对象获取
+        std::string label = (labelText && strlen(labelText) > 0) ? labelText : "";
+        if (label.empty() && userText) {
+            // 尝试从datamanage获取用户label
+            auto userObj = manager::FindUser(userText);
+            if (userObj != nullptr) {
+                label = userObj->getlabel();
+            }
+        }
+        msg["label"] = label;
+        
         msg["message"] = messageText ? messageText : "";
 
         if (imageUrlText && strlen(imageUrlText) > 0) {
