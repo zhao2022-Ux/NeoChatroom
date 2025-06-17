@@ -1090,7 +1090,7 @@ async function initPage() {
 
     // 获取用户列表
     await fetchUserList(); // 获取用户列表后，userList 会被填充
-
+    await fetchAllUsers(); //全部列表，带翻页
     // 初始加载所有与当前用户相关的消息
     // 这���填充 allMessages 对象
     await loadAllUserMessages(); 
@@ -1197,6 +1197,10 @@ function checkUnreadWithUser(username) {
     }
 }
 
+
+
+
+
 // 优化：清理已读状态缓存的函数
 function clearReadStatusCache() {
     // 定期清理缓存，防止内存泄漏
@@ -1204,6 +1208,8 @@ function clearReadStatusCache() {
         readStatusCache.clear();
     }
 }
+
+
 
 // 定期清理缓存
 setInterval(clearReadStatusCache, 300000); // 5分钟清理一次

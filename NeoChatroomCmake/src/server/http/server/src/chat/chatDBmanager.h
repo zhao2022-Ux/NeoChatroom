@@ -75,8 +75,8 @@ public:
     bool getUserRelatedMessages(int roomId, const std::string& username, std::deque<Json::Value>& messages, long long lastTimestamp = 0);
     
     // 获取两个特定用户之间的私聊消息
-    bool getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB, 
-                                      std::deque<Json::Value>& messages, long long lastTimestamp = 0);
+    //bool getPrivateMessagesBetweenUsers(int roomId, const std::string& userA, const std::string& userB,
+    //                                  std::deque<Json::Value>& messages, long long lastTimestamp = 0);
 
     // 获取用户的最近聊天列表
     bool getUserRecentChats(int roomId, const std::string& username, std::vector<std::string>& chatUsers, int limit = 20);

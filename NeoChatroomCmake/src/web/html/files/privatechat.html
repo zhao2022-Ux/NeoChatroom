@@ -6,120 +6,135 @@
     <title>私聊 - seve's chatroom</title>
     <link rel="icon" href="/images/logo16.ico" type="image/x-icon">
     <style>
-        /* 色彩系统 */
-        :root {
-            --primary-color: #007BFF;
-            --primary-dark: #0056b3;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --light-bg: #f5f5f5;
-            --dark-bg: #222;
-            --card-light: #fff;
-            --card-dark: #2a2a2a;
-            --border-color: #ddd;
-            --text-primary: #333;
-            --text-secondary: #666;
-
-            /* 圆角统一 */
-            --border-radius-sm: 4px;
-            --border-radius-md: 8px;
-            --border-radius-lg: 12px;
-
-            /* 阴影 */
-            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 动画定义 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes messageIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 基础样式 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--light-bg);
-            color: var(--text-primary);
+            background-color: #f5f5f5;
+            color: #333;
             transition: background-color 0.3s, color 0.3s;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* 头部导航栏 */
+        /* 通用滚动条样式（浅色模式） */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #999;
+            border-radius: 4px;
+            border: 2px solid #e0e0e0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #777;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #999 #e0e0e0;
+            box-sizing: border-box;
+        }
+
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 5px 20px;
-            box-shadow: var(--shadow-sm);
-            z-index: 10;
+            background-color: #007BFF;
+            color: white;
+            padding: 8px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            flex-wrap: wrap;
         }
 
-        .header .left-section {
+        .header-left,
+        .header-right {
             display: flex;
             align-items: center;
         }
 
-        .header .right-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header img {
+        .header-left img {
             height: 40px;
             margin-right: 10px;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            will-change: transform, filter;
         }
 
-        .header .chatroom-title {
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .header .username {
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .header button {
-            padding: 8px 12px;
-            border-radius: var(--border-radius-sm);
+        .header-left img:hover {
+            transform: scale(1.1) rotate(5deg);
             cursor: pointer;
-            color: var(--primary-color);
-            border: none;
-            font-size: 16px;
-            margin-right: 10px;
-            background-color: #dcdcdc;
-            transition: background-color 0.2s, transform 0.1s ease, box-shadow 0.2s;
-            box-shadow: var(--shadow-sm);
         }
 
-        .header button:hover {
+        body.dark-mode .header-left img {
+            filter: brightness(0.85) contrast(1.2);
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .logo-clicked {
+            animation: logoPulse 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .chatroom-title {
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .badge {
+            background-color: #ffebee;
+            color: #f44336;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            border: 1px solid #f44336;
+        }
+
+        .notification-toggle,
+        .theme-toggle,
+        .return-button,
+        .login-button {
+            font-size: 14px;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #dcdcdc;
+            color: #007BFF;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s ease;
+            margin-left: 8px;
+            height: 32px;
+            min-width: 80px;
+        }
+
+        .notification-toggle:hover,
+        .theme-toggle:hover,
+        .return-button:hover,
+        .login-button:hover {
             background-color: #c0c0c0;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            transform: scale(1.05);
+        }
+
+        .username {
+            margin-right: 10px;
+            font-weight: bold;
+            white-space: nowrap;
         }
 
         /* 主容器 */
@@ -132,8 +147,8 @@
         /* 用户列表侧边栏 */
         .user-sidebar {
             width: 280px;
-            background-color: var(--card-light);
-            border-right: 1px solid var(--border-color);
+            background-color: #fff;
+            border-right: 1px solid #ddd;
             display: flex;
             flex-direction: column;
             transition: background-color 0.3s;
@@ -141,21 +156,21 @@
 
         .user-search {
             padding: 15px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #ddd;
         }
 
         .search-input {
             width: 100%;
             padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-sm);
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 14px;
             transition: border-color 0.3s, box-shadow 0.3s;
             box-sizing: border-box;
         }
 
         .search-input:focus {
-            border-color: var(--primary-color);
+            border-color: #007BFF;
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
             outline: none;
         }
@@ -170,7 +185,7 @@
             display: flex;
             align-items: center;
             padding: 10px;
-            border-radius: var(--border-radius-md);
+            border-radius: 8px;
             margin-bottom: 5px;
             cursor: pointer;
             transition: background-color 0.2s;
@@ -190,7 +205,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: var(--primary-color);
+            background-color: #007BFF;
             color: white;
             display: flex;
             align-items: center;
@@ -214,11 +229,11 @@
 
         .user-status {
             font-size: 12px;
-            color: var(--text-secondary);
+            color: #666;
         }
 
         .user-badge {
-            background-color: var(--danger-color);  /* 改为红色警示色 */
+            background-color: #f44336;
             color: white;
             border-radius: 50%;
             width: 20px;
@@ -230,17 +245,17 @@
             font-weight: bold;
         }
 
-        /* 新增：用户列表分区样式 */
+        /* 用户列表分区样式 */
         .user-section {
             margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #ddd;
         }
 
         .section-title {
             font-weight: bold;
             padding: 10px;
             background-color: rgba(0, 0, 0, 0.05);
-            border-radius: var(--border-radius-sm);
+            border-radius: 5px;
             margin-bottom: 10px;
         }
 
@@ -269,31 +284,31 @@
             align-items: center;
             padding: 10px;
             background-color: rgba(0, 0, 0, 0.03);
-            border-radius: var(--border-radius-sm);
+            border-radius: 5px;
         }
 
         .pagination-controls button {
             padding: 5px 10px;
-            background-color: var(--primary-color);
+            background-color: #007BFF;
             color: white;
             border: none;
-            border-radius: var(--border-radius-sm);
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.2s;
         }
 
         .pagination-controls button:hover:not(:disabled) {
-            background-color: var(--primary-dark);
+            background-color: #0056b3;
         }
 
         .pagination-controls button:disabled {
-            background-color: var(--secondary-color);
+            background-color: #6c757d;
             cursor: not-allowed;
         }
 
         .pagination-info {
             font-size: 0.8em;
-            color: var(--text-secondary);
+            color: #666;
         }
 
         /* 聊天区域 */
@@ -301,14 +316,14 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background-color: var(--light-bg);
+            background-color: #fafafa;
             transition: background-color 0.3s;
         }
 
         .chat-header {
             padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--card-light);
+            border-bottom: 1px solid #ddd;
+            background-color: #fff;
             display: flex;
             align-items: center;
             transition: background-color 0.3s;
@@ -328,41 +343,38 @@
         }
 
         .message {
-            max-width: 70%;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: var(--border-radius-md);
+            max-width: 80%;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
             position: relative;
             word-wrap: break-word;
-            animation: messageIn 0.3s ease backwards;
+            transition: background-color 0.3s ease, transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
 
         .message-time {
             font-size: 12px;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             margin-top: 5px;
             display: block;
         }
 
         .message.sent {
             align-self: flex-end;
-            background-color: var(--primary-color);
-            color: white;
-            border-bottom-right-radius: 0;
+            background-color: #65a3ff;
+            color: #333;
         }
 
         .message.received {
             align-self: flex-start;
-            background-color: var(--card-light);
-            color: var(--text-primary);
-            border-bottom-left-radius: 0;
-            box-shadow: var(--shadow-sm);
+            background-color: #e0e0e0;
+            color: #333;
         }
 
         .message-input {
-            padding: 15px;
-            background-color: var(--card-light);
-            border-top: 1px solid var(--border-color);
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
             display: flex;
             align-items: center;
             transition: background-color 0.3s;
@@ -370,40 +382,42 @@
 
         .message-input textarea {
             flex: 1;
-            height: 40px;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-md);
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             resize: none;
             font-family: inherit;
             font-size: 14px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            line-height: 1.5;
+            height: auto;
+            min-height: 24px;
+            max-height: 120px;
+            overflow-y: auto;
         }
 
         .message-input textarea:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            border-color: #007BFF;
             outline: none;
         }
 
         .send-button {
-            padding: 10px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius-md);
+            padding: 10px;
             margin-left: 10px;
+            background-color: #007BFF;
+            border: none;
+            color: white;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.1s ease;
         }
 
         .send-button:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
+            background-color: #0056b3;
+            transform: scale(1.1);
         }
 
         .send-button:active {
-            transform: translateY(0);
+            transform: scale(0.95);
         }
 
         .welcome-screen {
@@ -412,19 +426,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: var(--light-bg);
+            background-color: #fafafa;
             transition: background-color 0.3s;
         }
 
         .welcome-icon {
             font-size: 5rem;
-            color: var(--primary-color);
+            color: #007BFF;
             margin-bottom: 20px;
         }
 
         .welcome-text {
             font-size: 1.5rem;
-            color: var(--text-secondary);
+            color: #666;
             text-align: center;
             max-width: 400px;
             line-height: 1.5;
@@ -432,33 +446,29 @@
 
         .empty-message {
             text-align: center;
-            color: var(--text-secondary);
+            color: #666;
             padding: 20px;
             font-style: italic;
         }
 
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.3);
+        .message.fade-in {
+            animation: fadeIn 0.5s ease-out;
         }
 
         /* 深色模式 */
         body.dark-mode {
-            background-color: var(--dark-bg);
-            color: #ccc;
+            background-color: #333;
+            color: #fff;
         }
 
         body.dark-mode .header {
@@ -466,17 +476,17 @@
         }
 
         body.dark-mode .user-sidebar {
-            background-color: var(--card-dark);
-            border-color: #444;
+            background-color: #444;
+            border-color: #555;
         }
 
         body.dark-mode .user-search {
-            border-color: #444;
+            border-color: #555;
         }
 
         body.dark-mode .search-input {
-            background-color: #333;
-            color: #ccc;
+            background-color: #666;
+            color: #fff;
             border-color: #555;
         }
 
@@ -492,37 +502,94 @@
             color: #aaa;
         }
 
-        body.dark-mode .chat-header {
-            background-color: var(--card-dark);
-            border-color: #444;
+        body.dark-mode .section-title {
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
-        body.dark-mode .message.received {
-            background-color: #333;
-            color: #eee;
+        body.dark-mode .pagination-controls {
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
-        body.dark-mode .message-time {
+        body.dark-mode .pagination-info {
             color: #aaa;
         }
 
-        body.dark-mode .message-input {
-            background-color: var(--card-dark);
-            border-color: #444;
+        body.dark-mode .chat-area {
+            background-color: #555;
         }
 
-        body.dark-mode .message-input textarea {
-            background-color: #333;
-            color: #ccc;
+        body.dark-mode .chat-header {
+            background-color: #444;
             border-color: #555;
         }
 
+        body.dark-mode .message.received {
+            background-color: #666;
+            color: #fff;
+        }
+
+        body.dark-mode .message.sent {
+            background-color: #438cd9;
+            color: #fff;
+        }
+
+        body.dark-mode .message-input {
+            background-color: #444;
+            border-color: #555;
+        }
+
+        body.dark-mode .message-input textarea {
+            background-color: #666;
+            color: #fff;
+            border-color: #555;
+        }
+
+        body.dark-mode .send-button {
+            background-color: #0056b3;
+        }
+
         body.dark-mode .welcome-screen {
-            background-color: var(--dark-bg);
+            background-color: #444;
         }
 
         body.dark-mode .welcome-text {
             color: #aaa;
+        }
+
+        body.dark-mode .empty-message {
+            color: #aaa;
+        }
+
+        body.dark-mode .notification-toggle,
+        body.dark-mode .theme-toggle,
+        body.dark-mode .return-button,
+        body.dark-mode .login-button {
+            background-color: #444;
+            color: #fff;
+        }
+
+        body.dark-mode .notification-toggle:hover,
+        body.dark-mode .theme-toggle:hover,
+        body.dark-mode .return-button:hover,
+        body.dark-mode .login-button:hover {
+            background-color: #555;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background-color: #444;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border: 2px solid #444;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb:hover {
+            background-color: #aaa;
+        }
+
+        body.dark-mode * {
+            scrollbar-color: #aaa #444;
         }
 
         /* 响应式布局 */
@@ -535,7 +602,7 @@
                 width: 100%;
                 height: 40%;
                 border-right: none;
-                border-bottom: 1px solid var(--border-color);
+                border-bottom: 1px solid #ddd;
             }
 
             .chat-area {
@@ -545,76 +612,97 @@
     </style>
 </head>
 <body>
-    <!-- 顶部导航栏 -->
-    <div class="header">
-        <div class="left-section">
-            <img src="logo.png" alt="Logo">
-            <div class="chatroom-title">私聊</div>
-        </div>
-        <div class="right-section">
-            <div class="username" id="usernameDisplay"></div>
-            <button class="login-button" id="loginButton" onclick="window.location.href='/login'">登录</button>
-            <button class="theme-toggle" id="themeToggle">D/B</button>
-            <button class="home-button" onclick="window.location.href='/chatlist'">返回首页</button>
-        </div>
+<!-- 顶部导航栏 -->
+<div class="header">
+    <div class="header-left">
+        <picture>
+            <source srcset="logo.png" type="image/png">
+            <img src="logo.png" alt="Logo" width="40" height="40" loading="lazy"
+                 srcset="logo.png 1x, logo@2x.png 2x"
+                 onerror="this.onerror=null; this.src='logo.png';" />
+        </picture>
+        <span class="chatroom-title">seve's chatroom</span>
+        <span class="badge">NEO</span>
     </div>
+    <div id="chatroomName">私聊</div>
+    <div class="header-right">
+        <span class="username" id="usernameDisplay"></span>
+        <button class="login-button" id="loginButton" style="display: none;" onclick="window.location.href='/login'">登录</button>
+        <button class="theme-toggle" id="themeToggle">D/B</button>
+        <button class="return-button" onclick="window.location.href='/chatlist'">返回列表</button>
+    </div>
+</div>
 
-    <!-- 主容器 -->
-    <div class="main-container">
-        <!-- 用户列表侧边栏 -->
-        <div class="user-sidebar">
-            <div class="user-section recent-chats">
-                <div class="section-title">最近聊天</div>
-                <div class="user-search-box">
-                    <input type="text" class="search-input" id="userSearchInput" placeholder="搜索最近聊天...">
-                </div>
-                <div class="section-content" id="userList">
-                    <!-- 最近聊天用户列表将通过JavaScript动态加载 -->
-                    <div class="empty-message">加载中...</div>
-                </div>
+<!-- 主容器 -->
+<div class="main-container">
+    <!-- 用户列表侧边栏 -->
+    <div class="user-sidebar">
+        <div class="user-section recent-chats">
+            <div class="section-title">最近聊天</div>
+            <div class="user-search-box">
+                <input type="text" class="search-input" id="userSearchInput" placeholder="搜索最近聊天...">
             </div>
-            
-            <div class="user-section all-users">
-                <div class="section-title">所有用户</div>
-                <div class="user-search-box">
-                    <input type="text" class="search-input" id="allUserSearchInput" placeholder="搜索用户...">
-                </div>
-                <div class="section-content" id="allUserList">
-                    <!-- 所有用户列表将通过JavaScript动态加载 -->
-                    <div class="empty-message">加载中...</div>
-                </div>
-                <div class="pagination-controls">
-                    <button id="prev-page" disabled>上一页</button>
-                    <div class="pagination-info" id="pagination-info">显示 0-0 共 0 个用户</div>
-                    <button id="next-page" disabled>下一页</button>
-                </div>
+            <div class="section-content" id="userList">
+                <!-- 最近聊天用户列表将通过JavaScript动态加载 -->
+                <div class="empty-message">加载中...</div>
             </div>
         </div>
 
-        <!-- 聊天区域 - 初始显示欢迎界面 -->
-        <div class="welcome-screen" id="welcomeScreen">
-            <div class="welcome-icon">💬</div>
-            <div class="welcome-text">
-                选择一位用户开始私聊
+        <div class="user-section all-users">
+            <div class="section-title">所有用户</div>
+            <div class="user-search-box">
+                <input type="text" class="search-input" id="allUserSearchInput" placeholder="搜索用户...">
             </div>
-        </div>
-
-        <!-- 聊天区域 - ���择用户后显示 -->
-        <div class="chat-area" id="chatArea" style="display: none;">
-            <div class="chat-header">
-                <div class="user-avatar" id="chatUserAvatar"></div>
-                <div class="user-name" id="chatUserName"></div>
+            <div class="section-content" id="private-chat-user-list">
+                <!-- 所有用户列表将通过JavaScript动态加载 -->
+                <div class="empty-message">加载中...</div>
             </div>
-            <div class="chat-messages" id="chatMessages">
-                <!-- 消息内容将通过JavaScript动态加载 -->
-            </div>
-            <div class="message-input">
-                <textarea id="messageInput" placeholder="输入消息..." rows="1"></textarea>
-                <button class="send-button" id="sendButton">发送</button>
+            <div class="pagination-controls">
+                <button id="prev-page" disabled>上一页</button>
+                <div class="pagination-info" id="pagination-info">显示 0-0 共 0 个用户</div>
+                <button id="next-page" disabled>下一页</button>
             </div>
         </div>
     </div>
 
-    <script src="/files/privatechat.html.js" charset="utf-8"></script>
+    <!-- 聊天区域 - 初始显示欢迎界面 -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-icon">💬</div>
+        <div class="welcome-text">
+            选择一位用户开始私聊
+        </div>
+    </div>
+
+    <!-- 聊天区域 - 选择用户后显示 -->
+    <div class="chat-area" id="chatArea" style="display: none;">
+        <div class="chat-header">
+            <div class="user-avatar" id="chatUserAvatar"></div>
+            <div class="user-name" id="chatUserName"></div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- 消息内容将通过JavaScript动态加载 -->
+        </div>
+        <div class="message-input">
+            <textarea id="messageInput" placeholder="输入消息... shift+enter换行" rows="1"></textarea>
+            <button class="send-button" id="sendButton">发送</button>
+        </div>
+    </div>
+</div>
+
+<script src="/files/privatechat.html.js" charset="utf-8"></script>
+<script src="/files/privatechatlist.js" charset="utf-8"></script>
+<script>
+    // 为Logo添加点击事件
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoImg = document.querySelector('.header-left img');
+        if (logoImg) {
+            logoImg.addEventListener('click', () => {
+                logoImg.classList.add('logo-clicked');
+                setTimeout(() => logoImg.classList.remove('logo-clicked'), 500);
+                window.location.href = '/';
+            });
+        }
+    });
+</script>
 </body>
 </html>
