@@ -106,45 +106,54 @@ function handleNotificationModeChange() {
 }
 notificationSelect.addEventListener('change', handleNotificationModeChange);
 
-// 优化后的键盘事件处理
+// 动态调整textarea高度的函数
+function adjustTextareaHeight() {
+    messageInput.style.height = 'auto';
+    const scrollHeight = messageInput.scrollHeight;
+    const maxHeight = parseInt(getComputedStyle(messageInput).maxHeight);
 
+    if (scrollHeight <= maxHeight) {
+        messageInput.style.height = scrollHeight + 'px';
+    } else {
+        messageInput.style.height = maxHeight + 'px';
+    }
+}
+
+// 优化后的键盘事件处理 - 支持Shift+Enter换行
 function handleKeyDown(event) {
     if (event.key === 'Enter') {
-        if (!event.shiftKey) {
+        if (event.shiftKey) {
+            // Shift+Enter: 插入真正的换行符
             event.preventDefault();
-            sendMessage();
-        } else {
-            event.preventDefault();
-
-            // 检查是否已达到最大高度
-            const maxHeight = parseInt(getComputedStyle(messageInput).maxHeight);
-            const currentHeight = messageInput.scrollHeight;
-
-            if (currentHeight >= maxHeight) {
-                // 已达到最大高度，不再增加行数，只是添加换行符
-                const startPos = messageInput.selectionStart;
-                const endPos = messageInput.selectionEnd;
-                messageInput.value = messageInput.value.substring(0, startPos) + "\n" +
-                    messageInput.value.substring(endPos);
-                messageInput.selectionStart = messageInput.selectionEnd = startPos + 1;
-                return;
-            }
-
-            // 动态调整textarea高度
-            adjustTextareaHeight();
 
             const startPos = messageInput.selectionStart;
             const endPos = messageInput.selectionEnd;
-            messageInput.value = messageInput.value.substring(0, startPos) + "\n" +
-                messageInput.value.substring(endPos);
+            const currentValue = messageInput.value;
+
+            // 插入真正的换行符而不是 __BR__
+            messageInput.value = currentValue.substring(0, startPos) + '\n' + currentValue.substring(endPos);
+
+            // 设置光标位置到插入的文本之后
             messageInput.selectionStart = messageInput.selectionEnd = startPos + 1;
 
-            // 再次调整高度以适应新内容
+            // 调整高度
             adjustTextareaHeight();
+        } else {
+            // 普通Enter: 发送消息
+            event.preventDefault();
+            sendMessage();
         }
     }
 }
+
 messageInput.addEventListener('keydown', handleKeyDown);
+
+// 监听输入事件，实时调整高度
+function handleInput() {
+    adjustTextareaHeight();
+}
+
+messageInput.addEventListener('input', handleInput);
 
 // 优化cookie获取
 function getCookie(name) {
@@ -160,9 +169,8 @@ const serverUrl = window.location.origin;
 
 // 修复的Base64编解码函数 - 保留LaTeX符号
 function encodeBase64(str) {
-    const withLineBreaks = str.replace(/\n/g, '__BR__');
     const encoder = new TextEncoder();
-    return btoa(String.fromCharCode(...encoder.encode(withLineBreaks)));
+    return btoa(String.fromCharCode(...encoder.encode(str)));
 }
 
 function decodeBase64(base64Str) {
@@ -531,7 +539,9 @@ async function sendMessage() {
         messageText = "__BR__";
     }
 
+    // 在发送前将换行符替换为 __BR__
     messageText = messageText.replace(/\n/g, '__BR__');
+    
     const path = window.location.pathname;
     const roomID = path.match(/^\/chat(\d+)$/)[1];
 
@@ -760,6 +770,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         fetchWithRetry();
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('focus', fetchWithRetry);
+
+        // 初始化textarea高度
+        adjustTextareaHeight();
     }
 });
 
@@ -779,7 +792,7 @@ function cleanup() {
 
     // 移除事件监听器
     messageInput.removeEventListener('keydown', handleKeyDown);
-    messageInput.removeEventListener('input', handleInput); // 新增：移除input监听器
+    messageInput.removeEventListener('input', handleInput);
     notificationSelect.removeEventListener('change', handleNotificationModeChange);
     imageInput.removeEventListener('change', handleImageInput);
     themeToggle.removeEventListener('click', handleThemeToggle);
@@ -799,9 +812,6 @@ let lastTimestamp = 0;
 
 // 为Logo添加点击事件
 document.addEventListener('DOMContentLoaded', () => {
-    // 初始化textarea高度
-    adjustTextareaHeight();
-
     // 为Logo添加点击事件
     const logoImg = document.querySelector('.header-left img');
     if (logoImg) {
@@ -812,11 +822,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-// 监听输入事件，实时调整高度
-function handleInput() {
-    adjustTextareaHeight();
-}
-
-// 添加输入事件监听器
-messageInput.addEventListener('input', handleInput);

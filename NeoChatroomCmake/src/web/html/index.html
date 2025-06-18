@@ -178,14 +178,14 @@
             transform: scale(1.05);
         }
 
-        /* 主容器 */
+        /* 主容器 - 增加高度 */
         .main-container {
             display: flex;
             flex: 1;
             overflow: hidden;
             max-width: 1000px;
             max-height: calc(100vh - 80px);
-            height: clamp(500px, 80vh, 900px);
+            height: clamp(600px, 85vh, 1000px); /* 从 500px 增加到 600px，从 80vh 增加到 85vh */
             margin: 16px auto 0;
             width: calc(100% - 32px);
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
@@ -227,8 +227,8 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            /* 确保消息区域有最小高度 */
-            min-height: 200px;
+            /* 确保消息区域有最小高度 - 增加高度 */
+            min-height: 300px; /* 从 200px 增加到 300px */
         }
 
         /* 优化消息渲染性能 */
@@ -356,7 +356,7 @@
             margin: 4px 0;
         }
 
-        /* 确保输入容器不会无限增长 */
+        /* 输入容器 - 允许更灵活的高度调整 */
         .message-input-container {
             padding: 16px 20px;
             background-color: #fff;
@@ -366,17 +366,17 @@
             transition: background-color 0.3s;
             border-radius: 0 0 16px 16px;
             gap: 12px;
-            /* 限制输入容器的最大高度 */
-            max-height: 200px;
-            overflow: auto; /* 允许内容溢出但不滚动整个容器 */
+            /* 增加最大高度限制以适应更多文本 */
+            max-height: 300px; /* 从 200px 增加到 300px */
+            overflow: auto;
         }
 
-        /* 确保输入行不会过度拉伸 */
+        /* 输入行布局优化 */
         .message-input-row {
             display: flex;
-            align-items: flex-end; /* 保持底部对齐 */
+            align-items: flex-end;
             gap: 12px;
-            min-height: 44px; /* 设置最小高度保持按钮对齐 */
+            min-height: 44px;
         }
 
         .message-input-row textarea {
@@ -389,13 +389,15 @@
             font-size: 14px;
             line-height: 1.4;
             height: auto;
-            min-height: 40px; /* 设置最小高度 */
-            max-height: 120px; /* 限制最大高度 */
-            overflow-y: auto; /* 超出高度时显示滚动条 */
+            min-height: 40px;
+            max-height: 200px; /* 增加最大高度以支持更多行 */
+            overflow-y: auto;
             background: #f8f9fa;
             transition: all 0.2s ease;
-            /* 防止textarea影响父容器布局 */
             box-sizing: border-box;
+            /* 优化textarea的滚动行为 */
+            scrollbar-width: thin;
+            scrollbar-color: #999 #e0e0e0;
         }
 
         .message-input-row textarea:focus {
@@ -408,8 +410,8 @@
         .input-buttons {
             display: flex;
             gap: 8px;
-            flex-shrink: 0; /* 防止按钮被压缩 */
-            align-self: flex-end; /* 保持底部对齐 */
+            flex-shrink: 0;
+            align-self: flex-end;
         }
 
         .send-button,
@@ -615,6 +617,7 @@
                 margin: 8px;
                 width: calc(100% - 16px);
                 border-radius: 12px;
+                height: clamp(500px, 90vh, 800px); /* 移动端也增加高度 */
             }
 
             .chat-area {
@@ -627,7 +630,7 @@
 
             .message-input-container {
                 border-radius: 0 0 12px 12px;
-                max-height: 150px; /* 移动端限制输入容器高度 */
+                max-height: 200px; /* 移动端保持合理的高度限制 */
             }
 
             .message {
@@ -640,7 +643,11 @@
             }
 
             .message-input-row textarea {
-                max-height: 80px; /* 移动端进一步限制高度 */
+                max-height: 120px; /* 移动端增加textarea最大高度 */
+            }
+
+            .chat-messages {
+                min-height: 250px; /* 移动端也增加消息区域高度 */
             }
         }
 
