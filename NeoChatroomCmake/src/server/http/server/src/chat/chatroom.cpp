@@ -88,6 +88,7 @@ using namespace std;
     }
 
     void chatroom::getChatMessages(const httplib::Request& req, httplib::Response& res) {
+        // 1. 验证请求路径
         std::string requested_path = req.path;
         std::string expected_path = "/chat/" + std::to_string(roomid) + "/messages";
         if (requested_path != expected_path) {
@@ -96,6 +97,14 @@ using namespace std;
             return;
         }
 
+        // 2. 验证 Cookie
+        if (!checkCookies(req)) {
+            res.status = 400;
+            res.set_content("Invalid Cookie", "text/plain");
+            return;
+        }
+
+        // 3. 获取 lastTimestamp 参数
         long long lastTimestamp = 0;
         if (req.has_param("lastTimestamp")) {
             try {
@@ -107,31 +116,19 @@ using namespace std;
             }
         }
 
-        Json::Value response;
-        try {
-            for (const auto& msg : chatMessages) {
-                if (msg["timestamp"].asInt64() > lastTimestamp) {
-                    response.append(msg);
-                }
-            }
-        } catch (const std::exception&) {
+        // 4. 直接从数据库获取新消息
+        std::deque<Json::Value> newMessages;
+        ChatDBManager& dbManager = ChatDBManager::getInstance();
+        if (!dbManager.getMessages(roomid, newMessages, lastTimestamp)) {
             res.status = 500;
-            res.set_content("Internal Server Error", "text/plain");
+            res.set_content("Failed to retrieve messages from database.", "text/plain");
             return;
         }
 
-        if (response.empty()) {
-            res.status = 200;
-            res.set_header("Access-Control-Allow-Origin", "*");
-            res.set_header("Content-Type", "application/json");
-            res.set_content(response.toStyledString(), "application/json");
-            return;
-        }
-
-        if (!checkCookies(req)) {
-            res.status = 400;
-            res.set_content("Invalid Cookie", "text/plain");
-            return;
+        // 5. 构建并发送响应
+        Json::Value response;
+        for (const auto& msg : newMessages) {
+            response.append(msg);
         }
 
         res.set_header("Access-Control-Allow-Origin", "*");
