@@ -79,6 +79,7 @@ function decodeBase64(base64Str) {
         return base64Str;
     }
 }
+
 function utf8ToGbk(utf8Str) {
     // 将 UTF-8 字符串转换为 Unicode 码点数组
     const unicodeArray = Encoding.stringToCode(utf8Str);
@@ -132,6 +133,50 @@ let isRendering = false;
 // Track rendered LaTeX elements
 const renderedLaTeXMessages = new Set();
 
+// 动画控制函数
+function addSlideInAnimation() {
+    // 为消息添加依次划入动画
+    function animateMessages(container) {
+        const messages = container.querySelectorAll('.message:not(.animated)');
+        messages.forEach((message, index) => {
+            message.style.animationDelay = `${index * 0.01}s`;
+            message.classList.add('slide-in');
+            message.addEventListener('animationend', () => {
+                message.classList.add('animated');
+                message.style.opacity = '1';
+                message.style.transform = 'none';
+                message.style.animationDelay = '';
+            }, { once: true });
+        });
+    }
+
+    // 监听消息列表变化
+    const messageObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                let hasNewMessages = false;
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('message')) {
+                        hasNewMessages = true;
+                    }
+                });
+
+                if (hasNewMessages) {
+                    setTimeout(() => {
+                        animateMessages(mutation.target);
+                    }, 50);
+                }
+            }
+        });
+    });
+
+    const chatMessagesContainer = document.getElementById('chatBox');
+    if (chatMessagesContainer) {
+        messageObserver.observe(chatMessagesContainer, { childList: true, subtree: true });
+        setTimeout(() => animateMessages(chatMessagesContainer), 100);
+    }
+}
+
 // Modify fetchChatMessages to fetch only new messages incrementally
 async function fetchChatMessages() {
     if (isRendering) return;
@@ -168,7 +213,6 @@ async function fetchChatMessages() {
         const fragment = document.createDocumentFragment();
 
         messages.forEach(msg => {
-            //console.log("Timestamp received:", msg.timestamp);
             const msgTimestamp = new Date(msg.timestamp).getTime();
             if (msgTimestamp > lastTimestamp) {
                 lastTimestamp = msgTimestamp;
@@ -196,7 +240,6 @@ async function fetchChatMessages() {
             await MathJax.typesetPromise();
         }
 
-
         if (!isScrolledToBottom) {
             chatBox.scrollTop = previousScrollTop;
         } else {
@@ -208,7 +251,6 @@ async function fetchChatMessages() {
         isRendering = false;
     }
 }
-
 
 function createMessageElement(msg) {
     // 将时间戳从秒转换为毫秒
@@ -225,44 +267,21 @@ function createMessageElement(msg) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `${messageClass} ${msg.isNew ? 'fade-in' : ''}`;
 
-    let messageStyle = '';
-    switch (msg.label) {
-        case 'GM':
-            messageStyle = document.body.classList.contains("dark-mode") ?
-                'background-color: black; color: white;' :
-                'background-color: white; color: black;';
-            break;
-        case 'U':
-            messageStyle = document.body.classList.contains("dark-mode") ?
-                'background-color: rgba(0, 204, 255, 0.15); color: white;' :
-                'background-color: rgba(0, 204, 255, 0.10); color: black;';
-            break;
-        case 'BAN':
-            messageStyle = document.body.classList.contains("dark-mode") ?
-                'background-color: white; color: white;' :
-                'background-color: black; color: black;';
-            break;
-        default:
-            messageStyle = document.body.classList.contains("dark-mode") ?
-                'background-color: black; color: white;' :
-                'background-color: white; color: black;';
+    // 添加标签属性用于样式选择
+    if (msg.label) {
+        messageDiv.setAttribute('data-label', msg.label);
     }
-
-    messageDiv.style.cssText = `${messageStyle}; white-space: normal; word-wrap: break-word;`;
 
     const headerDiv = document.createElement('div');
     headerDiv.className = 'header';
-    headerDiv.style.backgroundColor = 'transparent';
 
     const usernameDiv = document.createElement('div');
     usernameDiv.className = 'username';
     usernameDiv.textContent = msg.user;
-    usernameDiv.style.color = messageStyle.includes('white') ? 'white' : 'black';
 
     const timestampDiv = document.createElement('div');
     timestampDiv.className = 'timestamp';
     timestampDiv.textContent = messageTime;
-    timestampDiv.style.color = messageStyle.includes('white') ? 'white' : 'black';
 
     headerDiv.appendChild(usernameDiv);
     headerDiv.appendChild(timestampDiv);
@@ -301,8 +320,6 @@ function createMessageElement(msg) {
     messageDiv.appendChild(bodyDiv);
     return messageDiv;
 }
-
-
 
 function checkForNotification(msg) {
     const msgId = `${msg.timestamp}_${msg.user}_${msg.message}`;
@@ -343,9 +360,11 @@ function handleImageInput() {
     if (file) {
         imageObjectUrl = URL.createObjectURL(file);
         imagePreview.innerHTML = `<img src="${imageObjectUrl}" alt="Image preview" 
-            style="max-width: 100px; height: auto; margin-left: 10px;" />`;
+            style="max-width: 200px; height: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);" />`;
+        imagePreview.style.display = 'block';
     } else {
         imagePreview.innerHTML = '';
+        imagePreview.style.display = 'none';
     }
 }
 imageInput.addEventListener('change', handleImageInput);
@@ -418,6 +437,7 @@ async function sendMessage() {
                 imageObjectUrl = null;
             }
             imagePreview.innerHTML = '';
+            imagePreview.style.display = 'none';
             await fetchChatMessages();
             chatBox.scrollTop = chatBox.scrollHeight;
         } else if (response.status === 400) {
@@ -431,7 +451,6 @@ async function sendMessage() {
         console.error("Error sending message:", error);
     }
 }
-
 
 // 优化全屏图片查看
 function toggleFullScreen(imgElement) {
@@ -485,25 +504,17 @@ async function fetchUsername() {
 // 主题管理优化
 let isUserChangingTheme = false;
 
-function detectSystemTheme() {
-    const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.body.classList.toggle("dark-mode", systemDarkMode);
-}
+
 
 function handleThemeToggle() {
     document.body.classList.toggle("dark-mode");
-    isUserChangingTheme = true;
+    //isUserChangingTheme = true;
 }
 
-function handleSystemThemeChange(e) {
-    if (!isUserChangingTheme) {
-        document.body.classList.toggle("dark-mode", e.matches);
-    }
-}
 
 themeToggle.addEventListener("click", handleThemeToggle);
-detectSystemTheme();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange);
+//detectSystemTheme();
+//window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange);
 
 // 优化轮询机制
 let fetchInterval = 500;
@@ -592,8 +603,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const hasAccess = await checkChatroomAccess();
 
-
-
     // 新增：更新顶部栏中央聊天室名称
     if (hasAccess) {
         const path = window.location.pathname;
@@ -601,7 +610,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (match) {
             const roomID = match[1];
             const chatroomNameElement = document.getElementById("chatroomName");
-            if (chatroomNameElement) {
+            const roomTitleElement = document.getElementById("roomTitle");
+            if (chatroomNameElement && roomTitleElement) {
                 // Fetch the chatroom name using the API
                 fetch(`${serverUrl}/chatroomname?roomId=${roomID}`)
                     .then(response => {
@@ -611,11 +621,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return response.json();
                     })
                     .then(data => {
-                        chatroomNameElement.textContent = data.name || `无名的聊天室`;
+                        const roomName = data.name || `无名的聊天室`;
+                        chatroomNameElement.textContent = roomName;
+                        roomTitleElement.textContent = roomName;
                     })
                     .catch(error => {
                         console.error("Error fetching chatroom name:", error);
-                        chatroomNameElement.textContent = `无名的聊天室`; // Fallback to room ID
+                        chatroomNameElement.textContent = `无名的聊天室`;
+                        roomTitleElement.textContent = `无名的聊天室`;
                     });
             }
         }
@@ -623,6 +636,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (hasAccess) {
         await fetchUsername();
+        addSlideInAnimation();
         fetchWithRetry();
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('focus', fetchWithRetry);
@@ -649,8 +663,6 @@ function cleanup() {
     document.removeEventListener('visibilitychange', handleVisibilityChange);
     window.removeEventListener('focus', fetchWithRetry);
 }
-
-
 
 // 页面卸载时清理
 window.addEventListener('beforeunload', cleanup);

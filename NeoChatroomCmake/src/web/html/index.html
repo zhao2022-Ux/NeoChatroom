@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,29 +8,32 @@
     <title>seve's chatroom</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
             color: #333;
             transition: background-color 0.3s, color 0.3s;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 通用滚动条样式（浅色模式） */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
             background-color: #e0e0e0;
-            border-radius: 4px;
+            border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb {
             background-color: #999;
-            border-radius: 4px;
-            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -49,10 +52,11 @@
             justify-content: space-between;
             background-color: #007BFF;
             color: white;
-            padding: 8px 20px;
+            padding: 12px 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             position: relative;
             flex-wrap: wrap;
+            border-radius: 0;
         }
 
         .header-left,
@@ -63,7 +67,8 @@
 
         .header-left img {
             height: 40px;
-            margin-right: 10px;
+            margin-right: 12px;
+            border-radius: 12px;
             transition: transform 0.3s ease, filter 0.3s ease;
             will-change: transform, filter;
         }
@@ -89,18 +94,18 @@
 
         .chatroom-title {
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             white-space: nowrap;
         }
 
         .badge {
             background-color: #ffebee;
             color: #f44336;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 4px 10px;
+            border-radius: 16px;
             font-size: 12px;
-            font-weight: bold;
-            margin-left: 8px;
+            font-weight: 600;
+            margin-left: 10px;
             border: 1px solid #f44336;
         }
 
@@ -109,36 +114,37 @@
         .return-button,
         .login-button {
             font-size: 14px;
-            padding: 6px 10px;
-            border-radius: 5px;
+            padding: 8px 14px;
+            border-radius: 20px;
             border: none;
-            background-color: #dcdcdc;
-            color: #007BFF;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s ease;
+            transition: all 0.2s ease;
             margin-left: 8px;
-            height: 32px;
+            height: 36px;
             min-width: 80px;
+            font-weight: 500;
         }
 
         .notification-toggle:hover,
         .theme-toggle:hover,
         .return-button:hover,
         .login-button:hover {
-            background-color: #c0c0c0;
+            background-color: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
         }
 
         .username {
-            margin-right: 10px;
-            font-weight: bold;
+            margin-right: 12px;
+            font-weight: 600;
             white-space: nowrap;
         }
 
         #chatroomName {
             flex: 1;
             text-align: center;
-            font-weight: bold;
+            font-weight: 600;
             font-size: clamp(14px, 2vw, 20px);
             color: #eef;
             pointer-events: none;
@@ -152,203 +158,382 @@
             color: #ccc;
         }
 
-        .chat-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        #notificationSelect {
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 8px;
+            height: 36px;
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        #notificationSelect:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            flex: 1;
             overflow: hidden;
-            animation: fadeIn 1s ease-out;
+            max-width: 1000px;
+            max-height: calc(100vh - 80px);
+            height: clamp(500px, 80vh, 900px);
+            margin: 16px auto 0;
+            width: calc(100% - 32px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            background: white;
         }
 
-        .chat-box {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
+        /* 聊天区域 */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             background-color: #fafafa;
-            animation: fadeIn 1.5s ease-out;
+            transition: background-color 0.3s;
+            border-radius: 16px;
         }
 
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .chat-header .room-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 消息卡片样式 - Telegram 风格的气泡 */
         .message {
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            background-color: #e0e0e0;
-            max-width: 80%;
-            transition: background-color 0.3s ease, transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            max-width: 70%;
+            margin-bottom: 8px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            transition: all 0.2s ease;
+            opacity: 0;
+            transform: translateX(50px) scale(0.9);
+            line-height: 1.4;
             display: flex;
             flex-direction: column;
         }
 
+        /* 消息划入动画 */
+        .message.slide-in {
+            animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* 用户自己的消息 */
         .message.user {
-            background-color: #d0f0c0;
-            margin-left: auto;
+            align-self: flex-end;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        /* 其他用户的消息 */
+        .message:not(.user) {
+            align-self: flex-start;
+            background-color: white;
+            color: #333;
+            border-radius: 18px 18px 18px 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .message .header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.5em;
-            margin-bottom: 0.5px;
+            align-items: center;
+            margin-bottom: 6px;
             background-color: transparent;
-            color: rgba(255, 255, 255, 0.7);
             box-shadow: none;
-        }
-
-        .message .timestamp {
-            margin-right: 10px;
+            padding: 0;
+            border: none;
         }
 
         .message .username {
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 13px;
+            margin: 0;
         }
 
-        .input-box {
-            display: flex;
-            padding: 10px;
+        .message.user .username {
+            color: rgba(94, 118, 142, 0.9);
+        }
+
+        .message:not(.user) .username {
+            color: #007BFF;
+        }
+
+        .message .timestamp {
+            font-size: 11px;
+            margin: 0;
+        }
+
+        .message.user .timestamp {
+            color: #8e8e93;
+        }
+
+        .message:not(.user) .timestamp {
+            color: #8e8e93;
+        }
+
+        .message-body {
+            padding: 0;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .image-message {
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-message img {
+            border-radius: 12px;
+            margin: 4px 0;
+        }
+
+        .message-input-container {
+            padding: 16px 20px;
             background-color: #fff;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s;
+            border-radius: 0 0 16px 16px;
+            gap: 12px;
         }
 
-        .input-box textarea {
+        .message-input-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .message-input-row textarea {
             flex: 1;
-            padding: 6px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
             resize: none;
             font-family: inherit;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.4;
             height: auto;
-            min-height: 24px;
+            min-height: 20px;
             max-height: 120px;
             overflow-y: auto;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
         }
 
-        .input-box textarea:focus {
+        .message-input-row textarea:focus {
             border-color: #007BFF;
             outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
 
-        .input-box button {
-            padding: 10px;
-            margin-left: 10px;
+        .input-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .send-button,
+        .upload-button {
+            padding: 12px 16px;
             background-color: #007BFF;
             border: none;
             color: white;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.2s, transform 0.1s ease;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            min-width: 60px;
+            font-size: 14px;
         }
 
-        .input-box button:hover {
+        .send-button:hover,
+        .upload-button:hover {
             background-color: #0056b3;
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
+        .send-button:active,
+        .upload-button:active {
+            transform: scale(0.95);
+        }
+
+        .upload-button {
+            background-color: #28a745;
+        }
+
+        .upload-button:hover {
+            background-color: #218838;
+        }
+
+        #imagePreview {
+            margin-top: 8px;
+        }
+
+        #imagePreview img {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 深色模式 */
         body.dark-mode {
-            background-color: #333;
+            background-color: #1a1a1a;
             color: #fff;
         }
 
         body.dark-mode .header {
-            background-color: #222;
+            background-color: #2c2c2e;
         }
 
-        body.dark-mode .chat-box {
-            background-color: #555;
+        body.dark-mode .main-container {
+            background: #2c2c2e;
         }
 
-        body.dark-mode .message {
-            background-color: #666;
+        body.dark-mode .chat-area {
+            background-color: #1c1c1e;
+        }
+
+        body.dark-mode .chat-header {
+            background-color: #2c2c2e;
+            border-color: #3a3a3c;
+        }
+
+        body.dark-mode .chat-header .room-title {
+            color: #fff;
+        }
+
+        body.dark-mode .message:not(.user) {
+            background-color: #3a3a3c;
             color: #fff;
         }
 
         body.dark-mode .message.user {
-            background-color: #44d544;
-        }
-
-        body.dark-mode .input-box {
-            background-color: #444;
-        }
-
-        body.dark-mode .input-box textarea {
-            background-color: #666;
-            color: #fff;
-            border: 1px solid #555;
-        }
-
-        body.dark-mode .input-box button {
-            background-color: #0056b3;
-        }
-
-        body.dark-mode .header button {
-            background-color: #444;
+            background-color: #007AFF;
             color: #fff;
         }
 
-        body.dark-mode .header button:hover {
-            background-color: #555;
+        /* 深色模式下用户消息的用户名和时间戳颜色修复 */
+        body.dark-mode .message.user .username {
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        body.dark-mode .theme-toggle {
-            background-color: #444;
-            color: #fff;
+        body.dark-mode .message.user .timestamp {
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        body.dark-mode .theme-toggle:hover {
-            background-color: #555;
-        }
-
-        body.dark-mode .footer {
-            background-color: #444;
-            color: #fff;
-        }
-
-        body.dark-mode .footer a {
+        /* 深色模式下其他用户消息的用户名和时间戳颜色 */
+        body.dark-mode .message:not(.user) .username {
             color: #66aaff;
         }
 
+        body.dark-mode .message:not(.user) .timestamp {
+            color: #8e8e93;
+        }
+
+        body.dark-mode .message-input-container {
+            background-color: #2c2c2e;
+            border-color: #3a3a3c;
+        }
+
+        body.dark-mode .message-input-row textarea {
+            background-color: #3a3a3c;
+            color: #fff;
+            border-color: #3a3a3c;
+        }
+
+        body.dark-mode .message-input-row textarea:focus {
+            background: #48484a;
+        }
+
+        body.dark-mode .send-button {
+            background-color: #007AFF;
+        }
+
+        body.dark-mode .notification-toggle,
+        body.dark-mode .theme-toggle,
+        body.dark-mode .return-button,
+        body.dark-mode .login-button,
+        body.dark-mode #notificationSelect {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        body.dark-mode .notification-toggle:hover,
+        body.dark-mode .theme-toggle:hover,
+        body.dark-mode .return-button:hover,
+        body.dark-mode .login-button:hover,
+        body.dark-mode #notificationSelect:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
         body.dark-mode ::-webkit-scrollbar-track {
-            background-color: #444;
+            background-color: #3a3a3c;
         }
 
         body.dark-mode ::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border: 2px solid #444;
+            background-color: #8e8e93;
+            border: 1px solid #3a3a3c;
         }
 
         body.dark-mode ::-webkit-scrollbar-thumb:hover {
-            background-color: #aaa;
+            background-color: #aeaeb2;
         }
 
         body.dark-mode * {
-            scrollbar-color: #aaa #444;
+            scrollbar-color: #8e8e93 #3a3a3c;
         }
 
-        #sendButton {
-            transition: transform 0.1s ease;
-        }
-
-        #sendButton:active {
-            transform: scale(0.95);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .message.fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
+        /* 底部区域 */
         .footer {
             background-color: #f1f1f1;
             padding: 10px 20px;
@@ -367,43 +552,122 @@
             text-decoration: underline;
         }
 
-        .message-body {
-            padding: 2px 4px;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        #notificationSelect {
-            font-size: 14px;
-            padding: 6px 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            background-color: #dcdcdc;
-            color: #007BFF;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s ease;
-            margin-left: 8px;
-            height: 32px;
-            min-width: 120px;
-        }
-
-        #notificationSelect:hover {
-            background-color: #c0c0c0;
-            transform: scale(1.05);
-        }
-
-        body.dark-mode #notificationSelect {
-            background-color: #444;
+        body.dark-mode .footer {
+            background-color: #2c2c2e;
             color: #fff;
-            border: 1px solid #555;
+            border-color: #3a3a3c;
         }
 
-        body.dark-mode #notificationSelect:hover {
-            background-color: #555;
+        body.dark-mode .footer a {
+            color: #66aaff;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 8px;
+                width: calc(100% - 16px);
+                border-radius: 12px;
+            }
+
+            .chat-area {
+                border-radius: 12px;
+            }
+
+            .chat-header {
+                border-radius: 12px 12px 0 0;
+            }
+
+            .message-input-container {
+                border-radius: 0 0 12px 12px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .input-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* 防止重复动画的标记类 */
+        .message.animated {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* 淡入动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .message.fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 特殊消息样式 */
+        .message[data-label="GM"] {
+            background-color: #f8f9fa !important;
+            color: #333 !important;
+            border: 1px solid #dee2e6;
+        }
+
+        body.dark-mode .message[data-label="GM"] {
+            background-color: #2c2c2e !important;
+            color: #fff !important;
+            border: 1px solid #3a3a3c;
+        }
+
+        /* GM 消息的用户名和时间戳在深色模式下的颜色 */
+        body.dark-mode .message[data-label="GM"] .username,
+        body.dark-mode .message[data-label="GM"] .timestamp {
+            color: #8e8e93 !important;
+        }
+
+        .message[data-label="U"] {
+            background-color: rgba(0, 204, 255, 0.1) !important;
+            color: #333 !important;
+        }
+
+        body.dark-mode .message[data-label="U"] {
+            background-color: rgba(0, 204, 255, 0.15) !important;
+            color: #fff !important;
+        }
+
+        /* U 消息的用户名和时间戳在深色模式下的颜色 */
+        body.dark-mode .message[data-label="U"] .username {
+            color: #66aaff !important;
+        }
+
+        body.dark-mode .message[data-label="U"] .timestamp {
+            color: #8e8e93 !important;
+        }
+
+        .message[data-label="BAN"] {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        /* BAN 消息的用户名和时间戳颜色 */
+        .message[data-label="BAN"] .username,
+        .message[data-label="BAN"] .timestamp {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        body.dark-mode .message[data-label="BAN"] .username,
+        body.dark-mode .message[data-label="BAN"] .timestamp {
+            color: rgba(255, 255, 255, 0.9) !important;
         }
     </style>
 </head>
 <body>
+<!-- 顶部导航栏 -->
 <div class="header">
     <div class="header-left">
         <picture>
@@ -429,22 +693,34 @@
     </div>
 </div>
 
-<div class="chat-container">
-    <div class="chat-box" id="chatBox">
-        <!-- 聊天内容 -->
-    </div>
-    <div class="input-box">
-        <textarea id="messageInput" rows="1" placeholder="输入消息... shift+enter换行"></textarea>
-        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-        <button onclick="sendMessage()">发送</button>
-        <button onclick="selectImage()">上传图片</button>
-        <div id="imagePreview" style="display: inline-block; margin-left: 10px;"></div>
+<!-- 主容器 -->
+<div class="main-container">
+    <!-- 聊天区域 -->
+    <div class="chat-area">
+        <div class="chat-header">
+            <div class="room-title" id="roomTitle">聊天室</div>
+        </div>
+        <div class="chat-messages" id="chatBox">
+            <!-- 聊天内容 -->
+        </div>
+        <div class="message-input-container">
+            <div id="imagePreview"></div>
+            <div class="message-input-row">
+                <textarea id="messageInput" rows="1" placeholder="输入消息... shift+enter换行"></textarea>
+                <div class="input-buttons">
+                    <button class="upload-button" onclick="selectImage()">上传图片</button>
+                    <button class="send-button" onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+        </div>
     </div>
 </div>
 
 <div class="footer">
     <p>© 2025 seve's chatroom v0.1.2| <a href="/files/terms.html">使用条款</a> | <a href="/files/updates.html">更新日志</a></p>
 </div>
+
 <script src="/files/marked.min.js"></script>
 <script>
     window.MathJax = {
