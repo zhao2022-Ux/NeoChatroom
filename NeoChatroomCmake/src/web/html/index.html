@@ -227,6 +227,21 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            /* 确保消息区域有最小高度 */
+            min-height: 200px;
+        }
+
+        /* 优化消息渲染性能 */
+        .chat-messages.performance-mode .message {
+            contain: layout style paint;
+            content-visibility: auto;
+            contain-intrinsic-size: 0 80px;
+        }
+
+        .chat-messages.performance-mode .message {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
         }
 
         /* 消息卡片样式 - Telegram 风格的气泡 */
@@ -243,6 +258,8 @@
             line-height: 1.4;
             display: flex;
             flex-direction: column;
+            overflow-wrap: break-word;
+            word-break: break-all;
         }
 
         /* 消息划入动画 */
@@ -325,6 +342,8 @@
             padding: 0;
             margin: 0;
             line-height: 1.4;
+            overflow-wrap: break-word;
+            word-break: break-all;
         }
 
         .image-message {
@@ -337,6 +356,7 @@
             margin: 4px 0;
         }
 
+        /* 确保输入容器不会无限增长 */
         .message-input-container {
             padding: 16px 20px;
             background-color: #fff;
@@ -346,12 +366,17 @@
             transition: background-color 0.3s;
             border-radius: 0 0 16px 16px;
             gap: 12px;
+            /* 限制输入容器的最大高度 */
+            max-height: 200px;
+            overflow: auto; /* 允许内容溢出但不滚动整个容器 */
         }
 
+        /* 确保输入行不会过度拉伸 */
         .message-input-row {
             display: flex;
-            align-items: flex-end;
+            align-items: flex-end; /* 保持底部对齐 */
             gap: 12px;
+            min-height: 44px; /* 设置最小高度保持按钮对齐 */
         }
 
         .message-input-row textarea {
@@ -364,11 +389,13 @@
             font-size: 14px;
             line-height: 1.4;
             height: auto;
-            min-height: 20px;
-            max-height: 120px;
-            overflow-y: auto;
+            min-height: 40px; /* 设置最小高度 */
+            max-height: 120px; /* 限制最大高度 */
+            overflow-y: auto; /* 超出高度时显示滚动条 */
             background: #f8f9fa;
             transition: all 0.2s ease;
+            /* 防止textarea影响父容器布局 */
+            box-sizing: border-box;
         }
 
         .message-input-row textarea:focus {
@@ -381,6 +408,8 @@
         .input-buttons {
             display: flex;
             gap: 8px;
+            flex-shrink: 0; /* 防止按钮被压缩 */
+            align-self: flex-end; /* 保持底部对齐 */
         }
 
         .send-button,
@@ -423,6 +452,24 @@
         #imagePreview img {
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 性能模式指示器 */
+        .performance-indicator {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .performance-indicator.active {
+            display: block;
         }
 
         /* 深色模式 */
@@ -580,6 +627,7 @@
 
             .message-input-container {
                 border-radius: 0 0 12px 12px;
+                max-height: 150px; /* 移动端限制输入容器高度 */
             }
 
             .message {
@@ -588,6 +636,11 @@
 
             .input-buttons {
                 flex-direction: column;
+                gap: 4px;
+            }
+
+            .message-input-row textarea {
+                max-height: 80px; /* 移动端进一步限制高度 */
             }
         }
 
@@ -667,6 +720,11 @@
     </style>
 </head>
 <body>
+<!-- 性能模式指示器 -->
+<div id="performanceIndicator" class="performance-indicator">
+    性能模式已启用
+</div>
+
 <!-- 顶部导航栏 -->
 <div class="header">
     <div class="header-left">

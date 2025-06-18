@@ -862,6 +862,7 @@ function updateChatView(username) {
 }
 
 // 【修复】发送消息 - 不要调用已读相关函数
+// 【修复】发送消息 - 不要调用已读相关函数
 async function sendMessage() {
     if (!selectedUser || !currentUsername) return;
 
@@ -872,6 +873,11 @@ async function sendMessage() {
 
     // 清空输入框
     messageInput.value = '';
+
+    // 【修复】发送消息后重置输入框高度
+    messageInput.style.height = 'auto';
+    messageInput.style.height = (messageInput.scrollHeight) + 'px';
+
 
     // console.log(`准备发送消息给: ${selectedUser.username}, 内容: ${message}`);
 
