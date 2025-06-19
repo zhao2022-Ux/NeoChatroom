@@ -18,7 +18,6 @@ A high-performance C++-based LAN chatroom | A lightweight, high-efficiency, nati
 [![License](https://img.shields.io/github/license/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/stargazers)
 [![Last Commit](https://img.shields.io/github/last-commit/Dreamersseve/NeoChatroom?style=flat-square)](https://github.com/Dreamersseve/NeoChatroom/commits/main)
-[![Platform](https://img.shields.io/badge/platform-Windows-blue?style=flat-square)](#)
 
 ### 👀 Demo
 
