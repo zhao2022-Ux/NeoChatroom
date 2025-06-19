@@ -22,11 +22,13 @@
 
 ### 👀 Demo
 
-![](https://cdn.luogu.com.cn/upload/image_hosting/b65eyz4w.png)
-![](https://cdn.luogu.com.cn/upload/image_hosting/6qt8dkg7.png)
-![](https://cdn.luogu.com.cn/upload/image_hosting/pc5t3u9r.png)
-![](https://cdn.luogu.com.cn/upload/image_hosting/7s4jjvk1.png)
-![](https://cdn.luogu.com.cn/upload/image_hosting/xqs01vxa.png)
+![图片](https://github.com/user-attachments/assets/8d90d690-0c2c-48a5-8c22-ef9750a582b3)
+![图片](https://github.com/user-attachments/assets/9f01c8dd-fc27-4351-bc14-3dd71993b0f2)
+![图片](https://github.com/user-attachments/assets/4d8a3f60-7d4b-4cab-8373-5e97a9ddbdcd)
+![图片](https://github.com/user-attachments/assets/b1763248-9065-46ed-9710-df4d67768065)
+![图片](https://github.com/user-attachments/assets/1a730ceb-a76d-4f71-a0d4-e845f78dc14f)
+
+
 
 [🌐Seve'chatroom](https://chatroom.seveoi.icu)
 
