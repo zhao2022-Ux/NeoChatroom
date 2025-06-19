@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剪贴板 - seve's chatroom</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="/files/github.min.css">
+    <script src="/files/highlight.min.js"></script>
+    <style>
+        /* 基础样式 */
+        :root {
+            --primary-color: #007BFF;
+            --primary-dark: #0056b3;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-bg: #f5f5f5;
+            --dark-bg: #222;
+            --card-light: #fff;
+            --card-dark: #2a2a2a;
+            --text-light: #333;
+            --text-dark: #eee;
+            --border-light: #ddd;
+            --border-dark: #444;
+            
+            /* 圆角统一 */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            
+            /* 阴影 */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-light);
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background-color: #e0e0e0;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background-color: #999;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #777;
+        }
+        
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #999 #e0e0e0;
+            box-sizing: border-box;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+        
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-left img {
+            height: 40px;
+            margin-right: 12px;
+            border-radius: 12px;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        
+        .header-left img:hover {
+            transform: scale(1.1) rotate(5deg);
+            cursor: pointer;
+        }
+        
+        .chatroom-title {
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .badge {
+            background-color: #ffebee;
+            color: #f44336;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            border: 1px solid #f44336;
+        }
+        
+        .theme-toggle, .return-button, .login-button {
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 8px;
+            height: 36px;
+            min-width: 80px;
+            font-weight: 500;
+        }
+        
+        .theme-toggle:hover, .return-button:hover, .login-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .username {
+            margin-right: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        /* 主容器 */
+        .main-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        /* 面包屑导航 */
+        .breadcrumb {
+            display: flex;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .breadcrumb .separator {
+            margin: 0 8px;
+            color: var(--secondary-color);
+        }
+        
+        .breadcrumb .current {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        /* 剪贴板卡片 */
+        .paste-card {
+            background-color: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 剪贴板头部 */
+        .paste-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .paste-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            color: var(--text-light);
+            word-break: break-word;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .paste-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            color: var(--secondary-color);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .paste-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .paste-meta-icon {
+            font-size: 16px;
+        }
+        
+        .paste-language {
+            padding: 4px 8px;
+            background-color: #e9ecef;
+            border-radius: var(--border-radius-sm);
+            color: #555;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* 剪贴板内容 */
+        .paste-content-wrapper {
+            position: relative;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .paste-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .paste-toolbar-button {
+            padding: 6px 12px;
+            background-color: #fff;
+            color: var(--text-light);
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-sm);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            margin-left: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .paste-toolbar-button:hover {
+            background-color: #f1f1f1;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .paste-toolbar-button.copy-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .paste-toolbar-button.copy-btn:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .paste-content {
+            padding: 0;
+            margin: 0;
+            overflow-x: auto;
+            max-height: 70vh;
+            position: relative;
+        }
+        
+        .paste-content pre {
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            tab-size: 4;
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 200px;
+        }
+        
+        .paste-content code {
+            display: block;
+            overflow-x: auto;
+        }
+        
+        /* 剪贴板底部 */
+        .paste-footer {
+            padding: 15px 25px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+        
+        .paste-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .paste-action-button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            background-color: #f1f1f1;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .paste-action-button:hover {
+            background-color: #e3e3e3;
+            transform: translateY(-2px);
+        }
+        
+        .paste-action-button.edit-btn {
+            background-color: #e9f5ff;
+            color: var(--primary-color);
+        }
+        
+        .paste-action-button.edit-btn:hover {
+            background-color: #d1e9ff;
+        }
+        
+        .paste-action-button.delete-btn {
+            background-color: #ffebee;
+            color: var(--danger-color);
+        }
+        
+        .paste-action-button.delete-btn:hover {
+            background-color: #ffd5d9;
+        }
+        
+        /* 行号 */
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 50px;
+            padding: 20px 10px;
+            text-align: right;
+            background-color: #f0f0f0;
+            color: #888;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            user-select: none;
+            border-right: 1px solid #ddd;
+            overflow: hidden;
+        }
+        
+        .with-line-numbers {
+            padding-left: 60px !important;
+        }
+        
+        /* 通知消息 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: var(--success-color);
+            color: white;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: var(--secondary-color);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 123, 255, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .loading-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* 错误消息 */
+        .error-message {
+            padding: 30px;
+            text-align: center;
+            background-color: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            margin: 30px auto;
+            max-width: 600px;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+        
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .error-details {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .error-button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .error-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        /* 深色模式样式 */
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--text-dark);
+        }
+        
+        body.dark-mode .header {
+            background-color: #2c2c2e;
+        }
+        
+        body.dark-mode .paste-card {
+            background-color: var(--card-dark);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.dark-mode .paste-header,
+        body.dark-mode .paste-footer {
+            border-color: var(--border-dark);
+        }
+        
+        body.dark-mode .paste-title {
+            color: var(--text-dark);
+        }
+        
+        body.dark-mode .paste-toolbar {
+            background-color: #343a40;
+            border-color: var(--border-dark);
+        }
+        
+        body.dark-mode .paste-toolbar-button {
+            background-color: #495057;
+            color: #e9ecef;
+            border-color: #495057;
+        }
+        
+        body.dark-mode .paste-toolbar-button:hover {
+            background-color: #5a6268;
+        }
+        
+        body.dark-mode .paste-toolbar-button.copy-btn {
+            background-color: var(--primary-color);
+        }
+        
+        body.dark-mode .paste-toolbar-button.copy-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        body.dark-mode .paste-content pre {
+            background-color: #343a40;
+            color: #e9ecef;
+        }
+        
+        body.dark-mode .line-numbers {
+            background-color: #2c2c2e;
+            color: #adb5bd;
+            border-color: #495057;
+        }
+        
+        body.dark-mode .paste-language {
+            background-color: #495057;
+            color: #e9ecef;
+        }
+        
+        body.dark-mode .paste-action-button {
+            background-color: #343a40;
+            color: #e9ecef;
+        }
+        
+        body.dark-mode .paste-action-button:hover {
+            background-color: #495057;
+        }
+        
+        body.dark-mode .paste-action-button.edit-btn {
+            background-color: #1c4a6e;
+            color: #90caf9;
+        }
+        
+        body.dark-mode .paste-action-button.edit-btn:hover {
+            background-color: #1e5b85;
+        }
+        
+        body.dark-mode .paste-action-button.delete-btn {
+            background-color: #5c1624;
+            color: #f5b6be;
+        }
+        
+        body.dark-mode .paste-action-button.delete-btn:hover {
+            background-color: #6e1a2b;
+        }
+        
+        body.dark-mode .error-message {
+            background-color: var(--card-dark);
+            color: var(--text-dark);
+        }
+        
+        body.dark-mode .error-title {
+            color: var(--text-dark);
+        }
+        
+        body.dark-mode .error-details {
+            color: #adb5bd;
+        }
+        
+        body.dark-mode ::-webkit-scrollbar-track {
+            background-color: #3a3a3c;
+        }
+        
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background-color: #8e8e93;
+            border: 1px solid #3a3a3c;
+        }
+        
+        body.dark-mode ::-webkit-scrollbar-thumb:hover {
+            background-color: #aeaeb2;
+        }
+        
+        body.dark-mode * {
+            scrollbar-color: #8e8e93 #3a3a3c;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 0 15px;
+            }
+            
+            .paste-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .paste-header, .paste-footer {
+                padding: 15px;
+            }
+            
+            .paste-title {
+                font-size: 20px;
+            }
+            
+            .paste-footer {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .paste-content pre {
+                font-size: 13px;
+                padding: 15px;
+            }
+            
+            .line-numbers {
+                font-size: 13px;
+                width: 40px;
+                padding: 15px 8px;
+            }
+            
+            .with-line-numbers {
+                padding-left: 50px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="header">
+        <div class="header-left">
+            <link rel="icon" href="logo.png" type="image/png">
+            <span class="chatroom-title">seve's chatroom</span>
+            <span class="badge">NEO</span>
+        </div>
+        <div>剪贴板详情</div>
+        <div class="header-right">
+            <span class="username" id="usernameDisplay"></span>
+            <button class="login-button" id="loginButton" style="display: none;" onclick="window.location.href='/login'">登录</button>
+            <button class="theme-toggle" id="themeToggle">D/B</button>
+            <button class="return-button" onclick="window.location.href='/chatlist'">返回列表</button>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="/chatlist">聊天室列表</a>
+            <span class="separator">/</span>
+            <a href="/paste">云剪贴板</a>
+            <span class="separator">/</span>
+            <span class="current">剪贴板详情</span>
+        </div>
+        
+        <!-- 加载状态 -->
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">加载剪贴板内容...</div>
+        </div>
+        
+        <!-- 错误消息 -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">无法加载剪贴板</div>
+            <div class="error-details" id="error-details">请求的剪贴板不存在或您没有访问权限。</div>
+            <button class="error-button" onclick="window.location.href='/paste'">返回剪贴板列表</button>
+        </div>
+        
+        <!-- 剪贴板内容卡片 -->
+        <div id="paste-card" class="paste-card" style="display: none;">
+            <div class="paste-header">
+                <h1 class="paste-title" id="paste-title">剪贴板标题</h1>
+                <div class="paste-meta">
+                    <div class="paste-meta-item">
+                        <span class="paste-meta-icon">👤</span>
+                        <span id="paste-author">作者名称</span>
+                    </div>
+                    <div class="paste-meta-item">
+                        <span class="paste-meta-icon">📅</span>
+                        <span id="paste-time">创建时间</span>
+                    </div>
+                    <div class="paste-meta-item">
+                        <span class="paste-meta-icon">⏱️</span>
+                        <span id="paste-expiry">过期时间</span>
+                    </div>
+                    <div class="paste-meta-item">
+                        <span class="paste-language" id="paste-language">
+                            <span class="paste-meta-icon">📄</span>
+                            <span>语言类型</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="paste-content-wrapper">
+                <div class="paste-toolbar">
+                    <button class="paste-toolbar-button" id="toggle-line-numbers">
+                        <span class="paste-toolbar-icon">#</span>
+                        <span>行号</span>
+                    </button>
+                    <button class="paste-toolbar-button" id="wrap-button">
+                        <span class="paste-toolbar-icon">↩</span>
+                        <span>换行</span>
+                    </button>
+                    <button class="paste-toolbar-button copy-btn" id="copy-button">
+                        <span class="paste-toolbar-icon">📋</span>
+                        <span>复制</span>
+                    </button>
+                </div>
+                
+                <div class="paste-content">
+                    <div id="line-numbers" class="line-numbers" style="display: none;"></div>
+                    <pre><code id="paste-content-code"></code></pre>
+                </div>
+            </div>
+            
+            <div class="paste-footer">
+                <div id="paste-privacy-status">公开的剪贴板</div>
+                <div class="paste-actions">
+                    <button class="paste-action-button edit-btn" id="edit-button" style="display: none;">
+                        <span class="paste-action-icon">✏️</span>
+                        <span>编辑</span>
+                    </button>
+                    <button class="paste-action-button delete-btn" id="delete-button" style="display: none;">
+                        <span class="paste-action-icon">🗑️</span>
+                        <span>删除</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知消息 -->
+    <div class="notification" id="notification">已复制到剪贴板</div>
+    
+    <script>
+        // 全局变量
+        let currentUsername = "";
+        let currentPaste = null;
+        const serverUrl = window.location.origin;
+        
+        // 工具函数：获取 URL 参数
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        
+        // 工具函数：获取 cookie
+        function getCookie(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+        
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 更新登录状态
+        async function updateLoginStatus() {
+            const uid = getCookie("uid");
+            try {
+                const response = await fetch(`${serverUrl}/user/username?uid=${uid}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUsername = data.username;
+                    document.getElementById('usernameDisplay').textContent = currentUsername;
+                    document.getElementById('loginButton').style.display = 'none';
+                    return true;
+                } else {
+                    document.getElementById('loginButton').style.display = 'inline-block';
+                    currentUsername = '';
+                    document.getElementById('usernameDisplay').textContent = '';
+                    return false;
+                }
+            } catch (error) {
+                console.error('检查登录状态错误:', error);
+                document.getElementById('loginButton').style.display = 'inline-block';
+                currentUsername = '';
+                document.getElementById('usernameDisplay').textContent = '';
+                return false;
+            }
+        }
+        
+        // 获取剪贴板详情
+        async function loadPasteDetails() {
+            const pasteId = getUrlParam('id');
+            if (!pasteId) {
+                showError('未指定剪贴板ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${serverUrl}/paste/query?id=${pasteId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        // 私有剪贴板，需要密码
+                        const password = prompt('此剪贴板是私有的，请输入访问密码：');
+                        if (password === null) {
+                            showError('访问被取消');
+                            return;
+                        }
+                        
+                        // 使用密码重试
+                        return loadPasteWithPassword(pasteId, password);
+                    }
+                    
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '加载剪贴板失败');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 保存当前剪贴板数据
+                    currentPaste = result.data;
+                    renderPaste(currentPaste);
+                } else {
+                    throw new Error(result.message || '加载剪贴板失败');
+                }
+            } catch (error) {
+                console.error('获取剪贴板详情失败:', error);
+                showError(error.message || '加载剪贴板时发生错误');
+            }
+        }
+        
+        // 使用密码加载私有剪贴板
+        async function loadPasteWithPassword(pasteId, password) {
+            try {
+                const encodedPassword = encodeURIComponent(password);
+                const response = await fetch(`${serverUrl}/paste/query?id=${pasteId}&password=${encodedPassword}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '密码错误或加载剪贴板失败');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 保存当前剪贴板数据
+                    currentPaste = result.data;
+                    renderPaste(currentPaste);
+                } else {
+                    throw new Error(result.message || '密码错误或加载剪贴板失败');
+                }
+            } catch (error) {
+                console.error('使用密码加载剪贴板失败:', error);
+                showError(error.message || '密码验证失败');
+            }
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('paste-card').style.display = 'none';
+            
+            const errorMessage = document.getElementById('error-message');
+            const errorDetails = document.getElementById('error-details');
+            errorDetails.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        // 渲染剪贴板内容
+        function renderPaste(paste) {
+            // 隐藏加载状态
+            document.getElementById('loading').style.display = 'none';
+            
+            // 安全处理文本，防止XSS攻击
+            const safeTitle = document.createTextNode(paste.title || '无标题').textContent;
+            const safeAuthor = document.createTextNode(paste.author || '匿名').textContent;
+            const safeLanguage = document.createTextNode(paste.language || '纯文本').textContent;
+            
+            // 设置标题
+            document.title = `${safeTitle} - 剪贴板 - seve's chatroom`;
+            
+            // 填充剪贴板信息
+            document.getElementById('paste-title').textContent = safeTitle;
+            document.getElementById('paste-author').textContent = safeAuthor;
+            document.getElementById('paste-time').textContent = paste.formattedTime || '未知时间';
+            document.getElementById('paste-language').querySelector('span:last-child').textContent = safeLanguage;
+            
+            // 设置过期时间
+            const expiryElem = document.getElementById('paste-expiry');
+            if (paste.expiryDays && paste.expiryDays > 0) {
+                expiryElem.textContent = `${paste.expiryDays}天后过期`;
+            } else {
+                expiryElem.textContent = '永不过期';
+            }
+            
+            // 设置隐私状态
+            const privacyElem = document.getElementById('paste-privacy-status');
+            if (paste.isPrivate) {
+                privacyElem.textContent = '私有剪贴板';
+                privacyElem.style.color = '#dc3545';
+            } else {
+                privacyElem.textContent = '公开剪贴板';
+            }
+            
+            // 设置剪贴板内容并应用语法高亮
+            const contentElement = document.getElementById('paste-content-code');
+            contentElement.textContent = paste.content || '';
+            
+            if (paste.language && hljs) {
+                contentElement.className = `language-${paste.language}`;
+                try {
+                    hljs.highlightElement(contentElement);
+                } catch (e) {
+                    console.error('代码高亮出错:', e);
+                }
+            }
+            
+            // 生成行号
+            generateLineNumbers(paste.content || '');
+            
+            // 显示剪贴板卡片
+            document.getElementById('paste-card').style.display = 'block';
+            
+            // 根据用户权限显示编辑和删除按钮
+            const editButton = document.getElementById('edit-button');
+            const deleteButton = document.getElementById('delete-button');
+            
+            if (paste.author === currentUsername) {
+                editButton.style.display = 'flex';
+                deleteButton.style.display = 'flex';
+                
+                // 添加事件监听器
+                editButton.onclick = () => {
+                    window.location.href = `/paste?edit=${paste.id}`;
+                };
+                
+                deleteButton.onclick = () => {
+                    if (confirm('确定要删除此剪贴板吗？此操作不可撤销。')) {
+                        deletePaste(paste.id);
+                    }
+                };
+            }
+        }
+        
+        // 生成行号
+        function generateLineNumbers(content) {
+            if (!content) return;
+            
+            const lines = content.split('\n');
+            const lineNumbersContainer = document.getElementById('line-numbers');
+            lineNumbersContainer.innerHTML = '';
+            
+            for (let i = 1; i <= lines.length; i++) {
+                const lineNumber = document.createElement('div');
+                lineNumber.textContent = i;
+                lineNumbersContainer.appendChild(lineNumber);
+            }
+        }
+        
+        // 复制剪贴板内容
+        function copyPasteContent() {
+            if (!currentPaste || !currentPaste.content) return;
+            
+            navigator.clipboard.writeText(currentPaste.content)
+                .then(() => {
+                    showNotification('已复制到剪贴板');
+                    
+                    // 更改按钮文本，稍后恢复
+                    const copyButton = document.getElementById('copy-button');
+                    const originalText = copyButton.innerHTML;
+                    copyButton.innerHTML = '<span class="paste-toolbar-icon">✓</span><span>已复制</span>';
+                    
+                    setTimeout(() => {
+                        copyButton.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    showNotification('复制失败，请手动复制');
+                });
+        }
+        
+        // 删除剪贴板
+        async function deletePaste(pasteId) {
+            try {
+                const response = await fetch(`${serverUrl}/paste/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: parseInt(pasteId)
+                    }),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '删除剪贴板失败');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('剪贴板删除成功');
+                    setTimeout(() => {
+                        window.location.href = '/paste';
+                    }, 1000);
+                } else {
+                    throw new Error(result.message || '删除剪贴板失败');
+                }
+            } catch (error) {
+                console.error('删除剪贴板时发生错误:', error);
+                showNotification('删除剪贴板失败: ' + error.message);
+            }
+        }
+        
+        // 设置暗黑模式切换
+        function setupDarkMode() {
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                
+                // 保存主题偏好
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDarkMode);
+                
+                // 更新代码高亮样式
+                if (currentPaste && currentPaste.language && hljs) {
+                    const contentElement = document.getElementById('paste-content-code');
+                    try {
+                        hljs.highlightElement(contentElement);
+                    } catch (e) {
+                        console.error('代码高亮更新出错:', e);
+                    }
+                }
+            });
+            
+            // 加载保存的主题偏好
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // 设置工具栏功能
+        function setupToolbar() {
+            // 复制按钮
+            const copyButton = document.getElementById('copy-button');
+            copyButton.addEventListener('click', copyPasteContent);
+            
+            // 行号切换
+            const toggleLineNumbersButton = document.getElementById('toggle-line-numbers');
+            const lineNumbersContainer = document.getElementById('line-numbers');
+            const codeElement = document.querySelector('.paste-content pre');
+            
+            toggleLineNumbersButton.addEventListener('click', () => {
+                const isVisible = lineNumbersContainer.style.display !== 'none';
+                
+                if (isVisible) {
+                    lineNumbersContainer.style.display = 'none';
+                    codeElement.classList.remove('with-line-numbers');
+                    toggleLineNumbersButton.innerHTML = '<span class="paste-toolbar-icon">#</span><span>显示行号</span>';
+                } else {
+                    lineNumbersContainer.style.display = 'block';
+                    codeElement.classList.add('with-line-numbers');
+                    toggleLineNumbersButton.innerHTML = '<span class="paste-toolbar-icon">#</span><span>隐藏行号</span>';
+                }
+            });
+            
+            // 自动换行切换
+            const wrapButton = document.getElementById('wrap-button');
+            wrapButton.addEventListener('click', () => {
+                const currentWrap = codeElement.style.whiteSpace;
+                
+                if (currentWrap === 'pre' || currentWrap === '') {
+                    codeElement.style.whiteSpace = 'pre-wrap';
+                    wrapButton.innerHTML = '<span class="paste-toolbar-icon">↩</span><span>禁用换行</span>';
+                } else {
+                    codeElement.style.whiteSpace = 'pre';
+                    wrapButton.innerHTML = '<span class="paste-toolbar-icon">↩</span><span>启用换行</span>';
+                }
+            });
+        }
+        
+        // 页面加载后执行
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 加载登录状态
+            await updateLoginStatus();
+            
+            // 设置深色模式
+            setupDarkMode();
+            
+            // 设置工具栏功能
+            setupToolbar();
+            
+            // 加载剪贴板详情
+            loadPasteDetails();
+            
+            // 页面加载动画
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 50);
+        });
+    </script>
+</body>
+</html>

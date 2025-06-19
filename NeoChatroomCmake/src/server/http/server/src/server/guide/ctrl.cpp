@@ -4,6 +4,7 @@
 #include "../../chat/chatroom.h"
 #include "../../chat/roommanager.h"
 #include "../../config/serverconfig.h"
+#include "../../chat/paste/cloudpaste.h"  // 添加云剪贴板头文件到全局包含
 #include <string>
 #include <thread>
 #include <iostream>
@@ -126,6 +127,25 @@ Json::Value command_runner(string command, int roomid) {
                     logger.logError("Control", "启动管理系统时发生未知错误");
                     result["status"] = "error";
                     result["message"] = "启动管理系统时发生未知错误";
+                    return result;
+                }
+                
+                // 初始化并注册云剪贴板路由
+                try {
+                    // 获取CloudPaste单例实例并注册路由
+                    CloudPaste::getInstance().registerRoutes();
+                    logger.logInfo("Control", "云剪贴板系统已初始化并注册路由");
+                }
+                catch (const std::exception& e) {
+                    logger.logError("Control", "初始化云剪贴板系统失败: " + string(e.what()));
+                    result["status"] = "error";
+                    result["message"] = "初始化云剪贴板系统失败: " + string(e.what());
+                    return result;
+                }
+                catch (...) {
+                    logger.logError("Control", "初始化云剪贴板系统时发生未知错误");
+                    result["status"] = "error";
+                    result["message"] = "初始化云剪贴板系统时发生未知错误";
                     return result;
                 }
 
@@ -349,7 +369,7 @@ Json::Value command_runner(string command, int roomid) {
             catch (...) {
                 logger.logError("Control", "关闭数据库时发生未知错误");
                 result["status"] = "error";
-                result["message"] = "关闭数据库时发生未知错误";
+                result["message"] = "关��数据库时发生未知错误";
             }
         }
         else if (cmd == "say" && !args.empty()) {
@@ -542,7 +562,7 @@ Json::Value command_runner(string command, int roomid) {
                 if (userDetails.empty()) {
                     logger.logInfo("Control", "当前没有用户");
                     result["status"] = "success";
-                    result["message"] = "当前没有用户";
+                    result["message"] = "当前���有用户";
                 }
                 else {
                     logger.logInfo("Control", "用户列表已获取");
@@ -627,7 +647,7 @@ Json::Value command_runner(string command, int roomid) {
                     result["message"] = "删除用户时发生异常: " + string(e.what());
                 }
                 catch (...) {
-                    logger.logError("Control", "删除用户时发生未知错误，UID: " + to_string(userId));
+                    logger.logError("Control", "删除用户���发生未知错误，UID: " + to_string(userId));
                     result["status"] = "error";
                     result["message"] = "删除用户时发生未知错误";
                 }
@@ -775,7 +795,7 @@ void run() {
         logger.logFatal("Control", "运行控制模块时发生异常: " + string(e.what()));
     }
     catch (...) {
-        logger.logFatal("Control", "运行控制模块时发生未知错误");
+        logger.logFatal("Control", "运��控制模块时发生未知错误");
     }
     return;
 }

@@ -34,7 +34,9 @@ file(GLOB_RECURSE SOURCES
 # 可执行文件
 add_executable(NeoChatroom ${SOURCES}
         src/server/http/server/src/chat/privatechat.cpp
-        src/server/http/server/src/chat/privatechat.h)
+        src/server/http/server/src/chat/privatechat.h
+        src/server/http/server/src/chat/paste/cloudpaste.cpp
+        src/server/http/server/src/chat/paste/cloudpaste.h)
 
 # 找依赖
 find_package(OpenSSL REQUIRED)
