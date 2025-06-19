@@ -6,6 +6,9 @@
     <link rel="icon" href="/images/logo16.ico" type="image/x-icon" />
     <link rel="preload" href="logo.png" as="image" />
     <title>seve's chatroom</title>
+    <!-- 添加highlight.js资源 -->
+    <link rel="stylesheet" href="/files/github.min.css">
+    <script src="/files/highlight.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -185,7 +188,7 @@
             overflow: hidden;
             max-width: 1000px;
             max-height: calc(100vh - 80px);
-            height: clamp(600px, 85vh, 1000px); /* 从 500px 增加到 600px，从 80vh 增加到 85vh */
+            height: clamp(600px, 85vh, 1000px);
             margin: 16px auto 0;
             width: calc(100% - 32px);
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
@@ -201,6 +204,7 @@
             background-color: #fafafa;
             transition: background-color 0.3s;
             border-radius: 16px;
+            min-width: 0; /* 允许flex item收缩 */
         }
 
         .chat-header {
@@ -227,11 +231,13 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            /* 确保消息区域有最小高度 - 增加高度 */
-            min-height: 300px; /* 从 200px 增加到 300px */
+            min-height: 300px;
+            /* 确保消息容器不会被子元素撑大 */
+            max-width: 100%;
+            width: 100%;
         }
 
-        /* 优化消息渲染性能 */
+        /* 优化消息渲染性��� */
         .chat-messages.performance-mode .message {
             contain: layout style paint;
             content-visibility: auto;
@@ -246,7 +252,9 @@
 
         /* 消息卡片样式 - Telegram 风格的气泡 */
         .message {
-            max-width: 70%;
+            /* 关键修复：更严格的宽度控制，但保持高度自适应 */
+            max-width: min(70%, calc(100vw - 160px));
+            min-width: 200px; /* 设置最小宽度，防止过窄 */
             margin-bottom: 8px;
             padding: 12px 16px;
             border-radius: 18px;
@@ -259,7 +267,11 @@
             display: flex;
             flex-direction: column;
             overflow-wrap: break-word;
-            word-break: break-all;
+            word-break: break-word;
+            /* 关键修复：只在水平方向防止溢出，高度自适应 */
+            overflow-x: hidden;
+            overflow-y: visible;
+            flex-shrink: 0; /* 不压缩高度 */
         }
 
         /* 消息划入动画 */
@@ -343,17 +355,151 @@
             margin: 0;
             line-height: 1.4;
             overflow-wrap: break-word;
-            word-break: break-all;
+            word-break: break-word;
+            /* 关键修复：保持高度自适应，只控制宽度 */
+            max-width: 100%;
+            min-width: 0;
+            /* 只在水平方向防止溢出 */
+            overflow-x: hidden;
+            overflow-y: visible;
+            /* 确保内容有足够的高度空间 */
+            min-height: auto;
         }
 
+        /* 关键修复：统一所有代码块的容器样式，移除外层垂直滚动 */
+        .message-body pre,
+        .message-body code,
+        .message-body .code-block,
+        .message-body .code-block.with-line-numbers,
+        .inline-paste-content pre,
+        .inline-paste pre.code-block {
+            max-width: 100%;
+            overflow-x: auto; /* 水平滚动保�� */
+            overflow-y: visible; /* 关键修复：移除外层垂直滚动 */
+            white-space: pre;
+            word-wrap: normal;
+            word-break: normal;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            display: block;
+            margin: 4px 0;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            /* 确保代码块不会撑大父容器的宽度，但保持自然高度 */
+            min-width: 0;
+            width: 100%;
+            /* 移除高度限制，让内容自然展开 */
+            min-height: 20px;
+            /* 移除 max-height 限制，防止产生外层滚动条 */
+        }
+
+        .message-body pre code {
+            padding: 0;
+            border: none;
+            background-color: transparent;
+            max-width: 100%;
+            overflow-x: visible;
+            overflow-y: visible; /* 确保内层代码也不产生不必要的滚动 */
+            line-height: inherit;
+        }
+
+        /* 确保内联代码不会导致消息气泡过宽 */
+        .message-body p code {
+            white-space: pre-wrap;
+            word-break: break-word;
+            display: inline;
+            padding: 2px 4px;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+        }
+
+        /* 剪贴板代码块滚动样式 */
+        .inline-paste-content pre {
+            white-space: pre;
+            overflow-x: auto;
+            overflow-y: visible; /* 移除外层垂直滚动 */
+            max-width: 100%;
+            margin: 0;
+            min-width: 0;
+            min-height: 20px;
+        }
+
+        .inline-paste {
+            max-width: 100%;
+            overflow-x: hidden;
+            overflow-y: visible;
+            min-width: 0;
+        }
+
+        /* 针对Markdown渲染的表格添加滚动 */
+        .message-body table {
+            display: block;
+            overflow-x: auto;
+            overflow-y: visible;
+            max-width: 100%;
+            border-collapse: collapse;
+            min-width: 0;
+            width: 100%;
+        }
+
+        /* 控制代码块内的文本换行行为 */
+        code {
+            tab-size: 4;
+        }
+
+        /* 确保消息内容自适应宽度和高度 */
+        .message > div {
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        /* 确保段落有合理的高度 */
+        .message-body p {
+            margin: 4px 0;
+            min-height: 1.4em;
+        }
+
+        .message-body p:first-child {
+            margin-top: 0;
+        }
+
+        .message-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        body.dark-mode .message-body pre,
+        body.dark-mode .message-body code,
+        body.dark-mode .message-body .code-block,
+        body.dark-mode .inline-paste-content pre,
+        body.dark-mode .inline-paste pre.code-block {
+            background-color: #2a2a2a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .message-body p code {
+            background-color: #2a2a2a;
+        }
+
+        /* 图片消息样式增强 */
         .image-message {
             padding: 0;
             margin: 0;
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .image-message img {
             border-radius: 12px;
             margin: 4px 0;
+            max-width: 100%;
+            height: auto;
         }
 
         /* 输入容器 - 允许更灵活的高度调整 */
@@ -366,8 +512,7 @@
             transition: background-color 0.3s;
             border-radius: 0 0 16px 16px;
             gap: 12px;
-            /* 增加最大高度限制以适应更多文本 */
-            max-height: 300px; /* 从 200px 增加到 300px */
+            max-height: 300px;
             overflow: auto;
         }
 
@@ -390,12 +535,11 @@
             line-height: 1.4;
             height: auto;
             min-height: 40px;
-            max-height: 200px; /* 增加最大高度以支持更多行 */
+            max-height: 200px;
             overflow-y: auto;
             background: #f8f9fa;
             transition: all 0.2s ease;
             box-sizing: border-box;
-            /* 优化textarea的滚动行为 */
             scrollbar-width: thin;
             scrollbar-color: #999 #e0e0e0;
         }
@@ -611,13 +755,128 @@
             color: #66aaff;
         }
 
+        /* 内联剪贴板样式 - 确保不会溢出，但保持合理高度 */
+        .inline-paste {
+            margin: 10px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            /* 保持自然高度 */
+            min-height: auto;
+        }
+
+        body.dark-mode .inline-paste {
+            border-color: #444;
+            background: #2a2a2a;
+        }
+
+        .inline-paste-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #e9ecef;
+            border-bottom: 1px solid #ddd;
+            min-height: 32px; /* 确保header有最小高度 */
+        }
+
+        body.dark-mode .inline-paste-header {
+            background: #343a40;
+            border-color: #444;
+        }
+
+        .inline-paste-title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #495057;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        body.dark-mode .inline-paste-title {
+            color: #e9ecef;
+        }
+
+        .inline-paste-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .inline-paste-language {
+            padding: 2px 6px;
+            background: #dee2e6;
+            border-radius: 4px;
+            color: #495057;
+            line-height: 1.2;
+        }
+
+        body.dark-mode .inline-paste-language {
+            background: #495057;
+            color: #dee2e6;
+        }
+
+        .inline-paste-link {
+            color: #007bff;
+            text-decoration: none;
+            line-height: 1.2;
+        }
+
+        body.dark-mode .inline-paste-link {
+            color: #6ea8fe;
+        }
+
+        .inline-paste-link:hover {
+            text-decoration: underline;
+        }
+
+        .inline-paste-content {
+            /* 关键修复：移除外层垂直滚动的高度限制 */
+            overflow-x: hidden;
+            overflow-y: visible; /* 让内容自然展开 */
+            /* 确保剪贴板内容不会溢出，但保持自然高度 */
+            max-width: 100%;
+            min-width: 0;
+            min-height: auto;
+            /* 移除 max-height 限制 */
+        }
+
+        .paste-error {
+            padding: 10px;
+            color: #842029;
+            background-color: #f8d7da;
+            border: 1px solid #f5c2c7;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 14px;
+            max-width: 100%;
+            word-wrap: break-word;
+            min-height: 20px; /* 确保错误信息有最小高度 */
+            line-height: 1.4;
+        }
+
+        body.dark-mode .paste-error {
+            color: #ea868f;
+            background-color: #2c0b0e;
+            border-color: #842029;
+        }
+
         /* 响应式布局 */
         @media (max-width: 768px) {
             .main-container {
                 margin: 8px;
                 width: calc(100% - 16px);
                 border-radius: 12px;
-                height: clamp(500px, 90vh, 800px); /* 移动端也增加高度 */
+                height: clamp(500px, 90vh, 800px);
             }
 
             .chat-area {
@@ -630,11 +889,13 @@
 
             .message-input-container {
                 border-radius: 0 0 12px 12px;
-                max-height: 200px; /* 移动端保持合理的高度限制 */
+                max-height: 200px;
             }
 
             .message {
-                max-width: 85%;
+                /* 移动端更严格的宽度控制，但保持合理的最小宽度 */
+                max-width: min(85%, calc(100vw - 60px));
+                min-width: 150px; /* 移动端最小宽度 */
             }
 
             .input-buttons {
@@ -643,11 +904,11 @@
             }
 
             .message-input-row textarea {
-                max-height: 120px; /* 移动端增加textarea最大高度 */
+                max-height: 120px;
             }
 
             .chat-messages {
-                min-height: 250px; /* 移动端也增加消息区域高度 */
+                min-height: 250px;
             }
         }
 
@@ -792,6 +1053,46 @@
         tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
         svg: { fontCache: 'global' }
     };
+
+    // 配置marked以正确处理代码块
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            highlight: function(code, lang) {
+                // 如果hljs可用，使用hljs进行高亮
+                if (window.hljs) {
+                    try {
+                        if (lang && hljs.getLanguage(lang)) {
+                            return hljs.highlight(lang, code).value;
+                        } else {
+                            return hljs.highlightAuto(code).value;
+                        }
+                    } catch (e) {
+                        console.error('高亮处理错误:', e);
+                    }
+                }
+                return code;
+            },
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false,
+            renderer: (function() {
+                const renderer = new marked.Renderer();
+
+                // 自定义代码块渲染器，确保添加水平滚动
+                renderer.code = function(code, language) {
+                    return `<pre class="code-block-wrapper"><code class="language-${language || 'plaintext'}">${code}</code></pre>`;
+                };
+
+                // 自定义表格渲染器，添加滚动容器
+                renderer.table = function(header, body) {
+                    return `<div class="table-wrapper"><table>${header}${body}</table></div>`;
+                };
+
+                return renderer;
+            })()
+        });
+    }
 </script>
 <script src="/files/tex-svg.js"></script>
 <script src="/chat/js"></script>
