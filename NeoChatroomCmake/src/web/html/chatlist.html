@@ -731,13 +731,185 @@
             color: #eee;
         }
 
-        /* 响应式布局 */
+        /* 云剪贴板样式 */
+        .cloud-paste-container {
+            background: var(--card-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: background 0.3s, box-shadow 0.3s;
+            animation: fadeIn 0.5s ease-out;
+            margin-top: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cloud-paste-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .cloud-paste-title {
+            margin: 0;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+
+        .cloud-paste-title .icon {
+            margin-right: 8px;
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        .cloud-paste-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .paste-item {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-sm);
+            background: linear-gradient(to right, #f9f9f9, #f5f5f5);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            opacity: 0;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .paste-item:hover {
+            background: linear-gradient(to right, #e9f5ff, #e6f7ff);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .paste-item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .paste-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .paste-item-language {
+            padding: 2px 6px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: #555;
+        }
+
+        .cloud-paste-empty {
+            text-align: center;
+            color: #888;
+            padding: 15px;
+            font-style: italic;
+        }
+
+        .cloud-paste-button {
+            align-self: center;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .cloud-paste-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .cloud-paste-button .icon {
+            font-size: 18px;
+        }
+
+        /* 深色模式适配 */
+        body.dark-mode .cloud-paste-container {
+            background: var(--card-dark);
+        }
+
+        body.dark-mode .paste-item {
+            background: linear-gradient(to right, #333, #2a2a2a);
+            border-color: #444;
+        }
+
+        body.dark-mode .paste-item:hover {
+            background: linear-gradient(to right, #3a3a3a, #333);
+        }
+
+        body.dark-mode .paste-item-meta {
+            color: #aaa;
+        }
+
+        body.dark-mode .paste-item-language {
+            background-color: #495057;
+            color: #ddd;
+        }
+
+        body.dark-mode .cloud-paste-empty {
+            color: #aaa;
+        }
+
+        /* 加载动画 */
+        .paste-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .paste-loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        body.dark-mode .paste-loading-spinner {
+            border-color: #444;
+            border-top-color: var(--primary-color);
+        }
+
+        /* 响应式调整 */
         @media (max-width: 1024px) {
             .main-container {
                 flex-direction: column;
             }
 
-            .container {
+            .container, .user-list-container, .cloud-paste-container {
                 max-width: 100%;
             }
         }
@@ -768,7 +940,7 @@
 
 <!-- 主容器 - 两栏布局 -->
 <div class="main-container">
-    <!-- ���侧栏 - 聊天室列表 -->
+    <!-- 左侧栏 - 聊天室列表 -->
     <div class="left-column">
         <!-- 已加入的聊天室 -->
         <div class="container">
@@ -800,7 +972,7 @@
         </div>
     </div>
 
-    <!-- 右侧栏 - 用户列表 -->
+    <!-- 右侧栏 - 用户列表和云剪贴板 -->
     <div class="right-column">
         <div class="user-list-container">
             <div class="user-list-header">
@@ -818,9 +990,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- 云剪贴板区域 -->
+        <div class="cloud-paste-container">
+            <div class="cloud-paste-header">
+                <h2 class="cloud-paste-title">
+                    <span class="icon">📋</span>
+                    云剪贴板
+                </h2>
+            </div>
+            <div id="cloud-paste-list" class="cloud-paste-list">
+                <!-- 剪贴板内容将通过JavaScript动态加载 -->
+                <div class="paste-loading">
+                    <div class="paste-loading-spinner"></div>
+                    <div>加载中...</div>
+                </div>
+            </div>
+            <button class="cloud-paste-button" id="cloud-paste-button">
+                <span class="icon">📝</span>
+                进入云剪贴板
+            </button>
+        </div>
     </div>
 </div>
 
 <script src="/chatlist/js" charset="utf-8"></script>
+<script src="/files/chatlist-paste.js" charset="utf-8"></script>
 </body>
 </html>
