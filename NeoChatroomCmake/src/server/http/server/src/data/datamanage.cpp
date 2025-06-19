@@ -438,6 +438,43 @@ namespace manager {
         }
     }
 
+    bool SetAdmin(int uid) {
+        try {
+            const char* updateQuery = R"(
+                UPDATE users SET label = ? WHERE uid = ?;
+            )";
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, updateQuery, -1, &stmt, nullptr) != SQLITE_OK) {
+                Logger::getInstance().logError("database", "提升用户权限时发生错误 " + std::string(sqlite3_errmsg(db)));
+                return false;
+            }
+            sqlite3_bind_text(stmt, 1, GMlabel.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_int(stmt, 2, uid);
+            bool success = (sqlite3_step(stmt) == SQLITE_DONE);
+            if (success) {
+                Logger::getInstance().logInfo("database", "UID为 " + std::to_string(uid) + " 的用户已设为管理员。");
+                // 使缓存无效
+                lock_guard<mutex> lock(mtx);
+                auto it = userCacheById.find(uid);
+                if (it != userCacheById.end()) {
+                    userCacheByName.erase(it->second.userPtr->getname());
+                    delete it->second.userPtr;
+                    userCacheById.erase(it);
+                }
+            }
+            else {
+                Logger::getInstance().logError("database", "设为管理员失败: " + std::string(sqlite3_errmsg(db)));
+            }
+            sqlite3_finalize(stmt);
+            return success;
+        }
+        catch (const std::exception& e) {
+            Logger::getInstance().logError("database", "设为管理员时发生错误: " + string(e.what()));
+            return false;
+        }
+    }
+
+
     // 移除用户
     bool BanUser(int uid) {
         try {

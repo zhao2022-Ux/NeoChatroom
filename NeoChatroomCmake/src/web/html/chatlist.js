@@ -1091,11 +1091,11 @@ function renderUserList(users) {
         
         let userTypeClass = '';
         let userTypeText = '普通用户';
-        
-        if (user.labei === 'GM') {
+        console.debug(user.label);
+        if (user.label === 'GM') {
             userTypeClass = 'admin';
             userTypeText = '管理员';
-        } else if (user.labei === 'BAN') {
+        } else if (user.label === 'BAN') {
             userTypeClass = 'banned';
             userTypeText = '已封禁';
         }

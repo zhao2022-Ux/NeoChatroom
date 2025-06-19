@@ -536,6 +536,9 @@
                 <div class="user-controls">
                     <button class="action-button delete" onclick="deleteUser(${user.uid})">删除用户</button>
                 </div>
+                <div class="user-controls">
+                    <button class="action-button" onclick="setadmin(${user.uid})">设为管理员</button>
+                </div>
             </div>
         `).join('');
 
@@ -652,6 +655,17 @@
         await refreshUserList();
       } catch (error) {
         alert('删除用户失败: ' + error.message);
+      }
+    }
+  }
+
+  async function setadmin(uid) {
+    if (confirm(`确定要设为管理员 UID: ${uid} 吗？`)) {
+      try {
+        await sendCommand(`setadmin ${uid}`);
+        await refreshUserList();
+      } catch (error) {
+        alert('设为管理员失败: ' + error.message);
       }
     }
   }
