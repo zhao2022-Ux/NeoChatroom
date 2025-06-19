@@ -51,6 +51,8 @@ namespace manager {
 	user* FindUser(int uid);
 	//通过id查找用户
 	user* FindUser(string name);
+
+	bool SetAdmin(int uid);
 	//移除用户
 	bool RemoveUser(int uid);
 	bool BanUser(int uid);

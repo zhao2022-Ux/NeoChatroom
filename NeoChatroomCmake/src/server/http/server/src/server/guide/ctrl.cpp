@@ -608,7 +608,7 @@ Json::Value command_runner(string command, int roomid) {
             try {
                 int userId = stoi(args);
                 try {
-                    if (manager::RemoveUser(userId)) {
+                    if (manager::BanUser(userId)) {
                         logger.logInfo("Control", "用户已成功删除，UID: " + to_string(userId));
                         result["status"] = "success";
                         result["message"] = "用户已成功删除";
@@ -630,6 +630,45 @@ Json::Value command_runner(string command, int roomid) {
                     logger.logError("Control", "删除用户时发生未知错误，UID: " + to_string(userId));
                     result["status"] = "error";
                     result["message"] = "删除用户时发生未知错误";
+                }
+            }
+            catch (const std::exception&) {
+                logger.logError("Control", "无效的用户ID格式");
+                result["status"] = "error";
+                result["message"] = "无效的用户ID格式";
+            }
+            catch (...) {
+                logger.logError("Control", "rmuser 命令时发生未知错误");
+                result["status"] = "error";
+                result["message"] = "rmuser 命令时发生未知错误";
+            }
+        }
+        else if (cmd == "setadmin" && !args.empty()) {
+            try {
+                int userId = stoi(args);
+                try {
+                    if (manager::SetAdmin(userId)) {
+                        logger.logInfo("Control", "用户已设为管理员，UID: " + to_string(userId));
+                        result["status"] = "success";
+                        result["message"] = "用户已设为管理员";
+                        result["data"]["userId"] = userId;
+                    }
+                    else {
+                        logger.logError("Control", "设为管理员失败，可能找不到UID: " + to_string(userId));
+                        result["status"] = "error";
+                        result["message"] = "设为管理员失败，可能找不到指定用户";
+                        result["data"]["userId"] = userId;
+                    }
+                }
+                catch (const std::exception& e) {
+                    logger.logError("Control", "设为管理员时发生异常，UID: " + to_string(userId) + "，错误: " + string(e.what()));
+                    result["status"] = "error";
+                    result["message"] = "设为管理员时发生异常: " + string(e.what());
+                }
+                catch (...) {
+                    logger.logError("Control", "设为管理员时发生未知错误，UID: " + to_string(userId));
+                    result["status"] = "error";
+                    result["message"] = "设为管理员时发生未知错误";
                 }
             }
             catch (const std::exception&) {
